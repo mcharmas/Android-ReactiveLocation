@@ -1,7 +1,7 @@
 ReactiveLocation library for Android
 ====================================
 
-Small library that wraps Google Play Service API in brilliant [RxJava](https://github.com/Netflix/RxJava)
+Small library that wraps Google Play Services API in brilliant [RxJava](https://github.com/Netflix/RxJava)
 ```Observables``` reducing boilerplate to minimum.
 
 **This library is still in its early beta.**
@@ -14,11 +14,11 @@ What can you do with that?
 * manage geofences
 * geocode location to list of addresses
 
-How does the API looks like?
+How does the API look like?
 ----------------------------
 
 Simple. All you need is to create ```ReactiveLocationProvider``` using your context.
-All observables are already there. Examples are worth more than 1000 words.
+All observables are already there. Examples are worth more than 1000 words:
 
 
 ### Getting last known location
@@ -32,7 +32,7 @@ All observables are already there. Examples are worth more than 1000 words.
             }
         });
 
-Yep, Java 8 is not there yet (and on Android it will take a while), but there is
+Yep, Java 8 is not there yet (and on Android it will take a while) but there is
 absolutely no Google Play Services LocationClient callbacks hell and there is no
 clean-up you have to do.
 
@@ -47,9 +47,9 @@ clean-up you have to do.
     ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
     Subscription subscription = locationUpdatesObservable = locationProvider.getUpdatedLocation(request)
         .filter(...)    // you can filter location updates
-        .map(...)       // you can map location to sth different!
+        .map(...)       // you can map location to sth different
         .flatMap(...)   // or event flat map
-        ...             // and do eveything that is provided by RxJava
+        ...             // and do everything else that is provided by RxJava
         .subscribe(new Action1<Location>() {
             @Override
             public void call(Location location) {
@@ -69,7 +69,7 @@ Do you need address for location?
         .getGeocodeObservable(location.getLatitude(), location.getLongitude(), MAX_ADDRESSES);
 
     geocodeObservable
-        .subscribeOn(Schedulers.io())               // use io thread to query for addresses
+        .subscribeOn(Schedulers.io())               // use I/O thread to query for addresses
         .observeOn(AndroidSchedulers.mainThread())  // return result in main android thread to manipulate UI
         .subscribe(...);
 
@@ -104,8 +104,8 @@ Do you need location with certain accuracy but don't want to wait for it more th
 How to use it?
 --------------
 
-For know it is not available in Maven Central so you have to clone it, install it to
-you local maven repo by ```gradlew build install``` and use it as the dependency in your project
+For now it is not available in Maven Central so you have to clone it, install it to
+you local maven repo by ```gradlew build install``` and use it as dependency in your project
 along with Google Play Services and RxJava.
 
     compile 'pl.charmas.android:android-reactive-location:0.1@aar'
