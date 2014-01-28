@@ -76,8 +76,7 @@ Do you need address for location?
 
 ### Managing geofences
 
-For geofence management use ```addGeofences``` and ```removeGeofences``` methods on
-```ReactiveLocationProvider```.
+For geofence management use ```addGeofences``` and ```removeGeofences``` methods on ```ReactiveLocationProvider```.
 
 ### Cooler examples
 
