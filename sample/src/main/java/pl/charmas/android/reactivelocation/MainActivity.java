@@ -13,6 +13,7 @@ import java.util.List;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.util.functions.Action1;
 import rx.util.functions.Func1;
@@ -26,7 +27,7 @@ public class MainActivity extends ActionBarActivity {
     private TextView addressLocationView;
 
     private Observable<Location> lastKnownLocationObservable;
-    private Observable<Location> updatedLocationObservable;
+    private Observable<Location> locationUpdatesObservable;
 
     private Subscription lastKnownLocationSubscription;
     private Subscription updatableLocationSubscription;
@@ -44,10 +45,10 @@ public class MainActivity extends ActionBarActivity {
         locationProvider = new ReactiveLocationProvider(getApplicationContext());
         lastKnownLocationObservable = locationProvider.getLastKnownLocation();
 
-        updatedLocationObservable = locationProvider.getUpdatedLocation(
+        locationUpdatesObservable = locationProvider.getUpdatedLocation(
                 LocationRequest.create()
                         .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                        .setNumUpdates(10)
+                        .setNumUpdates(5)
                         .setInterval(100)
         );
 
@@ -60,7 +61,7 @@ public class MainActivity extends ActionBarActivity {
                 .map(new LocationToStringFunc())
                 .subscribe(new DisplayTextOnViewAction(lastKnownLocationView));
 
-        updatableLocationSubscription = updatedLocationObservable
+        updatableLocationSubscription = locationUpdatesObservable
                 .map(new LocationToStringFunc())
                 .map(new Func1<String, String>() {
                     int count = 0;
@@ -72,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
                 })
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView));
 
-        addressSubscription = AndroidObservable.fromActivity(this, updatedLocationObservable
+        addressSubscription = AndroidObservable.fromActivity(this, locationUpdatesObservable
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
                     @Override
                     public Observable<List<Address>> call(Location location) {
@@ -87,6 +88,7 @@ public class MainActivity extends ActionBarActivity {
                 })
                 .map(new AddressToStringFunc())
                 .subscribeOn(Schedulers.io()))
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DisplayTextOnViewAction(addressLocationView));
     }
 
@@ -101,7 +103,7 @@ public class MainActivity extends ActionBarActivity {
     private static class AddressToStringFunc implements Func1<Address, String> {
         @Override
         public String call(Address address) {
-            if(address == null) return "";
+            if (address == null) return "";
 
             String addressLines = "";
             for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {

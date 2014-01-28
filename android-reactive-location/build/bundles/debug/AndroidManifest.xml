@@ -1,0 +1,4 @@
+<!-- From: file:/home/orbit/Projects/AndroidStudioProjects/ReactiveLocation/android-reactive-location/src/main/AndroidManifest.xml --><manifest xmlns:android="http://schemas.android.com/apk/res/android" package="pl.charmas.android.reactivelocation">
+    <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="19"/>
+    <application/>
+</manifest>
