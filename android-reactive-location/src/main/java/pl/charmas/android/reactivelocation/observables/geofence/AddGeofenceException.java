@@ -1,14 +1,18 @@
 package pl.charmas.android.reactivelocation.observables.geofence;
 
+/**
+ * Exception that is thrown only on {@link com.google.android.gms.location.LocationStatusCodes#ERROR}
+ * when adding geofences. Exception contains whole operation result.
+ */
 public class AddGeofenceException extends Throwable {
-    private final AddGeofenceObservable.AddGeofenceResult addGeofenceResult;
+    private final AddGeofenceResult addGeofenceResult;
 
-    public AddGeofenceException(AddGeofenceObservable.AddGeofenceResult addGeofenceResult) {
+    AddGeofenceException(AddGeofenceResult addGeofenceResult) {
         super("Error adding geofences. Status code: " + addGeofenceResult.getStatusCode().getName());
         this.addGeofenceResult = addGeofenceResult;
     }
 
-    public AddGeofenceObservable.AddGeofenceResult getAddGeofenceResult() {
+    public AddGeofenceResult getAddGeofenceResult() {
         return addGeofenceResult;
     }
 }

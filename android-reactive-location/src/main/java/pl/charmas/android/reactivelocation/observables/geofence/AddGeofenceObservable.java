@@ -12,7 +12,7 @@ import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
 import rx.Observer;
 
-public class AddGeofenceObservable extends BaseLocationObservable<AddGeofenceObservable.AddGeofenceResult> {
+public class AddGeofenceObservable extends BaseLocationObservable<AddGeofenceResult> {
     private final List<Geofence> gefences;
     private final PendingIntent geofenceTransitionPendingIntent;
 
@@ -32,7 +32,7 @@ public class AddGeofenceObservable extends BaseLocationObservable<AddGeofenceObs
             @Override
             public void onAddGeofencesResult(int statusCode, String[] geofenceRequestIds) {
                 AddGeofenceResult result = new AddGeofenceResult(statusCode, geofenceRequestIds);
-                if(LocationStatusCode.ERROR.equals(result.getStatusCode())) {
+                if (LocationStatusCode.ERROR.equals(result.getStatusCode())) {
                     observer.onError(new AddGeofenceException(result));
                 } else {
                     observer.onNext(result);
@@ -44,28 +44,6 @@ public class AddGeofenceObservable extends BaseLocationObservable<AddGeofenceObs
 
     @Override
     protected void onLocationClientDisconnected(Observer<? super AddGeofenceResult> observer) {
-    }
-
-    public static final class AddGeofenceResult {
-        private final LocationStatusCode statusCode;
-        private final String[] geofenceRequestIds;
-
-        public AddGeofenceResult(int statusCode, String[] geofenceRequestIds) {
-            this.statusCode = LocationStatusCode.fromCode(statusCode);
-            this.geofenceRequestIds = geofenceRequestIds;
-        }
-
-        public LocationStatusCode getStatusCode() {
-            return statusCode;
-        }
-
-        public String[] getGeofenceRequestIds() {
-            return geofenceRequestIds;
-        }
-
-        public boolean isSuccess() {
-            return statusCode == LocationStatusCode.SUCCESS;
-        }
     }
 
 }

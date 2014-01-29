@@ -14,11 +14,11 @@ import rx.Observer;
 public abstract class RemoveGeofenceObservable<T> extends BaseLocationObservable<T> {
 
     public static Observable<RemoveGeofencesResult.PengingIntentRemoveGeofenceResult> createObservable(Context ctx, PendingIntent pendingIntent) {
-        return Observable.create(new PendingIntentRemoveGeofenceObservable(ctx, pendingIntent));
+        return Observable.create(new RemoveGeofenceByPendingIntentObservable(ctx, pendingIntent));
     }
 
     public static Observable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> createObservable(Context ctx, List<String> requestIds) {
-        return Observable.create(new RequestIdsRemoveGeofenceObservable(ctx, requestIds));
+        return Observable.create(new RemoveGeofenceRequestIdsObservable(ctx, requestIds));
     }
 
     protected RemoveGeofenceObservable(Context ctx) {

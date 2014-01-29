@@ -8,10 +8,10 @@ import java.util.List;
 
 import rx.Observer;
 
-class RequestIdsRemoveGeofenceObservable extends RemoveGeofenceObservable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> {
+class RemoveGeofenceRequestIdsObservable extends RemoveGeofenceObservable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> {
     private final List<String> geofenceRequestId;
 
-    RequestIdsRemoveGeofenceObservable(Context ctx, List<String> geofenceRequestId) {
+    RemoveGeofenceRequestIdsObservable(Context ctx, List<String> geofenceRequestId) {
         super(ctx);
         this.geofenceRequestId = geofenceRequestId;
     }

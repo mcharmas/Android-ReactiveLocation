@@ -1,4 +1,4 @@
-package pl.charmas.android.reactivelocation.observables;
+package pl.charmas.android.reactivelocation.observables.geocode;
 
 import android.content.Context;
 import android.location.Address;

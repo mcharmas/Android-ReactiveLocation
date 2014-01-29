@@ -7,7 +7,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
 
-import pl.charmas.android.reactivelocation.LocationConnectionException;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -61,12 +60,20 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
 
         @Override
         public void onConnected(Bundle bundle) {
-            onLocationClientReady(locationClient, observer);
+            try {
+                onLocationClientReady(locationClient, observer);
+            } catch (Throwable ex) {
+                observer.onError(ex);
+            }
         }
 
         @Override
         public void onDisconnected() {
-            onLocationClientDisconnected(observer);
+            try {
+                onLocationClientDisconnected(observer);
+            } catch (Throwable ex) {
+                observer.onError(ex);
+            }
         }
 
         @Override

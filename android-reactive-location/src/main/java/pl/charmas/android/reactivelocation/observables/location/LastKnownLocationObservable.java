@@ -1,10 +1,11 @@
-package pl.charmas.android.reactivelocation.observables;
+package pl.charmas.android.reactivelocation.observables.location;
 
 import android.content.Context;
 import android.location.Location;
 
 import com.google.android.gms.location.LocationClient;
 
+import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
 import rx.Observer;
 

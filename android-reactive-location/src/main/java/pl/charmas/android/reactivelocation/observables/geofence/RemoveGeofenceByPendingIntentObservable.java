@@ -7,10 +7,10 @@ import com.google.android.gms.location.LocationClient;
 
 import rx.Observer;
 
-class PendingIntentRemoveGeofenceObservable extends RemoveGeofenceObservable<RemoveGeofencesResult.PengingIntentRemoveGeofenceResult> {
+class RemoveGeofenceByPendingIntentObservable extends RemoveGeofenceObservable<RemoveGeofencesResult.PengingIntentRemoveGeofenceResult> {
     private final PendingIntent pendingIntent;
 
-    PendingIntentRemoveGeofenceObservable(Context ctx, PendingIntent pendingIntent) {
+    RemoveGeofenceByPendingIntentObservable(Context ctx, PendingIntent pendingIntent) {
         super(ctx);
         this.pendingIntent = pendingIntent;
     }
