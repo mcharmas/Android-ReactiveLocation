@@ -1,9 +1,6 @@
 apply plugin: 'android-library'
 apply plugin: 'maven'
 
-version '0.1'
-group 'pl.charmas.android'
-
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.1"
@@ -19,17 +16,20 @@ android {
     }
 }
 
-apply plugin: 'maven'
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository url: 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath
-        }
-    }
-}
-task install(dependsOn: uploadArchives)
+//TODO: local maven deployment
+//apply plugin: 'maven'
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository url: 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath
+//        }
+//    }
+//}
+//task install(dependsOn: uploadArchives)
 
 dependencies {
     compile 'com.google.android.gms:play-services:4.1.32'
     compile 'com.netflix.rxjava:rxjava-android:0.16.1'
 }
+
+apply from: '../maven_push.gradle'
