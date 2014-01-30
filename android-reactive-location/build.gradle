@@ -17,6 +17,19 @@ android {
 }
 
 //TODO: local maven deployment
+
+dependencies {
+    compile 'com.google.android.gms:play-services:4.1.32'
+    compile 'com.netflix.rxjava:rxjava-android:0.16.1'
+}
+
+// Comment this to deploy to local maven repository
+apply from: '../maven_push.gradle'
+
+
+//TODO: clean up
+//This is for local maven deployment
+
 //apply plugin: 'maven'
 //uploadArchives {
 //    repositories {
@@ -26,10 +39,3 @@ android {
 //    }
 //}
 //task install(dependsOn: uploadArchives)
-
-dependencies {
-    compile 'com.google.android.gms:play-services:4.1.32'
-    compile 'com.netflix.rxjava:rxjava-android:0.16.1'
-}
-
-apply from: '../maven_push.gradle'
