@@ -104,15 +104,15 @@ Do you need location with certain accuracy but don't want to wait for it more th
 How to use it?
 --------------
 
-For now it is not available in Maven Central so you have to clone it, install it to
-you local maven repo by ```gradlew build install``` and use it as dependency in your project
+Library is available in maven central. Just use it as dependency in your *build.gradle* file
 along with Google Play Services and RxJava.
 
-    compile 'pl.charmas.android:android-reactive-location:0.1@aar'
-    compile 'com.google.android.gms:play-services:4.1.32'
-    compile 'com.netflix.rxjava:rxjava-android:0.16.1'
-
-
+    dependencies {
+        ...
+        compile 'pl.charmas.android:android-reactive-location:0.1@aar'
+        compile 'com.google.android.gms:play-services:4.1.32'
+        compile 'com.netflix.rxjava:rxjava-android:0.16.1'
+    }
 
 Sample
 ------
