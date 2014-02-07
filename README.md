@@ -23,14 +23,16 @@ All observables are already there. Examples are worth more than 1000 words:
 
 ### Getting last known location
 
-    ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
-    locationProvider.getLastKnownLocation()
-        .subscribe(new Action1<Location>() {
-            @Override
-            public void call(Location location) {
-                doSthImportantWithObtainedLocation(location);
-            }
-        });
+```java
+ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
+locationProvider.getLastKnownLocation()
+    .subscribe(new Action1<Location>() {
+        @Override
+        public void call(Location location) {
+            doSthImportantWithObtainedLocation(location);
+        }
+    });
+```
 
 Yep, Java 8 is not there yet (and on Android it will take a while) but there is
 absolutely no Google Play Services LocationClient callbacks hell and there is no
@@ -38,67 +40,73 @@ clean-up you have to do.
 
 ### Subscribing for location updates
 
+```java
+LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
+                                  .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                                  .setNumUpdates(5)
+                                  .setInterval(100);
 
-    LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
-                                      .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                                      .setNumUpdates(5)
-                                      .setInterval(100);
-
-    ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
-    Subscription subscription = locationUpdatesObservable = locationProvider.getUpdatedLocation(request)
-        .filter(...)    // you can filter location updates
-        .map(...)       // you can map location to sth different
-        .flatMap(...)   // or event flat map
-        ...             // and do everything else that is provided by RxJava
-        .subscribe(new Action1<Location>() {
-            @Override
-            public void call(Location location) {
-                doSthImportantWithObtainedLocation(location);
-            }
-        });
+ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
+Subscription subscription = locationUpdatesObservable = locationProvider.getUpdatedLocation(request)
+    .filter(...)    // you can filter location updates
+    .map(...)       // you can map location to sth different
+    .flatMap(...)   // or event flat map
+    ...             // and do everything else that is provided by RxJava
+    .subscribe(new Action1<Location>() {
+        @Override
+        public void call(Location location) {
+            doSthImportantWithObtainedLocation(location);
+        }
+    });
+```
 
 When you are done (for example in ```onStop()```) remember to unsubscribe.
 
-    subscription.unsubscribe();
+```java
+subscription.unsubscribe();
+```
 
 ### Geocode location
 
 Do you need address for location?
 
-    Observable<List<Address> geocodeObservable = locationProvider
-        .getGeocodeObservable(location.getLatitude(), location.getLongitude(), MAX_ADDRESSES);
+```java
+Observable<List<Address> geocodeObservable = locationProvider
+    .getGeocodeObservable(location.getLatitude(), location.getLongitude(), MAX_ADDRESSES);
 
-    geocodeObservable
-        .subscribeOn(Schedulers.io())               // use I/O thread to query for addresses
-        .observeOn(AndroidSchedulers.mainThread())  // return result in main android thread to manipulate UI
-        .subscribe(...);
-
+geocodeObservable
+    .subscribeOn(Schedulers.io())               // use I/O thread to query for addresses
+    .observeOn(AndroidSchedulers.mainThread())  // return result in main android thread to manipulate UI
+    .subscribe(...);
+```
 
 ### Managing geofences
 
-For geofence management use ```addGeofences``` and ```removeGeofences``` methods.
+For geofence management use `addGeofences` and `removeGeofences` methods.
 
 ### Cooler examples
 
 Do you need location with certain accuracy but don't want to wait for it more than 4 sec? No problem.
 
-    LocationRequest req = LocationRequest.create()
-                             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                             .setExpirationDuration(TimeUnit.SECONDS.toMillis(LOCATION_TIMEOUT_IN_SECONDS)
-                             .setInterval(LOCATION_UPDATE_INTERVAL);
+```java
+LocationRequest req = LocationRequest.create()
+                         .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                         .setExpirationDuration(TimeUnit.SECONDS.toMillis(LOCATION_TIMEOUT_IN_SECONDS)
+                         .setInterval(LOCATION_UPDATE_INTERVAL);
 
-    Observable<Location> goodEnoughQuicklyOrNothingObservable = locationProvider.getUpdatedLocation(req)
-                .filter(new Func1<Location, Boolean>() {
-                    @Override
-                    public Boolean call(Location location) {
-                        return location.getAccuracy() < SUFFICIENT_ACCURACY;
-                    }
-                })
-                .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, Observable.from((Location) null), AndroidSchedulers.mainThread())
-                .first()
-                .observeOn(AndroidSchedulers.mainThread());
+Observable<Location> goodEnoughQuicklyOrNothingObservable = locationProvider.getUpdatedLocation(req)
+            .filter(new Func1<Location, Boolean>() {
+                @Override
+                public Boolean call(Location location) {
+                    return location.getAccuracy() < SUFFICIENT_ACCURACY;
+                }
+            })
+            .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, Observable.from((Location) null), AndroidSchedulers.mainThread())
+            .first()
+            .observeOn(AndroidSchedulers.mainThread());
 
-    goodEnoughQuicklyOrNothingObservable.subscribe(...);
+goodEnoughQuicklyOrNothingObservable.subscribe(...);
+```
 
 
 How to use it?
@@ -107,12 +115,14 @@ How to use it?
 Library is available in maven central. Just use it as dependency in your *build.gradle* file
 along with Google Play Services and RxJava.
 
-    dependencies {
-        ...
-        compile 'pl.charmas.android:android-reactive-location:0.1@aar'
-        compile 'com.google.android.gms:play-services:4.1.32'
-        compile 'com.netflix.rxjava:rxjava-android:0.16.1'
-    }
+```groovy
+dependencies {
+    ...
+    compile 'pl.charmas.android:android-reactive-location:0.1@aar'
+    compile 'com.google.android.gms:play-services:4.1.32'
+    compile 'com.netflix.rxjava:rxjava-android:0.16.1'
+}
+```
 
 Sample
 ------
