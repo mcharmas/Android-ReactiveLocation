@@ -112,7 +112,11 @@ goodEnoughQuicklyOrNothingObservable.subscribe(...);
 How to use it?
 --------------
 
-Library is available in maven central. Just use it as dependency in your *build.gradle* file
+Library is available in maven central.
+
+### Gradle
+
+Just use it as dependency in your *build.gradle* file
 along with Google Play Services and RxJava.
 
 ```groovy
@@ -123,6 +127,22 @@ dependencies {
     compile 'com.netflix.rxjava:rxjava-android:0.16.1'
 }
 ```
+
+### Maven
+
+Ensure you have android-maven-plugin version that support **aar* archives and add
+following dependency:
+
+```xml
+<dependency>
+    <groupId>pl.charmas.android</groupId>
+    <artifactId>android-reactive-location</artifactId>
+    <version>0.1</version>
+    <type>aar</type>
+</dependency>
+```
+
+It may be necessary to add google play services and rxjava-android dependency as well.
 
 Sample
 ------
