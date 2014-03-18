@@ -14,9 +14,9 @@ import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-import rx.util.functions.Action1;
-import rx.util.functions.Func1;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -57,11 +57,11 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        lastKnownLocationSubscription = lastKnownLocationObservable
-                .map(new LocationToStringFunc())
+        lastKnownLocationSubscription = AndroidObservable.bindActivity(this, lastKnownLocationObservable
+                .map(new LocationToStringFunc()))
                 .subscribe(new DisplayTextOnViewAction(lastKnownLocationView));
 
-        updatableLocationSubscription = locationUpdatesObservable
+        updatableLocationSubscription = AndroidObservable.bindActivity(this, locationUpdatesObservable
                 .map(new LocationToStringFunc())
                 .map(new Func1<String, String>() {
                     int count = 0;
@@ -70,10 +70,10 @@ public class MainActivity extends ActionBarActivity {
                     public String call(String s) {
                         return s + " " + count++;
                     }
-                })
+                }))
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView));
 
-        addressSubscription = AndroidObservable.fromActivity(this, locationUpdatesObservable
+        addressSubscription = AndroidObservable.bindActivity(this, locationUpdatesObservable
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
                     @Override
                     public Observable<List<Address>> call(Location location) {
@@ -88,7 +88,6 @@ public class MainActivity extends ActionBarActivity {
                 })
                 .map(new AddressToStringFunc())
                 .subscribeOn(Schedulers.io()))
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DisplayTextOnViewAction(addressLocationView));
     }
 
