@@ -11,6 +11,7 @@ import com.google.android.gms.location.LocationClient;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.android.subscriptions.AndroidSubscriptions;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
@@ -35,7 +36,7 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
             subscriber.onError(ex);
         }
 
-        subscriber.add(Subscriptions.create(new Action0() {
+        subscriber.add(AndroidSubscriptions.unsubscribeInUiThread(new Action0() {
             @Override
             public void call() {
                 if (locationClient.isConnected() || locationClient.isConnecting()) {
