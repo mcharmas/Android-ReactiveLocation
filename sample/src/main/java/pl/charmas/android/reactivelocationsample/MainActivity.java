@@ -1,22 +1,23 @@
-package pl.charmas.android.reactivelocation;
-
-import android.location.Address;
-import android.location.Location;
-import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.widget.TextView;
+package pl.charmas.android.reactivelocationsample;
 
 import com.google.android.gms.location.LocationRequest;
 
+import android.location.Address;
+import android.location.Location;
+import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.widget.TextView;
+
 import java.util.List;
 
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-import rx.util.functions.Action1;
-import rx.util.functions.Func1;
 
 public class MainActivity extends ActionBarActivity {
 
