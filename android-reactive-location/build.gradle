@@ -24,7 +24,7 @@ dependencies {
 }
 
 // Comment this to deploy to local maven repository
-apply from: '../maven_push.gradle'
+//apply from: '../maven_push.gradle'
 
 
 //TODO: clean up
