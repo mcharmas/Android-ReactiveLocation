@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    buildToolsVersion "19.0.3"
 
     defaultConfig {
         minSdkVersion 9
@@ -19,8 +19,8 @@ android {
 //TODO: local maven deployment
 
 dependencies {
-    compile 'com.google.android.gms:play-services:4.2.42'
-    compile 'com.netflix.rxjava:rxjava-android:0.17.1'
+    compile 'com.google.android.gms:play-services:4.3.+'
+    compile 'com.netflix.rxjava:rxjava-android:0.18.+'
 }
 
 // Comment this to deploy to local maven repository
