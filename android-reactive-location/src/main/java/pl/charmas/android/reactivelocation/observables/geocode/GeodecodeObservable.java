@@ -8,11 +8,9 @@ import java.io.IOException;
 import java.util.List;
 
 import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.subscriptions.Subscriptions;
+import rx.Subscriber;
 
-public class GeodecodeObservable implements Observable.OnSubscribeFunc<List<Address>> {
+public class GeodecodeObservable implements Observable.OnSubscribe<List<Address>> {
     private final Context ctx;
     private final double latitude;
     private final double longitude;
@@ -30,14 +28,13 @@ public class GeodecodeObservable implements Observable.OnSubscribeFunc<List<Addr
     }
 
     @Override
-    public Subscription onSubscribe(Observer<? super List<Address>> observer) {
+    public void call(Subscriber<? super List<Address>> subscriber) {
         Geocoder geocoder = new Geocoder(ctx);
         try {
-            observer.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
-            observer.onCompleted();
+            subscriber.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
+            subscriber.onCompleted();
         } catch (IOException e) {
-            observer.onError(e);
+            subscriber.onError(e);
         }
-        return Subscriptions.empty();
     }
 }

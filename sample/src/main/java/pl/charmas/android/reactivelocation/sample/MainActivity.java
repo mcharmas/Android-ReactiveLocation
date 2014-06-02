@@ -1,4 +1,4 @@
-package pl.charmas.android.reactivelocation;
+package pl.charmas.android.reactivelocation.sample;
 
 import android.location.Address;
 import android.location.Location;
@@ -10,13 +10,14 @@ import com.google.android.gms.location.LocationRequest;
 
 import java.util.List;
 
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-import rx.util.functions.Action1;
-import rx.util.functions.Func1;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -73,7 +74,7 @@ public class MainActivity extends ActionBarActivity {
                 })
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView));
 
-        addressSubscription = AndroidObservable.fromActivity(this, locationUpdatesObservable
+        addressSubscription = AndroidObservable.bindActivity(this, locationUpdatesObservable
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
                     @Override
                     public Observable<List<Address>> call(Location location) {
