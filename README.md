@@ -122,9 +122,9 @@ along with Google Play Services and RxJava.
 ```groovy
 dependencies {
     ...
-    compile 'pl.charmas.android:android-reactive-location:0.1@aar'
-    compile 'com.google.android.gms:play-services:4.1.32'
-    compile 'com.netflix.rxjava:rxjava-android:0.16.1'
+    compile 'pl.charmas.android:android-reactive-location:0.2@aar'
+    compile 'com.google.android.gms:play-services:4.4.52'
+    compile 'com.netflix.rxjava:rxjava-android:0.18.4'
 }
 ```
 
