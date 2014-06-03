@@ -6,6 +6,11 @@ Small library that wraps Google Play Services API in brilliant [RxJava](https://
 
 **This library is still in its early beta.**
 
+Current stable version - 0.2
+---------------
+
+**This version works with Google Play Services 4.4 and RxJava 0.19.+** 
+
 What can you do with that?
 --------------------------
 
@@ -137,7 +142,7 @@ following dependency:
 <dependency>
     <groupId>pl.charmas.android</groupId>
     <artifactId>android-reactive-location</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
     <type>aar</type>
 </dependency>
 ```
