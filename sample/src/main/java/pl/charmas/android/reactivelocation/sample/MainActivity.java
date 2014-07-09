@@ -1,9 +1,11 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.app.AlertDialog;
 import android.location.Address;
 import android.location.Location;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.gms.location.LocationRequest;
@@ -33,11 +35,13 @@ public class MainActivity extends ActionBarActivity {
     private Subscription lastKnownLocationSubscription;
     private Subscription updatableLocationSubscription;
     private Subscription addressSubscription;
+    private DisplayErrorAction errorAction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        errorAction = new DisplayErrorAction();
 
         lastKnownLocationView = (TextView) findViewById(R.id.last_known_location_view);
         updatableLocationView = (TextView) findViewById(R.id.updated_location_view);
@@ -60,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
         super.onStart();
         lastKnownLocationSubscription = lastKnownLocationObservable
                 .map(new LocationToStringFunc())
-                .subscribe(new DisplayTextOnViewAction(lastKnownLocationView));
+                .subscribe(new DisplayTextOnViewAction(lastKnownLocationView), errorAction);
 
         updatableLocationSubscription = locationUpdatesObservable
                 .map(new LocationToStringFunc())
@@ -72,7 +76,7 @@ public class MainActivity extends ActionBarActivity {
                         return s + " " + count++;
                     }
                 })
-                .subscribe(new DisplayTextOnViewAction(updatableLocationView));
+                .subscribe(new DisplayTextOnViewAction(updatableLocationView), errorAction);
 
         addressSubscription = AndroidObservable.bindActivity(this, locationUpdatesObservable
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
@@ -90,7 +94,7 @@ public class MainActivity extends ActionBarActivity {
                 .map(new AddressToStringFunc())
                 .subscribeOn(Schedulers.io()))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new DisplayTextOnViewAction(addressLocationView));
+                .subscribe(new DisplayTextOnViewAction(addressLocationView), errorAction);
     }
 
     @Override
@@ -99,6 +103,12 @@ public class MainActivity extends ActionBarActivity {
         lastKnownLocationSubscription.unsubscribe();
         updatableLocationSubscription.unsubscribe();
         addressSubscription.unsubscribe();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        errorAction.dismiss();
     }
 
     private static class AddressToStringFunc implements Func1<Address, String> {
@@ -131,6 +141,28 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void call(String s) {
             target.setText(s);
+        }
+    }
+
+    private class DisplayErrorAction implements Action1<Throwable> {
+        private AlertDialog errorDialog;
+
+        @Override
+        public void call(Throwable throwable) {
+            Log.e("MainActivity", "Error occurred.", throwable);
+            if(errorDialog == null) {
+                errorDialog = new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Error")
+                        .setMessage("Some error occured. See LogCat")
+                        .create();
+                errorDialog.show();
+            }
+        }
+
+        public void dismiss() {
+            if(errorDialog != null) {
+                errorDialog.dismiss();
+            }
         }
     }
 }
