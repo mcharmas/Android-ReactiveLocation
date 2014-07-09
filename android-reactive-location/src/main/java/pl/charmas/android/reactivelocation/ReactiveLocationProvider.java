@@ -64,7 +64,7 @@ public class ReactiveLocationProvider {
     }
 
     /**
-     * Creates obserbable that translates latitude and longitude to list of possible addresses using
+     * Creates observable that translates latitude and longitude to list of possible addresses using
      * included Geocoder class. You should subscribe for this observable on I/O thread.
      * The stream finishes after address list is available.
      *
