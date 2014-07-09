@@ -26,4 +26,6 @@ android {
 dependencies {
     compile 'com.android.support:appcompat-v7:19.1.0'
     compile project(':android-reactive-location')
+    compile 'com.google.android.gms:play-services:5.0.77'
+    compile 'com.netflix.rxjava:rxjava-android:0.19.6'
 }

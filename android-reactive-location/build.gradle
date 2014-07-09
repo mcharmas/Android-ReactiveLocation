@@ -19,8 +19,8 @@ android {
 //TODO: local maven deployment
 
 dependencies {
-    compile 'com.google.android.gms:play-services:4.4.52'
-    compile 'com.netflix.rxjava:rxjava-android:0.18.4'
+    provided 'com.google.android.gms:play-services:5.0.77'
+    provided 'com.netflix.rxjava:rxjava-android:0.19.6'
 }
 
 // Comment this to deploy to local maven repository
