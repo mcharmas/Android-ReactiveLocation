@@ -20,7 +20,7 @@ android {
 
 dependencies {
     provided 'com.google.android.gms:play-services:5.0.+'
-    provided 'com.netflix.rxjava:rxjava-android:0.19.+'
+    provided 'com.netflix.rxjava:rxjava-core:0.19.+'
 }
 
 // Comment this to deploy to local maven repository

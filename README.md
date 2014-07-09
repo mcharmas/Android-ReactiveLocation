@@ -128,8 +128,8 @@ along with Google Play Services and RxJava.
 dependencies {
     ...
     compile 'pl.charmas.android:android-reactive-location:0.2@aar'
-    compile 'com.google.android.gms:play-services:4.4.52'
-    compile 'com.netflix.rxjava:rxjava-android:0.18.4'
+    compile 'com.google.android.gms:play-services:5.0.+'
+    compile 'com.netflix.rxjava:rxjava:0.19.+'
 }
 ```
 
