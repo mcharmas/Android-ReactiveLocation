@@ -2,14 +2,10 @@ package pl.charmas.android.reactivelocation.sample;
 
 import android.location.Address;
 import android.location.Location;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.widget.TextView;
-
 import com.google.android.gms.location.LocationRequest;
-
-import java.util.List;
-
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.Observable;
 import rx.Subscription;
@@ -18,6 +14,8 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+
+import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -117,7 +115,9 @@ public class MainActivity extends ActionBarActivity {
     private static class LocationToStringFunc implements Func1<Location, String> {
         @Override
         public String call(Location location) {
-            return location.getLatitude() + " " + location.getLongitude() + " (" + location.getAccuracy() + ")";
+            if (location != null)
+                return location.getLatitude() + " " + location.getLongitude() + " (" + location.getAccuracy() + ")";
+            return "no location available";
         }
     }
 
