@@ -1,12 +1,16 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.View;
 import android.widget.TextView;
 import com.google.android.gms.location.LocationRequest;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation.trace.Tracer;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
@@ -131,6 +135,30 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void call(String s) {
             target.setText(s);
+        }
+    }
+
+    public void onStartTrack(View view) {
+        SampleApplication app = (SampleApplication) SampleApplication.getContext();
+        app.startTrack();
+    }
+
+    public void onStopTrack(View view) {
+        SampleApplication app = (SampleApplication) SampleApplication.getContext();
+        Tracer tracer = app.stopTrack();
+        if (tracer != null) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("Track results");
+            alertDialogBuilder.setMessage("Run: " + tracer.getRun() + " km \nStay time: " + tracer.getStayTime() + " ms \nAverage speed: " + tracer.getAverageSpeed() + " km/h");
+
+            alertDialogBuilder.setNeutralButton("ОК", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            alertDialogBuilder.show();
         }
     }
 }
