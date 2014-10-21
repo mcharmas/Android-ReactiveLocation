@@ -36,10 +36,19 @@ public class TraceRoute {
         return null;
     }
 
+    /**
+     * with default 1 meter collisions in location (accepted distance between Move and Stay state)
+     * @param key for tracker
+     * @param location geo north/east
+     */
     public void setTraceRun(String key, Location location) {
+        setTraceRun(key, location, 0.001);
+    }
+
+    public void setTraceRun(String key, Location location, double collisions) {
         if (lastLocation != null) {
             double distance = GISTool.getDistance(location.getLongitude(), lastLocation.getLongitude(), location.getLatitude(), lastLocation.getLatitude());
-            if (distance > 0) {
+            if (distance > collisions) {
                 mTraceMap.get(key).onMove(distance);
             } else {  //not move
                 mTraceMap.get(key).onStop();

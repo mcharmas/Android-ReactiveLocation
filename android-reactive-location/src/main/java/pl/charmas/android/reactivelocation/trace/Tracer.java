@@ -13,7 +13,7 @@ public class Tracer {
     private long startTime;
     private long previousStayTime;
     private long stayTime;
-    private double km = 0.0;
+    private double km;
 
     public Tracer() {
         set();
@@ -21,6 +21,8 @@ public class Tracer {
 
     public void set() {
         startTime = new Date().getTime();
+        stayTime = 0L;
+        previousStayTime = 0L;
         km = 0.0;
     }
 
@@ -34,7 +36,7 @@ public class Tracer {
 
     public void onStop() {
         long now = new Date().getTime();
-        stayTime = now - previousStayTime;
+        if (previousStayTime > 0L) stayTime += now - previousStayTime;
         previousStayTime = now;
     }
 
