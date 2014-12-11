@@ -9,7 +9,7 @@ Small library that wraps Google Play Services API in brilliant [RxJava](https://
 Current stable version - 0.2
 ---------------
 
-**This version works with Google Play Services 4.4 and RxJava 0.19.+** 
+**This version works with Google Play Services 6.5 and RxJava 0.23.+**
 
 What can you do with that?
 --------------------------
