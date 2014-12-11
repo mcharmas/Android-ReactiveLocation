@@ -1,18 +1,20 @@
 package pl.charmas.android.reactivelocation.observables.geofence;
 
+import com.google.android.gms.common.api.Result;
+
 /**
  * Exception that is delivered only od {@link com.google.android.gms.location.LocationStatusCodes#ERROR}
  * when removing geofences.
  */
 public class RemoveGeofencesException extends Throwable {
-    private final LocationStatusCode statusCode;
+  private final Result statusCode;
 
-    RemoveGeofencesException(LocationStatusCode statusCode) {
-        super("Error removing geofences.");
-        this.statusCode = statusCode;
-    }
+  RemoveGeofencesException(Result statusCode) {
+    super("Error removing geofences.");
+    this.statusCode = statusCode;
+  }
 
-    public LocationStatusCode getStatusCode() {
-        return statusCode;
-    }
+  public Result getStatusCode() {
+    return statusCode;
+  }
 }
