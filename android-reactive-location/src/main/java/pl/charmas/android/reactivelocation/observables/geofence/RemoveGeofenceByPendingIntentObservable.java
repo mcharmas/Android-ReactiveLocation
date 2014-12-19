@@ -3,11 +3,15 @@ package pl.charmas.android.reactivelocation.observables.geofence;
 import android.app.PendingIntent;
 import android.content.Context;
 
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationServices;
 
 import rx.Observer;
 
-class RemoveGeofenceByPendingIntentObservable extends RemoveGeofenceObservable<RemoveGeofencesResult.PengingIntentRemoveGeofenceResult> {
+class RemoveGeofenceByPendingIntentObservable extends
+        RemoveGeofenceObservable<RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> {
     private final PendingIntent pendingIntent;
 
     RemoveGeofenceByPendingIntentObservable(Context ctx, PendingIntent pendingIntent) {
@@ -16,12 +20,28 @@ class RemoveGeofenceByPendingIntentObservable extends RemoveGeofenceObservable<R
     }
 
     @Override
-    protected void deliverResultToObserver(RemoveGeofencesResult result, Observer<? super RemoveGeofencesResult.PengingIntentRemoveGeofenceResult> observer) {
-        observer.onNext((RemoveGeofencesResult.PengingIntentRemoveGeofenceResult) result);
+    protected void deliverResultToObserver(RemoveGeofencesResult result,
+                                           Observer<? super RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> observer) {
+        observer.onNext((RemoveGeofencesResult.PendingIntentRemoveGeofenceResult) result);
     }
 
     @Override
-    protected void removeGeofences(LocationClient locationClient, LocationClient.OnRemoveGeofencesResultListener onRemoveGeofencesResultListener) {
-        locationClient.removeGeofences(pendingIntent, onRemoveGeofencesResultListener);
+    protected void removeGeofences(GoogleApiClient locationClient,
+                                   final Observer<? super RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> observer) {
+        LocationServices.GeofencingApi.removeGeofences(locationClient, pendingIntent)
+            .setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(Status status) {
+                    RemoveGeofencesResult.PendingIntentRemoveGeofenceResult result =
+                            new RemoveGeofencesResult.PendingIntentRemoveGeofenceResult(status.getStatusCode(), pendingIntent);
+
+                    if (result.isSuccess()) {
+                        deliverResultToObserver(result, observer);
+                        observer.onCompleted();
+                    } else {
+                        observer.onError(new RemoveGeofencesException(result.getStatusCode()));
+                    }
+                }
+            });
     }
 }

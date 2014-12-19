@@ -3,7 +3,8 @@ package pl.charmas.android.reactivelocation.observables.location;
 import android.content.Context;
 import android.location.Location;
 
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
@@ -20,8 +21,8 @@ public class LastKnownLocationObservable extends BaseLocationObservable<Location
     }
 
     @Override
-    protected void onLocationClientReady(LocationClient locationClient, Observer<? super Location> observer) {
-        observer.onNext(locationClient.getLastLocation());
+    protected void onLocationClientReady(GoogleApiClient locationClient, Observer<? super Location> observer) {
+        observer.onNext(LocationServices.FusedLocationApi.getLastLocation(locationClient));
         observer.onCompleted();
     }
 

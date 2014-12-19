@@ -113,7 +113,7 @@ public class ReactiveLocationProvider {
      * @param pendingIntent key of registered geofences
      * @return observable that removed geofences
      */
-    public Observable<RemoveGeofencesResult.PengingIntentRemoveGeofenceResult> removeGeofences(PendingIntent pendingIntent) {
+    public Observable<RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> removeGeofences(PendingIntent pendingIntent) {
         return RemoveGeofenceObservable.createObservable(ctx, pendingIntent);
     }
 

@@ -1,26 +1,29 @@
 package pl.charmas.android.reactivelocation.observables.geofence;
 
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.location.GeofenceStatusCodes;
+
 /**
  * Result of add geofence action. Contains operation status code and geofence request ids.
+ * See @ref com.google.android.gms.location.GeofenceStatusCodes
  */
 public final class AddGeofenceResult {
-    private final LocationStatusCode statusCode;
-    private final String[] geofenceRequestIds;
+    private final int statusCode;
 
-    AddGeofenceResult(int statusCode, String[] geofenceRequestIds) {
-        this.statusCode = LocationStatusCode.fromCode(statusCode);
-        this.geofenceRequestIds = geofenceRequestIds;
+    AddGeofenceResult(int statusCode) {
+        this.statusCode = statusCode;
     }
 
-    public LocationStatusCode getStatusCode() {
+    public int getStatusCode() {
         return statusCode;
     }
 
-    public String[] getGeofenceRequestIds() {
-        return geofenceRequestIds;
+    public String getName() {
+        return GeofenceStatusCodes.getStatusCodeString(this.statusCode);
     }
 
     public boolean isSuccess() {
-        return statusCode == LocationStatusCode.SUCCESS;
+        return (this.statusCode == CommonStatusCodes.SUCCESS) ||
+            (this.statusCode == CommonStatusCodes.SUCCESS_CACHE);
     }
 }

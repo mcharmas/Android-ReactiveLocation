@@ -3,7 +3,8 @@ package pl.charmas.android.reactivelocation.observables.location;
 import android.content.Context;
 import android.location.Location;
 
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 
@@ -26,20 +27,20 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
     }
 
     @Override
-    protected void onLocationClientReady(LocationClient locationClient, final Observer<? super Location> observer) {
+    protected void onLocationClientReady(GoogleApiClient locationClient, final Observer<? super Location> observer) {
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 observer.onNext(location);
             }
         };
-        locationClient.requestLocationUpdates(locationRequest, listener);
+        LocationServices.FusedLocationApi.requestLocationUpdates(locationClient, locationRequest, listener);
     }
 
     @Override
-    protected void onUnsubscribed(LocationClient locationClient) {
+    protected void onUnsubscribed(GoogleApiClient locationClient) {
         if (locationClient.isConnected()) {
-            locationClient.removeLocationUpdates(listener);
+            LocationServices.FusedLocationApi.removeLocationUpdates(locationClient, listener);
         }
     }
 

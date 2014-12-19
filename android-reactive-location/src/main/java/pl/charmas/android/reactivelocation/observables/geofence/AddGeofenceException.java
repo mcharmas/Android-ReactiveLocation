@@ -8,7 +8,7 @@ public class AddGeofenceException extends Throwable {
     private final AddGeofenceResult addGeofenceResult;
 
     AddGeofenceException(AddGeofenceResult addGeofenceResult) {
-        super("Error adding geofences. Status code: " + addGeofenceResult.getStatusCode().getName());
+        super("Error adding geofences. Status code: " + addGeofenceResult.getName());
         this.addGeofenceResult = addGeofenceResult;
     }
 
