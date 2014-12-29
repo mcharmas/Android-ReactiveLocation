@@ -4,9 +4,9 @@ import android.content.Context;
 import android.location.Location;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
@@ -27,14 +27,14 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
     }
 
     @Override
-    protected void onLocationClientReady(GoogleApiClient locationClient, final Observer<? super Location> observer) {
+    protected void onLocationClientReady(GoogleApiClient apiClient, final Observer<? super Location> observer) {
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 observer.onNext(location);
             }
         };
-        LocationServices.FusedLocationApi.requestLocationUpdates(locationClient, locationRequest, listener);
+        LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, listener);
     }
 
     @Override
@@ -44,8 +44,4 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
         }
     }
 
-    @Override
-    protected void onLocationClientDisconnected(Observer<? super Location> observer) {
-        observer.onCompleted();
-    }
 }

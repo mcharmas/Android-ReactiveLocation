@@ -28,14 +28,8 @@ public abstract class RemoveGeofenceObservable<T> extends BaseLocationObservable
     }
 
     @Override
-    protected void onLocationClientReady(GoogleApiClient locationClient, final Observer<? super T> observer) {
-        removeGeofences(locationClient, observer);
-    }
-
-    protected abstract void deliverResultToObserver(RemoveGeofencesResult result, Observer<? super T> observer);
-
-    @Override
-    protected void onLocationClientDisconnected(Observer<? super T> observer) {
+    protected void onLocationClientReady(GoogleApiClient apiClient, final Observer<? super T> observer) {
+        removeGeofences(apiClient, observer);
     }
 
     protected abstract void removeGeofences(GoogleApiClient locationClient, Observer<? super T> observer);

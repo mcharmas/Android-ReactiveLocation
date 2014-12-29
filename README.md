@@ -1,15 +1,13 @@
 ReactiveLocation library for Android
 ====================================
 
-Small library that wraps Google Play Services API in brilliant [RxJava](https://github.com/Netflix/RxJava)
+Small library that wraps Google Play Services API in brilliant [RxJava](https://github.com/ReactiveX/RxJava)
 ```Observables``` reducing boilerplate to minimum.
 
-**This library is still in its early beta.**
-
-Current stable version - 0.2
+Current stable version - 0.3
 ---------------
 
-**This version works with Google Play Services 4.4 and RxJava 0.19.+** 
+**This version works with Google Play Services 6.5.+ and RxJava 1.0.+**
 
 What can you do with that?
 --------------------------
@@ -127,27 +125,27 @@ along with Google Play Services and RxJava.
 ```groovy
 dependencies {
     ...
-    compile 'pl.charmas.android:android-reactive-location:0.2@aar'
-    compile 'com.google.android.gms:play-services:4.4.52'
-    compile 'com.netflix.rxjava:rxjava-android:0.18.4'
+    compile 'pl.charmas.android:android-reactive-location:0.3@aar'
+    compile 'com.google.android.gms:play-services-location:6.5.87'
+    compile 'io.reactivex:rxjava:1.0.3'
 }
 ```
 
 ### Maven
 
-Ensure you have android-maven-plugin version that support **aar* archives and add
+Ensure you have android-maven-plugin version that support **aar** archives and add
 following dependency:
 
 ```xml
 <dependency>
     <groupId>pl.charmas.android</groupId>
     <artifactId>android-reactive-location</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
     <type>aar</type>
 </dependency>
 ```
 
-It may be necessary to add google play services and rxjava-android dependency as well.
+It may be necessary to add google play services and rxanroid dependency as well.
 
 Sample
 ------

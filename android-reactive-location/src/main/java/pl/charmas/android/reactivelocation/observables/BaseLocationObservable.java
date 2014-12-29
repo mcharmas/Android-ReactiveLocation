@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -26,14 +25,15 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
     @Override
     public void call(Subscriber<? super T> subscriber) {
         final LocationConnectionCallbacks locationConnectionCallbacks = new LocationConnectionCallbacks(subscriber);
-        final GoogleApiClient locationClient = new GoogleApiClient.Builder(ctx)
+        final GoogleApiClient apiClient = new GoogleApiClient.Builder(ctx)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(locationConnectionCallbacks)
+                .addOnConnectionFailedListener(locationConnectionCallbacks)
                 .build();
-        locationConnectionCallbacks.setClient(locationClient);
+        locationConnectionCallbacks.setClient(apiClient);
 
         try {
-            locationClient.connect();
+            apiClient.connect();
         } catch (Throwable ex) {
             subscriber.onError(ex);
         }
@@ -41,9 +41,9 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
         subscriber.add(Subscriptions.create(new Action0() {
             @Override
             public void call() {
-                if (locationClient.isConnected() || locationClient.isConnecting()) {
-                    onUnsubscribed(locationClient);
-                    locationClient.disconnect();
+                if (apiClient.isConnected() || apiClient.isConnecting()) {
+                    onUnsubscribed(apiClient);
+                    apiClient.disconnect();
                 }
             }
         }));
@@ -52,15 +52,13 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
     protected void onUnsubscribed(GoogleApiClient locationClient) {
     }
 
-    protected abstract void onLocationClientReady(GoogleApiClient locationClient, Observer<? super T> observer);
-
-    protected abstract void onLocationClientDisconnected(Observer<? super T> observer);
+    protected abstract void onLocationClientReady(GoogleApiClient apiClient, Observer<? super T> observer);
 
     private class LocationConnectionCallbacks implements
             GoogleApiClient.ConnectionCallbacks,
             GoogleApiClient.OnConnectionFailedListener {
         final private Observer<? super T> observer;
-        private GoogleApiClient locationClient;
+        private GoogleApiClient apiClient;
 
         private LocationConnectionCallbacks(Observer<? super T> observer) {
             this.observer = observer;
@@ -69,7 +67,7 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
         @Override
         public void onConnected(Bundle bundle) {
             try {
-                onLocationClientReady(locationClient, observer);
+                onLocationClientReady(apiClient, observer);
             } catch (Throwable ex) {
                 observer.onError(ex);
             }
@@ -77,11 +75,7 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
 
         @Override
         public void onConnectionSuspended(int cause) {
-            try {
-                onLocationClientDisconnected(observer);
-            } catch (Throwable ex) {
-                observer.onError(ex);
-            }
+            observer.onError(new LocationConnectionSuspendedException(cause));
         }
 
         @Override
@@ -90,7 +84,7 @@ public abstract class BaseLocationObservable<T> implements Observable.OnSubscrib
         }
 
         public void setClient(GoogleApiClient client) {
-            this.locationClient = client;
+            this.apiClient = client;
         }
     }
 }

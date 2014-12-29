@@ -1,13 +1,13 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1"
+    compileSdkVersion 21
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 19
+        targetSdkVersion 21
     }
 
     compileOptions {
@@ -19,8 +19,8 @@ android {
 //TODO: local maven deployment
 
 dependencies {
-    compile 'com.google.android.gms:play-services:6.7.87'
-    compile 'com.netflix.rxjava:rxjava-android:0.23.0'
+    compile 'com.google.android.gms:play-services-location:6.5.+'
+    compile 'io.reactivex:rxjava:1.0.+'
 }
 
 // Comment this to deploy to local maven repository

@@ -21,12 +21,6 @@ class RemoveGeofenceRequestIdsObservable extends
     }
 
     @Override
-    protected void deliverResultToObserver(RemoveGeofencesResult result,
-                                           Observer<? super RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> observer) {
-        observer.onNext((RemoveGeofencesResult.RequestIdsRemoveGeofenceResult) result);
-    }
-
-    @Override
     protected void removeGeofences(GoogleApiClient locationClient,
                                    final Observer<? super RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> observer) {
         LocationServices.GeofencingApi.removeGeofences(locationClient, geofenceRequestIds)
@@ -37,7 +31,7 @@ class RemoveGeofenceRequestIdsObservable extends
                                 new RemoveGeofencesResult.RequestIdsRemoveGeofenceResult(status.getStatusCode(), geofenceRequestIds);
 
                         if (result.isSuccess()) {
-                            deliverResultToObserver(result, observer);
+                            observer.onNext(result);
                             observer.onCompleted();
                         } else {
                             observer.onError(new RemoveGeofencesException(result.getStatusCode()));

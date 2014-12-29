@@ -5,7 +5,7 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 
-import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
 
 import java.util.List;
@@ -33,11 +33,11 @@ public class ReactiveLocationProvider {
     /**
      * Creates observable that obtains last known location and than completes.
      * Delivered location can be null in some cases according to
-     * {@link com.google.android.gms.location.LocationClient#getLastLocation()} docs.
+     * {@link com.google.android.gms.location.FusedLocationProviderApi#getLastLocation(com.google.android.gms.common.api.GoogleApiClient)} ()} docs.
      * <p/>
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.LocationConnectionException}
      * when there are trouble connecting with Google Play Services and other exceptions that
-     * can be thrown on {@link com.google.android.gms.location.LocationClient#getLastLocation()}.
+     * can be thrown on {@link com.google.android.gms.location.FusedLocationProviderApi#getLastLocation(com.google.android.gms.common.api.GoogleApiClient)}.
      * Everything is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @return observable that serves last know location
@@ -53,7 +53,7 @@ public class ReactiveLocationProvider {
      * <p/>
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.LocationConnectionException}
      * when there are trouble connecting with Google Play Services and other exceptions that
-     * can be thrown on {@link com.google.android.gms.location.LocationClient#requestLocationUpdates(com.google.android.gms.location.LocationRequest, com.google.android.gms.location.LocationListener)}.
+     * can be thrown on {@link com.google.android.gms.location.FusedLocationProviderApi#requestLocationUpdates(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.LocationRequest, com.google.android.gms.location.LocationListener)}.
      * Everything is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param locationRequest request object with info about what kind of location you need
@@ -78,7 +78,7 @@ public class ReactiveLocationProvider {
     }
 
     /**
-     * Creates observable that adds geofences and completes when the action is done.
+     * Creates observable that adds request and completes when the action is done.
      * <p/>
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.LocationConnectionException}
      * when there are trouble connecting with Google Play Services.
@@ -87,16 +87,16 @@ public class ReactiveLocationProvider {
      * reported only on {@link com.google.android.gms.location.LocationStatusCodes#ERROR}. Every other
      * status is included in {@link pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult}.
      * <p/>
-     * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.LocationClient#addGeofences(java.util.List, android.app.PendingIntent, com.google.android.gms.location.LocationClient.OnAddGeofencesResultListener)}.
+     * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#addGeofences(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.GeofencingRequest, android.app.PendingIntent)}
      * <p/>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param geofenceTransitionPendingIntent pending intent to register on geofence transition
-     * @param geofences                       list of geofences to add
-     * @return observable that adds geofences
+     * @param request                       list of request to add
+     * @return observable that adds request
      */
-    public Observable<AddGeofenceResult> addGeofences(PendingIntent geofenceTransitionPendingIntent, List<Geofence> geofences) {
-        return AddGeofenceObservable.createObservable(ctx, geofences, geofenceTransitionPendingIntent);
+    public Observable<AddGeofenceResult> addGeofences(PendingIntent geofenceTransitionPendingIntent, GeofencingRequest request) {
+        return AddGeofenceObservable.createObservable(ctx, request, geofenceTransitionPendingIntent);
     }
 
     /**
@@ -106,7 +106,7 @@ public class ReactiveLocationProvider {
      * reported only on {@link com.google.android.gms.location.LocationStatusCodes#ERROR}. Every other
      * status is included in {@link pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult}.
      * <p/>
-     * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.LocationClient#removeGeofences(android.app.PendingIntent, com.google.android.gms.location.LocationClient.OnRemoveGeofencesResultListener)}.
+     * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, android.app.PendingIntent)}.
      * <p/>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
@@ -124,7 +124,7 @@ public class ReactiveLocationProvider {
      * reported only on {@link com.google.android.gms.location.LocationStatusCodes#ERROR}. Every other
      * status is included in {@link pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult}.
      * <p/>
-     * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.LocationClient#removeGeofences(java.util.List, com.google.android.gms.location.LocationClient.OnRemoveGeofencesResultListener)}.
+     * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, java.util.List)}.
      * <p/>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
