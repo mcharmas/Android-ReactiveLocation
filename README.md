@@ -74,7 +74,7 @@ subscription.unsubscribe();
 Do you need address for location?
 
 ```java
-Observable<List<Address> geocodeObservable = locationProvider
+Observable<List<Address>> geocodeObservable = locationProvider
     .getGeocodeObservable(location.getLatitude(), location.getLongitude(), MAX_ADDRESSES);
 
 geocodeObservable
