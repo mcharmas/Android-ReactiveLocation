@@ -104,7 +104,7 @@ Observable<Location> goodEnoughQuicklyOrNothingObservable = locationProvider.get
                     return location.getAccuracy() < SUFFICIENT_ACCURACY;
                 }
             })
-            .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, Observable.from((Location) null), AndroidSchedulers.mainThread())
+            .timeout(LOCATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS, Observable.just((Location) null), AndroidSchedulers.mainThread())
             .first()
             .observeOn(AndroidSchedulers.mainThread());
 
