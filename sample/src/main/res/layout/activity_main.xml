@@ -1,49 +1,72 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_margin="8dp"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_margin="8dp">
 
-    <TextView
-        android:text="Last location"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        style="?android:attr/listSeparatorTextViewStyle" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/last_known_location_view"
-        tools:text="Sample location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Last location"
+            tools:ignore="HardcodedText" />
 
-    <TextView
-        android:text="Updatable location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        style="?android:attr/listSeparatorTextViewStyle" />
+        <TextView
+            android:id="@+id/last_known_location_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sample location" />
 
-    <TextView
-        android:id="@+id/updated_location_view"
-        tools:text="Sample updated location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Updatable location"
+            tools:ignore="HardcodedText" />
 
-    <TextView
-        android:text="Address for location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        style="?android:attr/listSeparatorTextViewStyle" />
+        <TextView
+            android:id="@+id/updated_location_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sample updated location" />
 
-    <TextView
-        android:id="@+id/address_for_location_view"
-        tools:text="Sample address for location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Address for location"
+            tools:ignore="HardcodedText" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/address_for_location_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sample address for location" />
+
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Detected activity"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/activity_recent_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="No activities detected yet" />
+
+    </LinearLayout>
+</ScrollView>

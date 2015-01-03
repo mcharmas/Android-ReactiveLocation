@@ -28,7 +28,7 @@ public class AddGeofenceObservable extends BaseLocationObservable<AddGeofenceRes
     }
 
     @Override
-    protected void onLocationClientReady(GoogleApiClient apiClient, final Observer<? super AddGeofenceResult> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super AddGeofenceResult> observer) {
         LocationServices.GeofencingApi.addGeofences(apiClient, request, geofenceTransitionPendingIntent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override

@@ -21,7 +21,7 @@ public class LastKnownLocationObservable extends BaseLocationObservable<Location
     }
 
     @Override
-    protected void onLocationClientReady(GoogleApiClient apiClient, Observer<? super Location> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, Observer<? super Location> observer) {
         observer.onNext(LocationServices.FusedLocationApi.getLastLocation(apiClient));
         observer.onCompleted();
     }

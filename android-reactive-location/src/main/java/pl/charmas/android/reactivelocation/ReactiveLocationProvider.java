@@ -5,11 +5,13 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 
+import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
 
 import java.util.List;
 
+import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.geocode.GeodecodeObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult;
@@ -92,7 +94,7 @@ public class ReactiveLocationProvider {
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param geofenceTransitionPendingIntent pending intent to register on geofence transition
-     * @param request                       list of request to add
+     * @param request                         list of request to add
      * @return observable that adds request
      */
     public Observable<AddGeofenceResult> addGeofences(PendingIntent geofenceTransitionPendingIntent, GeofencingRequest request) {
@@ -133,5 +135,16 @@ public class ReactiveLocationProvider {
      */
     public Observable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> removeGeofences(List<String> requestIds) {
         return RemoveGeofenceObservable.createObservable(ctx, requestIds);
+    }
+
+
+    /**
+     * Observable that can be used to observe activity provided by Actity Recognition mechanism.
+     *
+     * @param detectIntervalMiliseconds detecion interval
+     * @return observable that provides activity recognition
+     */
+    public Observable<ActivityRecognitionResult> getDetectedActivity(int detectIntervalMiliseconds) {
+        return ActivityUpdatesObservable.createObservable(ctx, detectIntervalMiliseconds);
     }
 }
