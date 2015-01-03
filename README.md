@@ -94,7 +94,7 @@ Do you need location with certain accuracy but don't want to wait for it more th
 ```java
 LocationRequest req = LocationRequest.create()
                          .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                         .setExpirationDuration(TimeUnit.SECONDS.toMillis(LOCATION_TIMEOUT_IN_SECONDS)
+                         .setExpirationDuration(TimeUnit.SECONDS.toMillis(LOCATION_TIMEOUT_IN_SECONDS))
                          .setInterval(LOCATION_UPDATE_INTERVAL);
 
 Observable<Location> goodEnoughQuicklyOrNothingObservable = locationProvider.getUpdatedLocation(req)
