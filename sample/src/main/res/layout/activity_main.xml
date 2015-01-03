@@ -5,6 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:id="@+id/button_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="toggleStart"
+        android:text="Start"/>
+
     <TextView
         android:text="Last location"
         android:layout_width="match_parent"
@@ -43,6 +50,20 @@
     <TextView
         android:id="@+id/address_for_location_view"
         tools:text="Sample address for location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="detected activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        style="?android:attr/listSeparatorTextViewStyle" />
+
+    <TextView
+        android:id="@+id/most_recent_activity_view"
+        tools:text="No activities detected yet"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

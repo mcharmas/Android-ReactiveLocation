@@ -5,11 +5,13 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 
+import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
 
 import java.util.List;
 
+import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.geocode.GeodecodeObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult;
@@ -133,5 +135,10 @@ public class ReactiveLocationProvider {
      */
     public Observable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> removeGeofences(List<String> requestIds) {
         return RemoveGeofenceObservable.createObservable(ctx, requestIds);
+    }
+
+
+    public Observable<DetectedActivity> getDetectedActivity(int detectIntervalMiliseconds) {
+        return ActivityUpdatesObservable.createObservable(ctx, detectIntervalMiliseconds);
     }
 }

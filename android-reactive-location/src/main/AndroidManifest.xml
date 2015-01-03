@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pl.charmas.android.reactivelocation" >
-    <application/>
+    <application>
+        <service android:name=".observables.activity.ActivityRecognitionIntentService"
+            android:exported="false"></service>
+     </application>
 </manifest>

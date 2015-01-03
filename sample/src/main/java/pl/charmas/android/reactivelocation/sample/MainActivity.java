@@ -4,9 +4,19 @@ import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.LocationRequest;
+
+import java.util.List;
+
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
@@ -15,31 +25,42 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-import java.util.List;
-
 public class MainActivity extends ActionBarActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final String STATE_RUNNING = "STATE_RUNNING";
+    private boolean is_running = false;
+
     private ReactiveLocationProvider locationProvider;
+
+    private Button startButton;
 
     private TextView lastKnownLocationView;
     private TextView updatableLocationView;
     private TextView addressLocationView;
+    private TextView currentActivityView;
 
     private Observable<Location> lastKnownLocationObservable;
     private Observable<Location> locationUpdatesObservable;
+    private Observable<DetectedActivity> activityObservable;
 
     private Subscription lastKnownLocationSubscription;
     private Subscription updatableLocationSubscription;
     private Subscription addressSubscription;
+    private Subscription activitySubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        startButton = (Button) findViewById(R.id.button_start);
+
         lastKnownLocationView = (TextView) findViewById(R.id.last_known_location_view);
         updatableLocationView = (TextView) findViewById(R.id.updated_location_view);
         addressLocationView = (TextView) findViewById(R.id.address_for_location_view);
+        currentActivityView = (TextView) findViewById(R.id.most_recent_activity_view);
 
         locationProvider = new ReactiveLocationProvider(getApplicationContext());
         lastKnownLocationObservable = locationProvider.getLastKnownLocation();
@@ -51,16 +72,58 @@ public class MainActivity extends ActionBarActivity {
                         .setInterval(100)
         );
 
+        activityObservable = locationProvider.getDetectedActivity(0);
+
+        if (savedInstanceState != null) {
+            is_running = savedInstanceState.getBoolean(STATE_RUNNING);
+
+        }
+
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(STATE_RUNNING, is_running);
+        super.onSaveInstanceState(outState);
+    }
+
+    public void toggleStart(View view) {
+
+        is_running = !is_running;
+        updateButtonState();
+
+        if (is_running) {
+            Toast.makeText(getApplicationContext(), "Starting", Toast.LENGTH_SHORT).show();
+            startSubscriptions();
+        } else {
+            Toast.makeText(getApplicationContext(), "Stopping", Toast.LENGTH_SHORT).show();
+            stopSubscriptions();
+        }
+    }
+
+    private void updateButtonState() {
+        String text = (is_running) ? "Stop" : "Start";
+        startButton.setText(text);
+    }
+
+    private void startSubscriptions() {
         lastKnownLocationSubscription = lastKnownLocationObservable
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, "lastKnownLocationSubscription", throwable);
+                    }
+                })
                 .map(new LocationToStringFunc())
                 .subscribe(new DisplayTextOnViewAction(lastKnownLocationView));
 
         updatableLocationSubscription = locationUpdatesObservable
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, "locationUpdatesObservable", throwable);
+                    }
+                })
                 .map(new LocationToStringFunc())
                 .map(new Func1<String, String>() {
                     int count = 0;
@@ -73,6 +136,12 @@ public class MainActivity extends ActionBarActivity {
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView));
 
         addressSubscription = AndroidObservable.bindActivity(this, locationUpdatesObservable
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, "addressSubscription", throwable);
+                    }
+                })
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
                     @Override
                     public Observable<List<Address>> call(Location location) {
@@ -89,14 +158,42 @@ public class MainActivity extends ActionBarActivity {
                 .subscribeOn(Schedulers.io()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DisplayTextOnViewAction(addressLocationView));
+
+        activitySubscription = activityObservable
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Log.e(TAG, "activityObservable", throwable);
+                    }
+                })
+                .map(new Func1<DetectedActivity, String>() {
+                    @Override
+                    public String call(DetectedActivity detectedActivity) {
+                        String resultText = "Activity: " + ActivityUpdatesObservable.getNameFromType(detectedActivity.getType()) + "\nConfidence: " + detectedActivity.getConfidence();
+                        return resultText;
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new DisplayTextOnViewAction(currentActivityView));
+    }
+
+    private void stopSubscriptions() {
+        unSubscribeIfNotNull(lastKnownLocationSubscription);
+        unSubscribeIfNotNull(updatableLocationSubscription);
+        unSubscribeIfNotNull(addressSubscription);
+        unSubscribeIfNotNull(activitySubscription);
+    }
+
+    private void unSubscribeIfNotNull(Subscription subscription) {
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        lastKnownLocationSubscription.unsubscribe();
-        updatableLocationSubscription.unsubscribe();
-        addressSubscription.unsubscribe();
+    protected void onDestroy() {
+        stopSubscriptions();
+        super.onDestroy();
     }
 
     private static class AddressToStringFunc implements Func1<Address, String> {
