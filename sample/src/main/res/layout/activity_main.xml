@@ -60,7 +60,21 @@
             style="?android:attr/listSeparatorTextViewStyle" />
 
         <TextView
-            android:id="@+id/most_recent_activity_view"
+            android:id="@+id/activity_recent_view"
+            tools:text="No activities detected yet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="selective activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            style="?android:attr/listSeparatorTextViewStyle" />
+
+        <TextView
+            android:id="@+id/activity_selective_view"
             tools:text="No activities detected yet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
