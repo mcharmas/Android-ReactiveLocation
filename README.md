@@ -16,6 +16,7 @@ What can you do with that?
 * subscribe for location updates
 * manage geofences
 * geocode location to list of addresses
+* activity recognition
 
 How does the API look like?
 ----------------------------
@@ -67,6 +68,26 @@ When you are done (for example in ```onStop()```) remember to unsubscribe.
 
 ```java
 subscription.unsubscribe();
+```
+
+### Subscribing for Activity Recognition
+
+Getting activity recognition is just as simple
+
+```java
+
+ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
+Subscription subscription = activityUpdatesObservable = locationProvider.getDetectedActivity(0) // detectionIntervalMillis
+    .filter(...)    // you can filter location updates
+    .map(...)       // you can map location to sth different
+    .flatMap(...)   // or event flat map
+    ...             // and do everything else that is provided by RxJava
+    .subscribe(new Action1<DetectedActivity>() {
+        @Override
+        public void call(DetectedActivity detectedActivity) {
+            doSthImportantWithObtainedActivity(detectedActivity);
+        }
+    });
 ```
 
 ### Geocode location
