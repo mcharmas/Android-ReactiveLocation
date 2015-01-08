@@ -176,7 +176,7 @@ public class MainActivity extends ActionBarActivity {
         }).subscribe(new Action1<DetectedActivity>() {
             @Override
             public void call(DetectedActivity detectedActivity) {
-                Log.i(TAG, "Activity changed or increased in confidence:");
+                Log.i(TAG, "Activity changed or increased in confidence");
                 String text =
                 "Last activity: " + ActivityUtils.getNameFromType(mLastSelectedActivity.getType()) + " confidence: " + mLastSelectedActivity.getConfidence() + "\n" +
                 "New activity: " + ActivityUtils.getNameFromType(detectedActivity.getType()) + " confidence: " + detectedActivity.getConfidence();
