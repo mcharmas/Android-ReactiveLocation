@@ -14,6 +14,8 @@ import rx.Observer;
 
 public class LocationUpdatesObservable extends BaseLocationObservable<Location> {
 
+    private static final String TAG = LocationUpdatesObservable.class.getSimpleName();
+
     public static Observable<Location> createObservable(Context ctx, LocationRequest locationRequest) {
         return Observable.create(new LocationUpdatesObservable(ctx, locationRequest));
     }
@@ -27,7 +29,7 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
     }
 
     @Override
-    protected void onLocationClientReady(GoogleApiClient apiClient, final Observer<? super Location> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super Location> observer) {
         listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {

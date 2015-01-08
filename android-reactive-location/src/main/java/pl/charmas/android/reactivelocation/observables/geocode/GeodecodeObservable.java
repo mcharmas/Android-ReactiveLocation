@@ -11,6 +11,9 @@ import rx.Observable;
 import rx.Subscriber;
 
 public class GeodecodeObservable implements Observable.OnSubscribe<List<Address>> {
+
+    private static final String TAG = GeodecodeObservable.class.getSimpleName();
+
     private final Context ctx;
     private final double latitude;
     private final double longitude;
