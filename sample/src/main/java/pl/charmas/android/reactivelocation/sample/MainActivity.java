@@ -5,10 +5,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.LocationRequest;
@@ -16,7 +13,7 @@ import com.google.android.gms.location.LocationRequest;
 import java.util.List;
 
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
+import pl.charmas.android.reactivelocation.observables.activity.ActivityUtils;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
@@ -33,8 +30,6 @@ public class MainActivity extends ActionBarActivity {
     private boolean is_running = false;
 
     private ReactiveLocationProvider locationProvider;
-
-    private Button startButton;
 
     private TextView lastKnownLocationView;
     private TextView updatableLocationView;
@@ -55,7 +50,6 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startButton = (Button) findViewById(R.id.button_start);
 
         lastKnownLocationView = (TextView) findViewById(R.id.last_known_location_view);
         updatableLocationView = (TextView) findViewById(R.id.updated_location_view);
@@ -74,39 +68,12 @@ public class MainActivity extends ActionBarActivity {
 
         activityObservable = locationProvider.getDetectedActivity(0);
 
-        if (savedInstanceState != null) {
-            is_running = savedInstanceState.getBoolean(STATE_RUNNING);
-
-        }
 
     }
+
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(STATE_RUNNING, is_running);
-        super.onSaveInstanceState(outState);
-    }
-
-    public void toggleStart(View view) {
-
-        is_running = !is_running;
-        updateButtonState();
-
-        if (is_running) {
-            Toast.makeText(getApplicationContext(), "Starting", Toast.LENGTH_SHORT).show();
-            startSubscriptions();
-        } else {
-            Toast.makeText(getApplicationContext(), "Stopping", Toast.LENGTH_SHORT).show();
-            stopSubscriptions();
-        }
-    }
-
-    private void updateButtonState() {
-        String text = (is_running) ? "Stop" : "Start";
-        startButton.setText(text);
-    }
-
-    private void startSubscriptions() {
+    protected void onStart() {
         lastKnownLocationSubscription = lastKnownLocationObservable
                 .doOnError(new Action1<Throwable>() {
                     @Override
@@ -169,20 +136,23 @@ public class MainActivity extends ActionBarActivity {
                 .map(new Func1<DetectedActivity, String>() {
                     @Override
                     public String call(DetectedActivity detectedActivity) {
-                        String resultText = "Activity: " + ActivityUpdatesObservable.getNameFromType(detectedActivity.getType()) + "\nConfidence: " + detectedActivity.getConfidence();
+                        String resultText = "Activity: " + ActivityUtils.getNameFromType(detectedActivity.getType()) + "\nConfidence: " + detectedActivity.getConfidence();
                         return resultText;
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DisplayTextOnViewAction(currentActivityView));
+        super.onStart();
     }
 
-    private void stopSubscriptions() {
-        unSubscribeIfNotNull(lastKnownLocationSubscription);
+    @Override
+    protected void onStop() {
         unSubscribeIfNotNull(updatableLocationSubscription);
         unSubscribeIfNotNull(addressSubscription);
         unSubscribeIfNotNull(activitySubscription);
+        super.onStop();
     }
+
 
     private void unSubscribeIfNotNull(Subscription subscription) {
         if (subscription != null) {
@@ -190,11 +160,6 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        stopSubscriptions();
-        super.onDestroy();
-    }
 
     private static class AddressToStringFunc implements Func1<Address, String> {
         @Override

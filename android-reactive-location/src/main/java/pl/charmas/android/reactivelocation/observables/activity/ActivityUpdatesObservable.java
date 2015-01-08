@@ -1,12 +1,15 @@
 package pl.charmas.android.reactivelocation.observables.activity;
 
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
 import pl.charmas.android.reactivelocation.observables.BaseActivityObservable;
@@ -17,6 +20,8 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<DetectedAc
 
     private static final String TAG = ActivityUpdatesObservable.class.getSimpleName();
 
+    public static final String ACTION_ACTIVITY_DETECTED = "action_activity_detected";
+
     private PendingIntent mActivityRecognitionPendingIntent;
 
     public static Observable<DetectedActivity> createObservable(Context ctx, int detectionIntervalMiliseconds) {
@@ -24,66 +29,67 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<DetectedAc
     }
 
     private final Context ctx;
-    private final int detectionIntervalMiliseconds;
-    private static Observer<? super DetectedActivity> mObserver;
+    private final int detectionIntervalMilliseconds;
+    private Observer<? super DetectedActivity> mObserver;
 
-    public static Observer<? super DetectedActivity> getObserver() {
-        return mObserver;
-    }
 
-    private static void setObserver(ActivityUpdatesObservable activityUpdatesObservable, GoogleApiClient apiClient, Observer<? super DetectedActivity> observer) {
-        if (getObserver() != null) {
-            /*
-             * Unsubscribe previous observer to avoid memory leak
-             */
-            activityUpdatesObservable.onUnsubscribed(apiClient);
-        }
-        mObserver = observer;
-    }
-
-    private ActivityUpdatesObservable(Context ctx, int detectionIntervalMiliseconds) {
+    private ActivityUpdatesObservable(Context ctx, int detectionIntervalMilliseconds) {
         super(ctx);
         this.ctx = ctx;
-        this.detectionIntervalMiliseconds = detectionIntervalMiliseconds;
+        this.detectionIntervalMilliseconds = detectionIntervalMilliseconds;
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super DetectedActivity> observer) {
-        setObserver(this, apiClient, observer);
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(apiClient, detectionIntervalMiliseconds, createRequestPendingIntent());
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, Observer<? super DetectedActivity> observer) {
+        mObserver = observer;
+
+        PendingIntent pIntent = createRequestPendingIntent();
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(apiClient, detectionIntervalMilliseconds, pIntent);
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ACTION_ACTIVITY_DETECTED);
+
+
+        LocalBroadcastManager.getInstance(ctx).registerReceiver(activityReceiver, intentFilter);
     }
+
+    private BroadcastReceiver activityReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ActivityRecognitionResult.hasResult(intent)) {
+
+                // Get the update
+                ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
+
+                DetectedActivity mostProbableActivity = result.getMostProbableActivity();
+
+
+                if (mObserver != null) {
+                    mObserver.onNext(mostProbableActivity);
+                }
+
+            }
+        }
+    };
 
     @Override
     protected void onUnsubscribed(GoogleApiClient apiClient) {
-        if (apiClient.isConnected()) {
-            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(apiClient, createRequestPendingIntent());
-            getRequestPendingIntent().cancel();
 
-            mObserver = null;
-            mActivityRecognitionPendingIntent = null;
-        } else {
-            Log.e(TAG, "apiClient not connected");
+        if (/*apiClient.isConnected() && */mActivityRecognitionPendingIntent != null) {
+            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(apiClient, mActivityRecognitionPendingIntent);
+            mActivityRecognitionPendingIntent.cancel();
         }
 
+        if (activityReceiver != null) {
+            LocalBroadcastManager.getInstance(ctx).unregisterReceiver(activityReceiver);
+        }
+
+        mActivityRecognitionPendingIntent = null;
+        activityReceiver = null;
+        mObserver = null;
     }
 
-    /**
-     * Returns the current PendingIntent to the caller.
-     *
-     * @return The PendingIntent used to request activity recognition updates
-     */
-    public PendingIntent getRequestPendingIntent() {
-        return mActivityRecognitionPendingIntent;
-    }
-
-    /**
-     * Sets the PendingIntent used to make activity recognition update requests
-     *
-     * @param intent The PendingIntent
-     */
-    public void setRequestPendingIntent(PendingIntent intent) {
-        mActivityRecognitionPendingIntent = intent;
-    }
 
     /**
      * Get a PendingIntent to send with the request to get activity recognition updates. Location
@@ -95,7 +101,7 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<DetectedAc
     private PendingIntent createRequestPendingIntent() {
 
         // If the PendingIntent already exists
-        if (null != getRequestPendingIntent()) {
+        if (null != mActivityRecognitionPendingIntent) {
 
             // Return the existing intent
             return mActivityRecognitionPendingIntent;
@@ -105,36 +111,7 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<DetectedAc
 
 
             // Create an Intent pointing to the IntentService
-
-
-    Intent intent = new Intent(ctx, ActivityRecognitionIntentService.class);
-//            intent.putExtra(ActivityRecognitionIntentService.REQUEST_RECEIVER_EXTRA, new ResultReceiver(null) {
-//                @Override
-//                protected void onReceiveResult(int resultCode, Bundle resultData) {
-//                    switch (resultCode) {
-//                        case ActivityRecognitionIntentService.RESULT_ID_WITH_ACTIVITYRESULT:
-//
-//                            ActivityRecognitionResult result = resultData.getParcelable(ActivityRecognitionIntentService.RESULT_BUNDLE_ACTIVITYRESULT);
-//                            DetectedActivity mostProbableActivity = result.getMostProbableActivity();
-//
-//                            mObserver.onNext(mostProbableActivity);
-//
-//                            // Get the confidence percentage for the most probable activity
-//                            int confidence = mostProbableActivity.getConfidence();
-//
-//                            // Get the type of activity
-//                            int activityType = mostProbableActivity.getType();
-//
-//                            Log.d(TAG, getNameFromType(activityType) + " confidence: " + confidence + " isMoving: " + isMoving(activityType));
-//                            break;
-//                        case ActivityRecognitionIntentService.RESULT_ID_NO_ACTIVITYRESULT:
-//                            Log.e(TAG, "Nonfatal: no activity result");
-//                            break;
-//                        default:
-//                            Log.e(TAG, "Unexpected resultCode: " + resultCode);
-//                    }
-//                }
-//            });
+            Intent intent = new Intent(ctx, ActivityRecognitionIntentService.class);
 
             /*
              * Return a PendingIntent to start the IntentService.
@@ -143,58 +120,17 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<DetectedAc
              * again updates the original. Otherwise, Location Services
              * can't match the PendingIntent to requests made with it.
              */
-    PendingIntent pendingIntent = PendingIntent.getService(ctx, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getService(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
-            setRequestPendingIntent(pendingIntent);
-            return pendingIntent;
+
+            mActivityRecognitionPendingIntent = pendingIntent;
+            return mActivityRecognitionPendingIntent;
+
+
+
         }
 
+
     }
-
-
-    /**
-     * Determine if an activity means that the user is moving.
-     *
-     * @param type The type of activity the user is doing (see DetectedActivity constants)
-     * @return true if the user seems to be moving from one location to another, otherwise false
-     */
-    public static boolean isMoving(int type) {
-        switch (type) {
-            // These types mean that the user is probably not moving
-            case DetectedActivity.STILL:
-            case DetectedActivity.TILTING:
-            case DetectedActivity.UNKNOWN:
-                return false;
-            default:
-                return true;
-        }
-    }
-
-
-    /**
-     * Map detected activity types to strings
-     *
-     * @param activityType The detected activity type
-     * @return A user-readable name for the type
-     */
-    public static String getNameFromType(int activityType) {
-        switch (activityType) {
-            case DetectedActivity.IN_VEHICLE:
-                return "in_vehicle";
-            case DetectedActivity.ON_BICYCLE:
-                return "on_bicycle";
-            case DetectedActivity.ON_FOOT:
-                return "on_foot";
-            case DetectedActivity.STILL:
-                return "still";
-            case DetectedActivity.UNKNOWN:
-                return "unknown";
-            case DetectedActivity.TILTING:
-                return "tilting";
-        }
-        return "unknown";
-    }
-
 }
