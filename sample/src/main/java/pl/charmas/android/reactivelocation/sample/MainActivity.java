@@ -5,10 +5,11 @@ import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-
+import android.widget.Toast;
 
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.LocationRequest;
@@ -17,14 +18,15 @@ import java.util.List;
 
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import pl.charmas.android.reactivelocation.sample.utils.AddressToStringFunc;
+import pl.charmas.android.reactivelocation.sample.utils.DetectedActivityToString;
 import pl.charmas.android.reactivelocation.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
-import pl.charmas.android.reactivelocation.sample.utils.DetectedActivityToString;
 import pl.charmas.android.reactivelocation.sample.utils.ToMostProbableActivity;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -71,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
         super.onStart();
         lastKnownLocationSubscription = lastKnownLocationObservable
                 .map(new LocationToStringFunc())
-                .subscribe(new DisplayTextOnViewAction(lastKnownLocationView));
+                .subscribe(new DisplayTextOnViewAction(lastKnownLocationView), new ErrorHandler());
 
         updatableLocationSubscription = locationUpdatesObservable
                 .map(new LocationToStringFunc())
@@ -83,7 +85,7 @@ public class MainActivity extends ActionBarActivity {
                         return s + " " + count++;
                     }
                 })
-                .subscribe(new DisplayTextOnViewAction(updatableLocationView));
+                .subscribe(new DisplayTextOnViewAction(updatableLocationView), new ErrorHandler());
 
         addressSubscription = AndroidObservable.bindActivity(this, locationUpdatesObservable
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
@@ -101,12 +103,12 @@ public class MainActivity extends ActionBarActivity {
                 .map(new AddressToStringFunc())
                 .subscribeOn(Schedulers.io()))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new DisplayTextOnViewAction(addressLocationView));
+                .subscribe(new DisplayTextOnViewAction(addressLocationView), new ErrorHandler());
 
         activitySubscription = AndroidObservable.bindActivity(this, activityObservable)
                 .map(new ToMostProbableActivity())
                 .map(new DetectedActivityToString())
-                .subscribe(new DisplayTextOnViewAction(currentActivityView));
+                .subscribe(new DisplayTextOnViewAction(currentActivityView), new ErrorHandler());
     }
 
     @Override
@@ -128,5 +130,13 @@ public class MainActivity extends ActionBarActivity {
             }
         });
         return true;
+    }
+
+    private class ErrorHandler implements Action1<Throwable> {
+        @Override
+        public void call(Throwable throwable) {
+            Toast.makeText(MainActivity.this, "Error occurred.", Toast.LENGTH_SHORT).show();
+            Log.d("MainActivity", "Error occurred", throwable);
+        }
     }
 }
