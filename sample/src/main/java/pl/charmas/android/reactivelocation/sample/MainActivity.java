@@ -1,21 +1,28 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.content.Intent;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
+
 import com.google.android.gms.location.LocationRequest;
+
+import java.util.List;
+
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation.sample.utils.AddressToStringFunc;
+import pl.charmas.android.reactivelocation.sample.utils.DisplayTextOnViewAction;
+import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-
-import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -99,38 +106,15 @@ public class MainActivity extends ActionBarActivity {
         addressSubscription.unsubscribe();
     }
 
-    private static class AddressToStringFunc implements Func1<Address, String> {
-        @Override
-        public String call(Address address) {
-            if (address == null) return "";
-
-            String addressLines = "";
-            for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                addressLines += address.getAddressLine(i) + '\n';
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add("Geofencing").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                startActivity(new Intent(MainActivity.this, GeofenceActivity.class));
+                return true;
             }
-            return addressLines;
-        }
-    }
-
-    private static class LocationToStringFunc implements Func1<Location, String> {
-        @Override
-        public String call(Location location) {
-            if (location != null)
-                return location.getLatitude() + " " + location.getLongitude() + " (" + location.getAccuracy() + ")";
-            return "no location available";
-        }
-    }
-
-    private static class DisplayTextOnViewAction implements Action1<String> {
-        private final TextView target;
-
-        private DisplayTextOnViewAction(TextView target) {
-            this.target = target;
-        }
-
-        @Override
-        public void call(String s) {
-            target.setText(s);
-        }
+        });
+        return true;
     }
 }
