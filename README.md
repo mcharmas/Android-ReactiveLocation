@@ -51,7 +51,7 @@ LocationRequest request = LocationRequest.create() //standard GMS LocationReques
                                   .setInterval(100);
 
 ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
-Subscription subscription = locationUpdatesObservable = locationProvider.getUpdatedLocation(request)
+locationProvider.getUpdatedLocation(request)
     .filter(...)    // you can filter location updates
     .map(...)       // you can map location to sth different
     .flatMap(...)   // or event flat map
