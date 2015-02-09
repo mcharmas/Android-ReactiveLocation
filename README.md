@@ -148,7 +148,7 @@ dependencies {
     ...
     compile 'pl.charmas.android:android-reactive-location:0.4@aar'
     compile 'com.google.android.gms:play-services-location:6.5.87'
-    compile 'io.reactivex:rxjava:1.0.3'
+    compile 'io.reactivex:rxandroid:0.24.0'
 }
 ```
 
