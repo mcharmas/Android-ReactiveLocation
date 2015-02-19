@@ -30,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Latitude"
-        android:inputType="numberDecimal"
+        android:inputType="numberDecimal|numberSigned"
         android:singleLine="true" />
 
     <EditText
@@ -38,7 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Longitude"
-        android:inputType="numberDecimal"
+        android:inputType="numberDecimal|numberSigned"
         android:singleLine="true" />
 
     <EditText

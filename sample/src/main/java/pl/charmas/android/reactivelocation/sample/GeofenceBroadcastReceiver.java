@@ -21,7 +21,6 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle("Geofence action")
                 .setContentText(transition)
-                .setAutoCancel(true)
                 .setTicker("Geofence action")
                 .build();
         nm.notify(0, notification);
