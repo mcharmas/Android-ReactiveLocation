@@ -77,7 +77,7 @@ Getting activity recognition is just as simple
 ```java
 
 ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
-Subscription subscription = activityUpdatesObservable = locationProvider.getDetectedActivity(0) // detectionIntervalMillis
+Subscription subscription = locationProvider.getDetectedActivity(0) // detectionIntervalMillis
     .filter(...)    // you can filter location updates
     .map(...)       // you can map location to sth different
     .flatMap(...)   // or event flat map
