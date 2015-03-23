@@ -21,6 +21,7 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
     private final Context ctx;
     private final List<Api<? extends Api.ApiOptions.NotRequiredOptions>> services;
 
+    @SafeVarargs
     protected BaseObservable(Context ctx, Api<? extends Api.ApiOptions.NotRequiredOptions>... services) {
         this.ctx = ctx;
         this.services = Arrays.asList(services);
@@ -98,12 +99,12 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
 
         @Override
         public void onConnectionSuspended(int cause) {
-            observer.onError(new LocationConnectionSuspendedException(cause));
+            observer.onError(new GoogleAPIConnectionSuspendedException(cause));
         }
 
         @Override
         public void onConnectionFailed(ConnectionResult connectionResult) {
-            observer.onError(new LocationConnectionException("Error connecting to GoogleApiClient.", connectionResult));
+            observer.onError(new GoogleAPIConnectionException("Error connecting to GoogleApiClient.", connectionResult));
         }
 
         public void setClient(GoogleApiClient client) {

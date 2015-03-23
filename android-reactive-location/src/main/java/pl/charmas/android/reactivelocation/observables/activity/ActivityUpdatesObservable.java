@@ -10,7 +10,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionResult;
 
-import pl.charmas.android.reactivelocation.observables.BaseActivityObservable;
 import rx.Observable;
 import rx.Observer;
 

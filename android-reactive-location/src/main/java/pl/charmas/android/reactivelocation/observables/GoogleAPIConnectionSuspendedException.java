@@ -1,9 +1,9 @@
 package pl.charmas.android.reactivelocation.observables;
 
-public class LocationConnectionSuspendedException extends RuntimeException {
+public class GoogleAPIConnectionSuspendedException extends RuntimeException {
     private final int cause;
 
-    public LocationConnectionSuspendedException(int cause) {
+    GoogleAPIConnectionSuspendedException(int cause) {
         this.cause = cause;
     }
 
