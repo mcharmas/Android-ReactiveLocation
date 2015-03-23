@@ -1,6 +1,7 @@
 package pl.charmas.android.reactivelocation.sample;
 
 import android.content.Intent;
+import android.content.IntentSender;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
@@ -11,8 +12,12 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.List;
 
@@ -31,6 +36,8 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class MainActivity extends ActionBarActivity {
+    private static final int REQUEST_CHECK_SETTINGS = 0;
+
     private ReactiveLocationProvider locationProvider;
 
     private TextView lastKnownLocationView;
@@ -46,6 +53,7 @@ public class MainActivity extends ActionBarActivity {
     private Subscription updatableLocationSubscription;
     private Subscription addressSubscription;
     private Subscription activitySubscription;
+    private Observable<String> addressObservable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +67,54 @@ public class MainActivity extends ActionBarActivity {
 
         locationProvider = new ReactiveLocationProvider(getApplicationContext());
         lastKnownLocationObservable = locationProvider.getLastKnownLocation();
-        locationUpdatesObservable = locationProvider.getUpdatedLocation(
-                LocationRequest.create()
-                        .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                        .setNumUpdates(5)
-                        .setInterval(100)
-        );
+
+        final LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setNumUpdates(5)
+                .setInterval(100);
+        locationUpdatesObservable = locationProvider
+                .checkLocationSettings(
+                        new LocationSettingsRequest.Builder()
+                                .addLocationRequest(locationRequest)
+                                .build()
+                )
+                .doOnNext(new Action1<LocationSettingsResult>() {
+                    @Override
+                    public void call(LocationSettingsResult locationSettingsResult) {
+                        Status status = locationSettingsResult.getStatus();
+                        if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                            try {
+                                status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+                            } catch (IntentSender.SendIntentException th) {
+                                Log.e("MainActivity", "Error opening settings activity.", th);
+                            }
+                        }
+                    }
+                })
+                .flatMap(new Func1<LocationSettingsResult, Observable<Location>>() {
+                    @Override
+                    public Observable<Location> call(LocationSettingsResult locationSettingsResult) {
+                        return locationProvider.getUpdatedLocation(locationRequest);
+                    }
+                });
+
+        addressObservable = locationProvider.getUpdatedLocation(locationRequest)
+                .flatMap(new Func1<Location, Observable<List<Address>>>() {
+                    @Override
+                    public Observable<List<Address>> call(Location location) {
+                        return locationProvider.getGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
+                    }
+                })
+                .map(new Func1<List<Address>, Address>() {
+                    @Override
+                    public Address call(List<Address> addresses) {
+                        return addresses != null && !addresses.isEmpty() ? addresses.get(0) : null;
+                    }
+                })
+                .map(new AddressToStringFunc())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+
         activityObservable = locationProvider.getDetectedActivity(50);
     }
 
@@ -87,22 +137,8 @@ public class MainActivity extends ActionBarActivity {
                 })
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView), new ErrorHandler());
 
-        addressSubscription = AndroidObservable.bindActivity(this, locationUpdatesObservable
-                .flatMap(new Func1<Location, Observable<List<Address>>>() {
-                    @Override
-                    public Observable<List<Address>> call(Location location) {
-                        return locationProvider.getGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
-                    }
-                })
-                .map(new Func1<List<Address>, Address>() {
-                    @Override
-                    public Address call(List<Address> addresses) {
-                        return addresses != null && !addresses.isEmpty() ? addresses.get(0) : null;
-                    }
-                })
-                .map(new AddressToStringFunc())
-                .subscribeOn(Schedulers.io()))
-                .observeOn(AndroidSchedulers.mainThread())
+
+        addressSubscription = AndroidObservable.bindActivity(this, addressObservable)
                 .subscribe(new DisplayTextOnViewAction(addressLocationView), new ErrorHandler());
 
         activitySubscription = AndroidObservable.bindActivity(this, activityObservable)

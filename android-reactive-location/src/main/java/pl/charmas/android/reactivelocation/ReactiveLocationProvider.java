@@ -5,12 +5,18 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
 
 import java.util.List;
 
+import pl.charmas.android.reactivelocation.observables.ApiClientObservable;
+import pl.charmas.android.reactivelocation.observables.PendingResultObservable;
 import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.geocode.GeodecodeObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceObservable;
@@ -20,6 +26,7 @@ import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesR
 import pl.charmas.android.reactivelocation.observables.location.LastKnownLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesObservable;
 import rx.Observable;
+import rx.functions.Func1;
 
 /**
  * Factory of observables that can manipulate location
@@ -146,5 +153,22 @@ public class ReactiveLocationProvider {
      */
     public Observable<ActivityRecognitionResult> getDetectedActivity(int detectIntervalMiliseconds) {
         return ActivityUpdatesObservable.createObservable(ctx, detectIntervalMiliseconds);
+    }
+
+    /**
+     * Observable that can be used to check settings state for given location request.
+     *
+     * @param locationRequest location request
+     * @return observable that emits check result of location settings
+     * @see com.google.android.gms.location.SettingsApi
+     */
+    public Observable<LocationSettingsResult> checkLocationSettings(final LocationSettingsRequest locationRequest) {
+        return ApiClientObservable.create(ctx)
+                .flatMap(new Func1<GoogleApiClient, Observable<LocationSettingsResult>>() {
+                    @Override
+                    public Observable<LocationSettingsResult> call(GoogleApiClient googleApiClient) {
+                        return Observable.create(new PendingResultObservable<>(LocationServices.SettingsApi.checkLocationSettings(googleApiClient, locationRequest)));
+                    }
+                });
     }
 }

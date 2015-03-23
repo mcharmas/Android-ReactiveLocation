@@ -18,12 +18,8 @@ import rx.subscriptions.Subscriptions;
 
 
 public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
-
-    private static final String TAG = BaseObservable.class.getSimpleName();
-
     private final Context ctx;
     private final List<Api<? extends Api.ApiOptions.NotRequiredOptions>> services;
-
 
     protected BaseObservable(Context ctx, Api<? extends Api.ApiOptions.NotRequiredOptions>... services) {
         this.ctx = ctx;
