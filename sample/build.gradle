@@ -1,14 +1,22 @@
 apply plugin: 'com.android.application'
 
+def getGooglePlayServicesApiKey() {
+    if (REACTIVE_LOCATION_GMS_API_KEY != null && !REACTIVE_LOCATION_GMS_API_KEY.isEmpty()) {
+        return REACTIVE_LOCATION_GMS_API_KEY;
+    }
+    return ""
+}
+
 android {
-    compileSdkVersion 21
+    compileSdkVersion 22
     buildToolsVersion "21.1.2"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 21
+        targetSdkVersion 22
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
+        resValue "string", "API_KEY", getGooglePlayServicesApiKey()
     }
 
     compileOptions {
@@ -24,7 +32,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'io.reactivex:rxandroid:0.23.0'
     compile project(':android-reactive-location')
 }

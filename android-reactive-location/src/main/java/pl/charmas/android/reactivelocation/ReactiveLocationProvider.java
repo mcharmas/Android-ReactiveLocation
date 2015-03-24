@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.location.Address;
 import android.location.Location;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -15,6 +16,12 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.AutocompletePredictionBuffer;
+import com.google.android.gms.location.places.PlaceFilter;
+import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.List;
 
@@ -46,7 +53,7 @@ public class ReactiveLocationProvider {
      * Creates observable that obtains last known location and than completes.
      * Delivered location is never null - when it is unavailable Observable completes without emitting
      * any value.
-     *
+     * <p/>
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException}
      * when there are trouble connecting with Google Play Services and other exceptions that
      * can be thrown on {@link com.google.android.gms.location.FusedLocationProviderApi#getLastLocation(com.google.android.gms.common.api.GoogleApiClient)}.
@@ -176,6 +183,44 @@ public class ReactiveLocationProvider {
     }
 
     /**
+     * Returns observable that fetches current place from Places API. To flatmap and auto release
+     * buffer to {@link com.google.android.gms.location.places.PlaceLikelihood} observable use
+     * {@link DataBufferObservable}.
+     *
+     * @param placeFilter filter
+     * @return observable that emits current places buffer and completes
+     */
+    public final Observable<PlaceLikelihoodBuffer> getCurrentPlace(@Nullable final PlaceFilter placeFilter) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(new Func1<GoogleApiClient, Observable<PlaceLikelihoodBuffer>>() {
+                    @Override
+                    public Observable<PlaceLikelihoodBuffer> call(GoogleApiClient api) {
+                        return fromPendingResult(Places.PlaceDetectionApi.getCurrentPlace(api, placeFilter));
+                    }
+                });
+    }
+
+    /**
+     * Returns observable that fetches autocomplete predictions from Places API. To flatmap and autorelease
+     * {@link com.google.android.gms.location.places.AutocompletePredictionBuffer} you can use
+     * {@link DataBufferObservable}.
+     *
+     * @param query  search query
+     * @param bounds bounds where to fetch suggestions from
+     * @param filter filter
+     * @return observable with suggestions buffer and completes
+     */
+    public final Observable<AutocompletePredictionBuffer> getPlaceAutocompletePredictions(final String query, final LatLngBounds bounds, final AutocompleteFilter filter) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(new Func1<GoogleApiClient, Observable<AutocompletePredictionBuffer>>() {
+                    @Override
+                    public Observable<AutocompletePredictionBuffer> call(GoogleApiClient api) {
+                        return fromPendingResult(Places.GeoDataApi.getAutocompletePredictions(api, query, bounds, filter));
+                    }
+                });
+    }
+
+    /**
      * Observable that emits {@link com.google.android.gms.common.api.GoogleApiClient} object after connection.
      * In case of error {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException} is emmited.
      * When connection to Google Play Services is suspended {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionSuspendedException}
@@ -185,8 +230,8 @@ public class ReactiveLocationProvider {
      * @param apis collection of apis to connect to
      * @return observable that emits apis client after successful connection
      */
-    @SafeVarargs
-    public final Observable<GoogleApiClient> getGoogleApiClientObservable(Api<? extends Api.ApiOptions.NoOptions>... apis) {
+    public final Observable<GoogleApiClient> getGoogleApiClientObservable(Api... apis) {
+        //noinspection unchecked
         return GoogleAPIClientObservable.create(ctx, apis);
     }
 

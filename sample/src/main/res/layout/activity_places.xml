@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dp"
+    android:orientation="vertical">
+
+    <TextView
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Current Place"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/current_place_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Place autocomplete"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/place_query_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Place query"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <ListView
+        android:id="@+id/place_suggestions_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+
+</LinearLayout>

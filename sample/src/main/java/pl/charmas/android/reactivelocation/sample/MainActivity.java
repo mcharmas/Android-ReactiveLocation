@@ -6,6 +6,7 @@ import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -162,6 +163,17 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 startActivity(new Intent(MainActivity.this, GeofenceActivity.class));
+                return true;
+            }
+        });
+        menu.add("Places").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (TextUtils.isEmpty(getString(R.string.API_KEY))) {
+                    Toast.makeText(MainActivity.this, "First you need to configure your API Key - see README.md", Toast.LENGTH_SHORT).show();
+                } else {
+                    startActivity(new Intent(MainActivity.this, PlacesActivity.class));
+                }
                 return true;
             }
         });
