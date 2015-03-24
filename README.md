@@ -15,6 +15,7 @@ What can you do with that?
 * easily connect to Play Services API
 * obtain last known location
 * subscribe for location updates
+* use location settings API
 * manage geofences
 * geocode location to list of addresses
 * activity recognition
@@ -110,6 +111,12 @@ geocodeObservable
 ### Managing geofences
 
 For geofence management use `addGeofences` and `removeGeofences` methods.
+
+### Checking location settings though location settings API
+
+To get ```LocationSettingsResponse``` for your ```LocationRequest``` check
+out ```ReactiveLocationProvider.checkLocationSettings()``` method. Sample
+usage can be found in **sample** project in ```MainActivity``` class.
 
 ### Connecting to Google Play Services API
 
