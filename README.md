@@ -129,14 +129,14 @@ If you are manually using Google Play Services and you are dealing with
 To transform any buffer to observable and autorelease it on unsubscription
 use ```DataBufferObservable.from()``` method. It will let you easily flatMap
 such data as ```PlaceLikelihoodBuffer``` or ```AutocompletePredictionBuffer```
-from Places API.
+from Places API. For usage example see ```PlacesActivity``` sample.
 
 ### Places API
 
 You can fetch current place or place suggestions using:
 
-* ```ReactiveLocationProvider.getCurrentPlace```
-* ```ReactiveLocationProvider.getPlaceAutocompletePredictions```
+* ```ReactiveLocationProvider.getCurrentPlace()```
+* ```ReactiveLocationProvider.getPlaceAutocompletePredictions()```
 
 For more info see sample project and ```PlacesActivity```.
 
