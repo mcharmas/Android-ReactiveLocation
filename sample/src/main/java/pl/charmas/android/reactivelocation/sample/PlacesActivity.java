@@ -23,11 +23,12 @@ import pl.charmas.android.reactivelocation.DataBufferObservable;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import pl.charmas.android.reactivelocation.sample.utils.TextObservable;
 import rx.Observable;
-import rx.android.observables.AndroidObservable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.subscriptions.CompositeSubscription;
+
+import static rx.android.app.AppObservable.bindActivity;
 
 public class PlacesActivity extends ActionBarActivity {
 
@@ -53,7 +54,7 @@ public class PlacesActivity extends ActionBarActivity {
         super.onStart();
         compositeSubscription = new CompositeSubscription();
         compositeSubscription.add(
-                AndroidObservable.bindActivity(this, reactiveLocationProvider.getCurrentPlace(null))
+                bindActivity(this, reactiveLocationProvider.getCurrentPlace(null))
                         .flatMap(new Func1<PlaceLikelihoodBuffer, Observable<PlaceLikelihood>>() {
                             @Override
                             public Observable<PlaceLikelihood> call(PlaceLikelihoodBuffer placeLikelihoods) {
@@ -111,7 +112,7 @@ public class PlacesActivity extends ActionBarActivity {
                     }
                 });
 
-        compositeSubscription.add(AndroidObservable.bindActivity(this, suggestionsObservable).subscribe(new Action1<List<String>>() {
+        compositeSubscription.add(bindActivity(this, suggestionsObservable).subscribe(new Action1<List<String>>() {
             @Override
             public void call(List<String> autocompletePredictions) {
                 placeSuggestionsList.setAdapter(new ArrayAdapter<>(PlacesActivity.this, android.R.layout.simple_list_item_1, autocompletePredictions));

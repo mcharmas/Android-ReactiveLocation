@@ -4,19 +4,22 @@ ReactiveLocation library for Android
 Small library that wraps Google Play Services API in brilliant [RxJava](https://github.com/ReactiveX/RxJava)
 ```Observables``` reducing boilerplate to minimum.
 
-Current stable version - 0.4
+Current stable version - 0.5
 ---------------
 
-**This version works with Google Play Services 6.5.+ and RxJava 1.0.+**
+**This version works with Google Play Services 7.0.+ and RxJava 1.0.+**
 
 What can you do with that?
 --------------------------
 
+* easily connect to Play Services API
 * obtain last known location
 * subscribe for location updates
 * manage geofences
 * geocode location to list of addresses
 * activity recognition
+* use current place API
+* fetch place autocomplete suggestions
 
 How does the API look like?
 ----------------------------
@@ -108,6 +111,35 @@ geocodeObservable
 
 For geofence management use `addGeofences` and `removeGeofences` methods.
 
+### Connecting to Google Play Services API
+
+If you just need managed connection to Play Services API
+use ```ReactiveLocationProvider.getGoogleApiClientObservable()```.
+On subscription it will connect to the API.
+Unsubscription will close the connection.
+
+### Creating observable from PendingResult
+
+If you are manually using Google Play Services and you are dealing with
+```PendingResult``` you can easily transform them to observables with
+```ReactiveLocationProvider.fromPendingResult()``` method.
+
+### Transforming buffers to observable
+
+To transform any buffer to observable and autorelease it on unsubscription
+use ```DataBufferObservable.from()``` method. It will let you easily flatMap
+such data as ```PlaceLikelihoodBuffer``` or ```AutocompletePredictionBuffer```
+from Places API.
+
+### Places API
+
+You can fetch current place or place suggestions using:
+
+* ```ReactiveLocationProvider.getCurrentPlace```
+* ```ReactiveLocationProvider.getPlaceAutocompletePredictions```
+
+For more info see sample project and ```PlacesActivity```.
+
 ### Cooler examples
 
 Do you need location with certain accuracy but don't want to wait for it more than 4 sec? No problem.
@@ -146,9 +178,9 @@ along with Google Play Services and RxJava.
 ```groovy
 dependencies {
     ...
-    compile 'pl.charmas.android:android-reactive-location:0.4@aar'
-    compile 'com.google.android.gms:play-services-location:6.5.87'
-    compile 'io.reactivex:rxjava:1.0.3'
+    compile 'pl.charmas.android:android-reactive-location:0.5@aar'
+    compile 'com.google.android.gms:play-services-location:7.0.0'
+    compile 'io.reactivex:rxjava:1.0.8'
 }
 ```
 
@@ -161,7 +193,7 @@ following dependency:
 <dependency>
     <groupId>pl.charmas.android</groupId>
     <artifactId>android-reactive-location</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
     <type>aar</type>
 </dependency>
 ```
@@ -173,10 +205,15 @@ Sample
 
 Sample usage is available in *sample* directory.
 
+Places API requires API Key. Before running samples you need to create project on API console
+and obtain API Key using this [guide](https://developers.google.com/places/android/signup).
+Obtained key should be exported as gradle property named: ```REACTIVE_LOCATION_GMS_API_KEY``` for
+example in ```~/.gradle/gradle.properties```.
+
 License
 =======
 
-    Copyright (C) 2014 Michał Charmas (http://blog.charmas.pl)
+    Copyright (C) 2015 Michał Charmas (http://blog.charmas.pl)
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.

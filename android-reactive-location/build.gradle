@@ -20,7 +20,7 @@ android {
 
 dependencies {
     compile 'com.google.android.gms:play-services-location:7.0.0'
-    compile 'io.reactivex:rxjava:1.0.3'
+    compile 'io.reactivex:rxjava:1.0.8'
 }
 
 // Comment this to deploy to local maven repository

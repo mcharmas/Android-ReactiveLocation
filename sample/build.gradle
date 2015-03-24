@@ -33,6 +33,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
-    compile 'io.reactivex:rxandroid:0.23.0'
+    compile 'io.reactivex:rxandroid:0.24.0'
     compile project(':android-reactive-location')
 }

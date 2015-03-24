@@ -30,11 +30,12 @@ import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
 import pl.charmas.android.reactivelocation.sample.utils.ToMostProbableActivity;
 import rx.Observable;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+
+import static rx.android.app.AppObservable.bindActivity;
 
 public class MainActivity extends ActionBarActivity {
     private static final int REQUEST_CHECK_SETTINGS = 0;
@@ -139,10 +140,10 @@ public class MainActivity extends ActionBarActivity {
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView), new ErrorHandler());
 
 
-        addressSubscription = AndroidObservable.bindActivity(this, addressObservable)
+        addressSubscription = bindActivity(this, addressObservable)
                 .subscribe(new DisplayTextOnViewAction(addressLocationView), new ErrorHandler());
 
-        activitySubscription = AndroidObservable.bindActivity(this, activityObservable)
+        activitySubscription = bindActivity(this, activityObservable)
                 .map(new ToMostProbableActivity())
                 .map(new DetectedActivityToString())
                 .subscribe(new DisplayTextOnViewAction(currentActivityView), new ErrorHandler());
