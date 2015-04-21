@@ -94,17 +94,31 @@ Subscription subscription = locationProvider.getDetectedActivity(0) // detection
     });
 ```
 
-### Geocode location
+### Reverse geocode location
 
 Do you need address for location?
 
 ```java
-Observable<List<Address>> geocodeObservable = locationProvider
-    .getGeocodeObservable(location.getLatitude(), location.getLongitude(), MAX_ADDRESSES);
+Observable<List<Address>> reverseGeocodeObservable = locationProvider
+    .getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), MAX_ADDRESSES);
 
-geocodeObservable
+reverseGeocodeObservable
     .subscribeOn(Schedulers.io())               // use I/O thread to query for addresses
     .observeOn(AndroidSchedulers.mainThread())  // return result in main android thread to manipulate UI
+    .subscribe(...);
+```
+
+### Geocode location
+
+Do you need address for a text search query?
+
+```java
+Observable<List<Address>> geocodeObservable = locationProvider
+    .getGeocodeObservable(String userQuery, MAX_ADDRESSES);
+
+geocodeObservable
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
     .subscribe(...);
 ```
 

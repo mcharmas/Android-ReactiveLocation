@@ -28,7 +28,8 @@ import java.util.List;
 import pl.charmas.android.reactivelocation.observables.GoogleAPIClientObservable;
 import pl.charmas.android.reactivelocation.observables.PendingResultObservable;
 import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
-import pl.charmas.android.reactivelocation.observables.geocode.GeodecodeObservable;
+import pl.charmas.android.reactivelocation.observables.geocode.GeocodeObservable;
+import pl.charmas.android.reactivelocation.observables.geocode.ReverseGeocodeObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult;
 import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofenceObservable;
@@ -83,7 +84,7 @@ public class ReactiveLocationProvider {
     }
 
     /**
-     * Creates obserbable that translates latitude and longitude to list of possible addresses using
+     * Creates observable that translates latitude and longitude to list of possible addresses using
      * included Geocoder class. You should subscribe for this observable on I/O thread.
      * The stream finishes after address list is available.
      *
@@ -92,8 +93,39 @@ public class ReactiveLocationProvider {
      * @param maxResults maximal number of results you are interested in
      * @return observable that serves list of address based on location
      */
-    public Observable<List<Address>> getGeocodeObservable(double lat, double lng, int maxResults) {
-        return GeodecodeObservable.createObservable(ctx, lat, lng, maxResults);
+    public Observable<List<Address>> getReverseGeocodeObservable(double lat, double lng, int maxResults) {
+        return ReverseGeocodeObservable.createObservable(ctx, lat, lng, maxResults);
+    }
+
+    /**
+     * Creates observable that translates a street address or other description into a list of
+     * possible addresses using included Geocoder class. You should subscribe for this
+     * observable on I/O thread.
+     * The stream finishes after address list is available.
+     *
+     * @param locationName a user-supplied description of a location
+     * @param maxResults max number of results you are interested in
+     * @return observable that serves list of address based on location name
+     */
+    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults) {
+        return getGeocodeObservable(locationName, maxResults, null);
+    }
+
+    /**
+     * Creates observable that translates a street address or other description into a list of
+     * possible addresses using included Geocoder class. You should subscribe for this
+     * observable on I/O thread.
+     * The stream finishes after address list is available.
+     * <p/>
+     * You may specify a bounding box for the search results.
+     *
+     * @param locationName a user-supplied description of a location
+     * @param maxResults max number of results you are interested in
+     * @param bounds restricts the results to geographical bounds. May be null
+     * @return observable that serves list of address based on location name
+     */
+    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds) {
+        return GeocodeObservable.createObservable(ctx, locationName, maxResults, bounds);
     }
 
     /**
