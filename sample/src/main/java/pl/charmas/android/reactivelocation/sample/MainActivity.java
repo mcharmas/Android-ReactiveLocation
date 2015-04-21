@@ -104,7 +104,7 @@ public class MainActivity extends ActionBarActivity {
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
                     @Override
                     public Observable<List<Address>> call(Location location) {
-                        return locationProvider.getGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
+                        return locationProvider.getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
                     }
                 })
                 .map(new Func1<List<Address>, Address>() {

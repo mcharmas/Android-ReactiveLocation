@@ -10,17 +10,17 @@ import java.util.List;
 import rx.Observable;
 import rx.Subscriber;
 
-public class GeodecodeObservable implements Observable.OnSubscribe<List<Address>> {
+public class ReverseGeocodeObservable implements Observable.OnSubscribe<List<Address>> {
     private final Context ctx;
     private final double latitude;
     private final double longitude;
     private final int maxResults;
 
     public static Observable<List<Address>> createObservable(Context ctx, double latitude, double longitude, int maxResults) {
-        return Observable.create(new GeodecodeObservable(ctx, latitude, longitude, maxResults));
+        return Observable.create(new ReverseGeocodeObservable(ctx, latitude, longitude, maxResults));
     }
 
-    private GeodecodeObservable(Context ctx, double latitude, double longitude, int maxResults) {
+    private ReverseGeocodeObservable(Context ctx, double latitude, double longitude, int maxResults) {
         this.ctx = ctx;
         this.latitude = latitude;
         this.longitude = longitude;
