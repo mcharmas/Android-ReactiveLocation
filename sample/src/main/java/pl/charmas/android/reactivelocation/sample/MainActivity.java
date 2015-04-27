@@ -178,6 +178,13 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             }
         });
+        menu.add("Mock Locations").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                startActivity(new Intent(MainActivity.this, MockLocationsActivity.class));
+                return true;
+            }
+        });
         return true;
     }
 
