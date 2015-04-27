@@ -291,8 +291,8 @@ public class ReactiveLocationProvider {
      * For this method to work, mock locations must be enabled in developer options and your
      * application must have the ACCESS_MOCK_LOCATION permission.
      *
-     * @param locationObservable an observable that emits @{link com.android.location.Location} objects suitable for use as mock locations
-     * @return observable that emits the return value of each @{link com.google.android.gms.location.LocationServices.FusedLocationApi.setMockLocation} call
+     * @param locationObservable an observable that emits {@link android.location.Location} objects suitable for use as mock locations
+     * @return observable that emits the return value of each {@link com.google.android.gms.location.FusedLocationProviderApi.setMockLocation} call
      */
     public Observable<Status> setMockLocations(Observable<Location> locationObservable) {
         Observable<GoogleApiClient> apiClientObservable = MockModeObservable.create(ctx, LocationServices.API);
