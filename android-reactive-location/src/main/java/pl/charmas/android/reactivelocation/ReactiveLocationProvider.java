@@ -40,7 +40,6 @@ import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesO
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Func1;
-import rx.functions.Func2;
 
 /**
  * Factory of observables that can manipulate location
@@ -294,36 +293,32 @@ public class ReactiveLocationProvider {
      * @param locationObservable an observable that emits {@link android.location.Location} objects suitable for use as mock locations
      * @return observable that emits the return value of each {@link com.google.android.gms.location.FusedLocationProviderApi.setMockLocation} call
      */
-    public Observable<Status> setMockLocations(Observable<Location> locationObservable) {
+    public Observable<Status> setMockLocations(final Observable<Location> locationObservable) {
         Observable<GoogleApiClient> apiClientObservable = MockModeObservable.create(ctx, LocationServices.API);
 
-        return Observable.combineLatest(apiClientObservable, locationObservable,
-                new Func2<GoogleApiClient, Location, PendingResult<Status>>() {
+        return apiClientObservable.flatMap(new Func1<GoogleApiClient, Observable<Status>>() {
+            @Override
+            public Observable<Status> call(final GoogleApiClient googleApiClient) {
+                return locationObservable.flatMap(new Func1<Location, Observable<Status>>() {
                     @Override
-                    public PendingResult<Status> call(GoogleApiClient apiClient, Location location) {
-                        return LocationServices.FusedLocationApi.setMockLocation(apiClient, location);
-                    }
-                })
-                .flatMap(new Func1<PendingResult<Status>, Observable<Status>>() {
-                    @Override
-                    public Observable<Status> call(PendingResult<Status> setMockLocationStatus) {
-                        return fromPendingResult(setMockLocationStatus);
-                    }
-                })
-                .flatMap(new Func1<Status, Observable<Status>>() {
-                    @Override
-                    public Observable<Status> call(final Status status) {
-                        return Observable.create(new Observable.OnSubscribe<Status>() {
-                            @Override
-                            public void call(Subscriber<? super Status> subscriber) {
-                                if (status.isSuccess()) {
-                                    subscriber.onNext(status);
-                                } else {
-                                    subscriber.onError(new SetMockLocationException(status.getStatusCode()));
-                                }
-                            }
-                        });
+                    public Observable<Status> call(Location location) {
+                        return fromPendingResult(LocationServices.FusedLocationApi.setMockLocation(googleApiClient, location));
                     }
                 });
+            }
+        }).flatMap(new Func1<Status, Observable<Status>>() {
+                @Override
+                public Observable<Status> call(final Status status) {
+                    return Observable.create(new Observable.OnSubscribe<Status>() {
+                        @Override public void call(Subscriber<? super Status> subscriber) {
+                            if (status.isSuccess()) {
+                                subscriber.onNext(status);
+                            } else {
+                                subscriber.onError(new SetMockLocationException(status.getStatusCode()));
+                            }
+                        }
+                    });
+                }
+            });
     }
 }
