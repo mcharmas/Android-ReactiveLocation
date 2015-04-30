@@ -10,7 +10,6 @@ import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Result;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
@@ -37,8 +36,9 @@ import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofenceOb
 import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult;
 import pl.charmas.android.reactivelocation.observables.location.LastKnownLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesObservable;
+import pl.charmas.android.reactivelocation.observables.location.MockLocationObservable;
+import pl.charmas.android.reactivelocation.observables.location.MockLocationResult;
 import rx.Observable;
-import rx.Subscriber;
 import rx.functions.Func1;
 
 /**
@@ -83,6 +83,31 @@ public class ReactiveLocationProvider {
      */
     public Observable<Location> getUpdatedLocation(LocationRequest locationRequest) {
         return LocationUpdatesObservable.createObservable(ctx, locationRequest);
+    }
+
+    /**
+     * Returns an observable which activates mock location mode when subscribed to, using the
+     * supplied observable as a source of mock locations. Mock locations will replace normal
+     * location information for all users of the FusedLocationProvider API on the device while this
+     * observable is subscribed to.
+     * <p/>
+     * To use this method, mock locations must be enabled in developer options and your application
+     * must hold the android.permission.ACCESS_MOCK_LOCATION permission, or a {@link java.lang.SecurityException}
+     * will be thrown.
+     * <p/>
+     * Status codes other than {@link com.google.android.gms.common.api.CommonStatusCodes#SUCCESS} and
+     * {@link com.google.android.gms.common.api.CommonStatusCodes#SUCCESS_CACHE} that can be returned from
+     * {@link com.google.android.gms.location.FusedLocationProviderApi#setMockMode(com.google.android.gms.common.api.GoogleApiClient, boolean)}
+     * and {@link com.google.android.gms.location.FusedLocationProviderApi#setMockLocation(com.google.android.gms.common.api.GoogleApiClient, android.location.Location)}
+     * will be reported as {@link pl.charmas.android.reactivelocation.observables.location.MockLocationException}.
+     * <p/>
+     * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
+     *
+     * @param locationObservable observable that emits {@link android.location.Location} instances suitable to use as mock locations
+     * @return observable that emits {@link pl.charmas.android.reactivelocation.observables.location.MockLocationResult}
+     */
+    public Observable<MockLocationResult> getMockLocationObservable(Observable<Location> locationObservable) {
+        return MockLocationObservable.createObservable(ctx, locationObservable);
     }
 
     /**
@@ -278,47 +303,5 @@ public class ReactiveLocationProvider {
      */
     public static <T extends Result> Observable<T> fromPendingResult(PendingResult<T> result) {
         return Observable.create(new PendingResultObservable<>(result));
-    }
-
-    /**
-     * Returns an observable which activates mock location mode when subscribed to, using the
-     * supplied observable as a source of mock locations. Mock locations will replace normal
-     * location information for all observables that have been and that will be created by this
-     * ReactiveLocationProvider instance. Mock mode is disabled when the returned observable is no
-     * longer subscribed to.
-     * <p/>
-     * For this method to work, mock locations must be enabled in developer options and your
-     * application must have the ACCESS_MOCK_LOCATION permission.
-     *
-     * @param locationObservable an observable that emits {@link android.location.Location} objects suitable for use as mock locations
-     * @return observable that emits the return value of each {@link com.google.android.gms.location.FusedLocationProviderApi.setMockLocation} call
-     */
-    public Observable<Status> setMockLocations(final Observable<Location> locationObservable) {
-        Observable<GoogleApiClient> apiClientObservable = MockModeObservable.create(ctx, LocationServices.API);
-
-        return apiClientObservable.flatMap(new Func1<GoogleApiClient, Observable<Status>>() {
-            @Override
-            public Observable<Status> call(final GoogleApiClient googleApiClient) {
-                return locationObservable.flatMap(new Func1<Location, Observable<Status>>() {
-                    @Override
-                    public Observable<Status> call(Location location) {
-                        return fromPendingResult(LocationServices.FusedLocationApi.setMockLocation(googleApiClient, location));
-                    }
-                });
-            }
-        }).flatMap(new Func1<Status, Observable<Status>>() {
-                @Override
-                public Observable<Status> call(final Status status) {
-                    return Observable.create(new Observable.OnSubscribe<Status>() {
-                        @Override public void call(Subscriber<? super Status> subscriber) {
-                            if (status.isSuccess()) {
-                                subscriber.onNext(status);
-                            } else {
-                                subscriber.onError(new SetMockLocationException(status.getStatusCode()));
-                            }
-                        }
-                    });
-                }
-            });
     }
 }

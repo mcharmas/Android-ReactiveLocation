@@ -15,12 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 
 import java.util.Date;
 
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation.observables.location.MockLocationResult;
 import pl.charmas.android.reactivelocation.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
 import rx.Observable;
@@ -118,12 +118,12 @@ public class MockLocationsActivity extends ActionBarActivity {
     private void setMockMode(boolean toggle) {
         if (toggle) {
             mockLocationSubscription =
-                    Observable.zip(locationProvider.setMockLocations(mockLocationObservable),
-                            mockLocationObservable, new Func2<Status, Location, String>() {
+                    Observable.zip(locationProvider.getMockLocationObservable(mockLocationObservable),
+                            mockLocationObservable, new Func2<MockLocationResult, Location, String>() {
                                 int count = 0;
 
                                 @Override
-                                public String call(Status status, Location location) {
+                                public String call(MockLocationResult result, Location location) {
                                     return new LocationToStringFunc().call(location) + " " + count++;
                                 }
                             })
