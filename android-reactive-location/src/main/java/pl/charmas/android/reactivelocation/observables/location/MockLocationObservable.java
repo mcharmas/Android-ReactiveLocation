@@ -11,11 +11,14 @@ import com.google.android.gms.location.LocationServices;
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
 import rx.Observer;
+import rx.Subscription;
+import rx.functions.Action0;
 import rx.functions.Action1;
 
 public class MockLocationObservable extends BaseLocationObservable<MockLocationResult> {
 
     private Observable<Location> locationObservable;
+    private Subscription mockLocationSubscription;
 
     public static Observable<MockLocationResult> createObservable(Context context, Observable<Location> locationObservable) {
         return Observable.create(new MockLocationObservable(context, locationObservable));
@@ -40,10 +43,9 @@ public class MockLocationObservable extends BaseLocationObservable<MockLocationR
                     }
                 });
 
-        locationObservable.subscribe(new Action1<Location>() {
+        mockLocationSubscription = locationObservable.subscribe(new Action1<Location>() {
             @Override
-            public void call(Location location) {
-                LocationServices.FusedLocationApi.setMockLocation(apiClient, location)
+            public void call(Location location) { LocationServices.FusedLocationApi.setMockLocation(apiClient, location)
                         .setResultCallback(new ResultCallback<Status>() {
                             @Override
                             public void onResult(Status status) {
@@ -55,6 +57,16 @@ public class MockLocationObservable extends BaseLocationObservable<MockLocationR
                                 }
                             }
                         });
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                observer.onError(throwable);
+            }
+        }, new Action0() {
+            @Override
+            public void call() {
+                observer.onCompleted();
             }
         });
     }
@@ -68,6 +80,9 @@ public class MockLocationObservable extends BaseLocationObservable<MockLocationR
                 // if this happens then we couldn't have switched mock mode on in the first place,
                 // and the observer's onError will already have been called
             }
+        }
+        if (mockLocationSubscription != null && !mockLocationSubscription.isUnsubscribed()) {
+            mockLocationSubscription.unsubscribe();
         }
     }
 }
