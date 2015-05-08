@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="pl.charmas.android.reactivelocation.sample">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="MockLocation" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
@@ -32,6 +35,8 @@
         <activity android:name=".GeofenceActivity" />
 
         <activity android:name=".PlacesActivity" />
+
+        <activity android:name=".MockLocationsActivity" />
 
         <receiver android:name=".GeofenceBroadcastReceiver" />
     </application>
