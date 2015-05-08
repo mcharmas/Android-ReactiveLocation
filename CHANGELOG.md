@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.6
+----------------------------
+
+* Added support for mock locations.
+* Corrected geocode to reverse geocode and proper geocode implemented.
+* Added support for PendingIntent location updates.
+* Simplified and unified observables that were based on status now return status instead of custom responses.
+* Updated to newest Play Services version.
+
 Version 0.5
 ----------------------------
 

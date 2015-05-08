@@ -4,10 +4,10 @@ ReactiveLocation library for Android
 Small library that wraps Google Play Services API in brilliant [RxJava](https://github.com/ReactiveX/RxJava)
 ```Observables``` reducing boilerplate to minimum.
 
-Current stable version - 0.5
+Current stable version - 0.6
 ---------------
 
-**This version works with Google Play Services 7.0.+ and RxJava 1.0.+**
+**This version works with Google Play Services 7.3.+ and RxJava 1.0.+**
 
 What can you do with that?
 --------------------------
@@ -199,9 +199,9 @@ along with Google Play Services and RxJava.
 ```groovy
 dependencies {
     ...
-    compile 'pl.charmas.android:android-reactive-location:0.5@aar'
-    compile 'com.google.android.gms:play-services-location:7.0.0'
-    compile 'io.reactivex:rxjava:1.0.8'
+    compile 'pl.charmas.android:android-reactive-location:0.6@aar'
+    compile 'com.google.android.gms:play-services-location:7.3.0'
+    compile 'io.reactivex:rxjava:1.0.10'
 
     //RxAndroid or NotRxAndroid is not required by library
     compile 'io.reactivex:rxandroid:0.24.0'
@@ -217,7 +217,7 @@ following dependency:
 <dependency>
     <groupId>pl.charmas.android</groupId>
     <artifactId>android-reactive-location</artifactId>
-    <version>0.5</version>
+    <version>0.6</version>
     <type>aar</type>
 </dependency>
 ```
