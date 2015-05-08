@@ -202,6 +202,8 @@ dependencies {
     compile 'pl.charmas.android:android-reactive-location:0.5@aar'
     compile 'com.google.android.gms:play-services-location:7.0.0'
     compile 'io.reactivex:rxjava:1.0.8'
+
+    //RxAndroid or NotRxAndroid is not required by library
     compile 'io.reactivex:rxandroid:0.24.0'
 }
 ```
