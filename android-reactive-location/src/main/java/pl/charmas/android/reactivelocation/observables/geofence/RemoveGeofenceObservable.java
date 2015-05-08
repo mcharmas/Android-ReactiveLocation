@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 
 import java.util.List;
 
@@ -13,12 +14,12 @@ import rx.Observer;
 
 public abstract class RemoveGeofenceObservable<T> extends BaseLocationObservable<T> {
 
-    public static Observable<RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> createObservable(
+    public static Observable<Status> createObservable(
             Context ctx, PendingIntent pendingIntent) {
         return Observable.create(new RemoveGeofenceByPendingIntentObservable(ctx, pendingIntent));
     }
 
-    public static Observable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> createObservable(
+    public static Observable<Status> createObservable(
             Context ctx, List<String> requestIds) {
         return Observable.create(new RemoveGeofenceRequestIdsObservable(ctx, requestIds));
     }

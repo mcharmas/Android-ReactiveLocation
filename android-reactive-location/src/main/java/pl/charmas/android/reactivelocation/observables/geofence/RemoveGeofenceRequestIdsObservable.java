@@ -9,10 +9,10 @@ import com.google.android.gms.location.LocationServices;
 
 import java.util.List;
 
+import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observer;
 
-class RemoveGeofenceRequestIdsObservable extends
-        RemoveGeofenceObservable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> {
+class RemoveGeofenceRequestIdsObservable extends RemoveGeofenceObservable<Status> {
     private final List<String> geofenceRequestIds;
 
     RemoveGeofenceRequestIdsObservable(Context ctx, List<String> geofenceRequestIds) {
@@ -21,20 +21,16 @@ class RemoveGeofenceRequestIdsObservable extends
     }
 
     @Override
-    protected void removeGeofences(GoogleApiClient locationClient,
-                                   final Observer<? super RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> observer) {
+    protected void removeGeofences(GoogleApiClient locationClient, final Observer<? super Status> observer) {
         LocationServices.GeofencingApi.removeGeofences(locationClient, geofenceRequestIds)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        RemoveGeofencesResult.RequestIdsRemoveGeofenceResult result =
-                                new RemoveGeofencesResult.RequestIdsRemoveGeofenceResult(status.getStatusCode(), geofenceRequestIds);
-
-                        if (result.isSuccess()) {
-                            observer.onNext(result);
+                        if (status.isSuccess()) {
+                            observer.onNext(status);
                             observer.onCompleted();
                         } else {
-                            observer.onError(new RemoveGeofencesException(result.getStatusCode()));
+                            observer.onError(new StatusException(status));
                         }
                     }
                 });

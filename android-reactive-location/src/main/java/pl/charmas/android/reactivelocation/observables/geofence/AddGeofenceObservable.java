@@ -10,14 +10,15 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
+import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observable;
 import rx.Observer;
 
-public class AddGeofenceObservable extends BaseLocationObservable<AddGeofenceResult> {
+public class AddGeofenceObservable extends BaseLocationObservable<Status> {
     private final GeofencingRequest request;
     private final PendingIntent geofenceTransitionPendingIntent;
 
-    public static Observable<AddGeofenceResult> createObservable(Context ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
+    public static Observable<Status> createObservable(Context ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
         return Observable.create(new AddGeofenceObservable(ctx, request, geofenceTransitionPendingIntent));
     }
 
@@ -28,16 +29,15 @@ public class AddGeofenceObservable extends BaseLocationObservable<AddGeofenceRes
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super AddGeofenceResult> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super Status> observer) {
         LocationServices.GeofencingApi.addGeofences(apiClient, request, geofenceTransitionPendingIntent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        AddGeofenceResult result = new AddGeofenceResult(status.getStatusCode());
-                        if (!result.isSuccess()) {
-                            observer.onError(new AddGeofenceException(result));
+                        if (!status.isSuccess()) {
+                            observer.onError(new StatusException(status));
                         } else {
-                            observer.onNext(result);
+                            observer.onNext(status);
                             observer.onCompleted();
                         }
                     }

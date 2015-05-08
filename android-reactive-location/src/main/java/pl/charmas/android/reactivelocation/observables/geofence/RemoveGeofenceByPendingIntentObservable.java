@@ -8,10 +8,10 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
+import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observer;
 
-class RemoveGeofenceByPendingIntentObservable extends
-        RemoveGeofenceObservable<RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> {
+class RemoveGeofenceByPendingIntentObservable extends RemoveGeofenceObservable<Status> {
     private final PendingIntent pendingIntent;
 
     RemoveGeofenceByPendingIntentObservable(Context ctx, PendingIntent pendingIntent) {
@@ -20,22 +20,18 @@ class RemoveGeofenceByPendingIntentObservable extends
     }
 
     @Override
-    protected void removeGeofences(GoogleApiClient locationClient,
-                                   final Observer<? super RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> observer) {
+    protected void removeGeofences(GoogleApiClient locationClient, final Observer<? super Status> observer) {
         LocationServices.GeofencingApi.removeGeofences(locationClient, pendingIntent)
-            .setResultCallback(new ResultCallback<Status>() {
-                @Override
-                public void onResult(Status status) {
-                    RemoveGeofencesResult.PendingIntentRemoveGeofenceResult result =
-                            new RemoveGeofencesResult.PendingIntentRemoveGeofenceResult(status.getStatusCode(), pendingIntent);
-
-                    if (result.isSuccess()) {
-                        observer.onNext(result);
-                        observer.onCompleted();
-                    } else {
-                        observer.onError(new RemoveGeofencesException(result.getStatusCode()));
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        if (status.isSuccess()) {
+                            observer.onNext(status);
+                            observer.onCompleted();
+                        } else {
+                            observer.onError(new StatusException(status));
+                        }
                     }
-                }
-            });
+                });
     }
 }

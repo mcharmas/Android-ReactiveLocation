@@ -10,12 +10,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult;
-import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult;
 import pl.charmas.android.reactivelocation.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
 import rx.Observable;
@@ -76,9 +75,9 @@ public class GeofenceActivity extends ActionBarActivity {
     }
 
     private void clearGeofence() {
-        reactiveLocationProvider.removeGeofences(createNotificationBroadcastPendingIntent()).subscribe(new Action1<RemoveGeofencesResult.PendingIntentRemoveGeofenceResult>() {
+        reactiveLocationProvider.removeGeofences(createNotificationBroadcastPendingIntent()).subscribe(new Action1<Status>() {
             @Override
-            public void call(RemoveGeofencesResult.PendingIntentRemoveGeofenceResult pendingIntentRemoveGeofenceResult) {
+            public void call(Status status) {
                 toast("Geofences removed");
             }
         }, new Action1<Throwable>() {
@@ -105,15 +104,15 @@ public class GeofenceActivity extends ActionBarActivity {
         final PendingIntent pendingIntent = createNotificationBroadcastPendingIntent();
         reactiveLocationProvider
                 .removeGeofences(pendingIntent)
-                .flatMap(new Func1<RemoveGeofencesResult.PendingIntentRemoveGeofenceResult, Observable<AddGeofenceResult>>() {
+                .flatMap(new Func1<Status, Observable<Status>>() {
                     @Override
-                    public Observable<AddGeofenceResult> call(RemoveGeofencesResult.PendingIntentRemoveGeofenceResult pendingIntentRemoveGeofenceResult) {
+                    public Observable<Status> call(Status pendingIntentRemoveGeofenceResult) {
                         return reactiveLocationProvider.addGeofences(pendingIntent, geofencingRequest);
                     }
                 })
-                .subscribe(new Action1<AddGeofenceResult>() {
+                .subscribe(new Action1<Status>() {
                     @Override
-                    public void call(AddGeofenceResult addGeofenceResult) {
+                    public void call(Status addGeofenceResult) {
                         toast("Geofence added, success: " + addGeofenceResult.isSuccess());
                     }
                 }, new Action1<Throwable>() {

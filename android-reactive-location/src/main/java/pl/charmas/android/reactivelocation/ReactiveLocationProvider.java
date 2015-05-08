@@ -10,6 +10,7 @@ import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Result;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationRequest;
@@ -31,15 +32,11 @@ import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesO
 import pl.charmas.android.reactivelocation.observables.geocode.GeocodeObservable;
 import pl.charmas.android.reactivelocation.observables.geocode.ReverseGeocodeObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceObservable;
-import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult;
 import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofenceObservable;
-import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult;
 import pl.charmas.android.reactivelocation.observables.location.AddLocationIntentUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.location.LastKnownLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesObservable;
-import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesResult;
 import pl.charmas.android.reactivelocation.observables.location.MockLocationObservable;
-import pl.charmas.android.reactivelocation.observables.location.MockLocationResult;
 import pl.charmas.android.reactivelocation.observables.location.RemoveLocationIntentUpdatesObservable;
 import rx.Observable;
 import rx.functions.Func1;
@@ -98,43 +95,44 @@ public class ReactiveLocationProvider {
      * must hold the android.permission.ACCESS_MOCK_LOCATION permission, or a {@link java.lang.SecurityException}
      * will be thrown.
      * <p/>
-     * Status codes other than {@link com.google.android.gms.common.api.CommonStatusCodes#SUCCESS} and
-     * {@link com.google.android.gms.common.api.CommonStatusCodes#SUCCESS_CACHE} that can be returned from
-     * {@link com.google.android.gms.location.FusedLocationProviderApi#setMockMode(com.google.android.gms.common.api.GoogleApiClient, boolean)}
-     * and {@link com.google.android.gms.location.FusedLocationProviderApi#setMockLocation(com.google.android.gms.common.api.GoogleApiClient, android.location.Location)}
-     * will be reported as {@link pl.charmas.android.reactivelocation.observables.location.MockLocationException}.
+     * All statuses that are not successful will be reported as {@link pl.charmas.android.reactivelocation.observables.StatusException}.
      * <p/>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param sourceLocationObservable observable that emits {@link android.location.Location} instances suitable to use as mock locations
-     * @return observable that emits {@link pl.charmas.android.reactivelocation.observables.location.MockLocationResult}
+     * @return observable that emits {@link com.google.android.gms.common.api.Status}
      */
-    public Observable<MockLocationResult> mockLocation(Observable<Location> sourceLocationObservable) {
+    public Observable<Status> mockLocation(Observable<Location> sourceLocationObservable) {
         return MockLocationObservable.createObservable(ctx, sourceLocationObservable);
     }
 
     /**
-     * Creates an observable that adds a {@link android.app.PendingIntent} as a location
-     * listener.
+     * Creates an observable that adds a {@link android.app.PendingIntent} as a location listener.
      * <p/>
      * This invokes {@link com.google.android.gms.location.FusedLocationProviderApi#requestLocationUpdates(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.LocationRequest, android.app.PendingIntent)}.
      * <p/>
      * When location updates are no longer required, a call to {@link #removeLocationUpdates(android.app.PendingIntent)}
      * should be made.
+     * <p/>
+     * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
+     *
      * @param locationRequest request object with info about what kind of location you need
-     * @param intent PendingIntent that will be called with location updates
+     * @param intent          PendingIntent that will be called with location updates
      * @return observable that adds the request and PendingIntent
      */
-    public Observable<LocationUpdatesResult> requestLocationUpdates(LocationRequest locationRequest, PendingIntent intent) {
+    public Observable<Status> requestLocationUpdates(LocationRequest locationRequest, PendingIntent intent) {
         return AddLocationIntentUpdatesObservable.createObservable(ctx, locationRequest, intent);
     }
 
     /**
      * Observable that can be used to remove {@link android.app.PendingIntent} location updates.
+     * <p/>
+     * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
+     *
      * @param intent PendingIntent to remove location updates for
      * @return observable that removes the PendingIntent
      */
-    public Observable<LocationUpdatesResult> removeLocationUpdates(PendingIntent intent) {
+    public Observable<Status> removeLocationUpdates(PendingIntent intent) {
         return RemoveLocationIntentUpdatesObservable.createObservable(ctx, intent);
     }
 
@@ -159,7 +157,7 @@ public class ReactiveLocationProvider {
      * The stream finishes after address list is available.
      *
      * @param locationName a user-supplied description of a location
-     * @param maxResults max number of results you are interested in
+     * @param maxResults   max number of results you are interested in
      * @return observable that serves list of address based on location name
      */
     public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults) {
@@ -175,8 +173,8 @@ public class ReactiveLocationProvider {
      * You may specify a bounding box for the search results.
      *
      * @param locationName a user-supplied description of a location
-     * @param maxResults max number of results you are interested in
-     * @param bounds restricts the results to geographical bounds. May be null
+     * @param maxResults   max number of results you are interested in
+     * @param bounds       restricts the results to geographical bounds. May be null
      * @return observable that serves list of address based on location name
      */
     public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds) {
@@ -189,28 +187,22 @@ public class ReactiveLocationProvider {
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException}
      * when there are trouble connecting with Google Play Services.
      * <p/>
-     * The {@link pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceException} is
-     * reported only on {@link com.google.android.gms.location.LocationStatusCodes#ERROR}. Every other
-     * status is included in {@link pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult}.
+     * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
      * <p/>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#addGeofences(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.GeofencingRequest, android.app.PendingIntent)}
-     * <p/>
-     * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param geofenceTransitionPendingIntent pending intent to register on geofence transition
      * @param request                         list of request to add
      * @return observable that adds request
      */
-    public Observable<AddGeofenceResult> addGeofences(PendingIntent geofenceTransitionPendingIntent, GeofencingRequest request) {
+    public Observable<Status> addGeofences(PendingIntent geofenceTransitionPendingIntent, GeofencingRequest request) {
         return AddGeofenceObservable.createObservable(ctx, request, geofenceTransitionPendingIntent);
     }
 
     /**
      * Observable that can be used to remove geofences from LocationClient.
      * <p/>
-     * The {@link pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesException} is
-     * reported only on {@link com.google.android.gms.location.LocationStatusCodes#ERROR}. Every other
-     * status is included in {@link pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult}.
+     * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
      * <p/>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, android.app.PendingIntent)}.
      * <p/>
@@ -219,16 +211,14 @@ public class ReactiveLocationProvider {
      * @param pendingIntent key of registered geofences
      * @return observable that removed geofences
      */
-    public Observable<RemoveGeofencesResult.PendingIntentRemoveGeofenceResult> removeGeofences(PendingIntent pendingIntent) {
+    public Observable<Status> removeGeofences(PendingIntent pendingIntent) {
         return RemoveGeofenceObservable.createObservable(ctx, pendingIntent);
     }
 
     /**
      * Observable that can be used to remove geofences from LocationClient.
      * <p/>
-     * The {@link pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesException} is
-     * reported only on {@link com.google.android.gms.location.LocationStatusCodes#ERROR}. Every other
-     * status is included in {@link pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult}.
+     * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
      * <p/>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, java.util.List)}.
      * <p/>
@@ -237,7 +227,7 @@ public class ReactiveLocationProvider {
      * @param requestIds geofences to remove
      * @return observable that removed geofences
      */
-    public Observable<RemoveGeofencesResult.RequestIdsRemoveGeofenceResult> removeGeofences(List<String> requestIds) {
+    public Observable<Status> removeGeofences(List<String> requestIds) {
         return RemoveGeofenceObservable.createObservable(ctx, requestIds);
     }
 

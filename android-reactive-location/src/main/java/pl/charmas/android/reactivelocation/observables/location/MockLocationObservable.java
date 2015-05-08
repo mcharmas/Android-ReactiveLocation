@@ -9,18 +9,18 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
+import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
 
-public class MockLocationObservable extends BaseLocationObservable<MockLocationResult> {
-
+public class MockLocationObservable extends BaseLocationObservable<Status> {
     private Observable<Location> locationObservable;
     private Subscription mockLocationSubscription;
 
-    public static Observable<MockLocationResult> createObservable(Context context, Observable<Location> locationObservable) {
+    public static Observable<Status> createObservable(Context context, Observable<Location> locationObservable) {
         return Observable.create(new MockLocationObservable(context, locationObservable));
     }
 
@@ -30,16 +30,15 @@ public class MockLocationObservable extends BaseLocationObservable<MockLocationR
     }
 
     @Override
-    protected void onGoogleApiClientReady(final GoogleApiClient apiClient, final Observer<? super MockLocationResult> observer) {
+    protected void onGoogleApiClientReady(final GoogleApiClient apiClient, final Observer<? super Status> observer) {
         // this throws SecurityException if permissions are bad or mock locations are not enabled,
         // which is passed to observer's onError by BaseObservable
         LocationServices.FusedLocationApi.setMockMode(apiClient, true)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        MockLocationResult result = new MockLocationResult(status.getStatusCode());
                         if (!status.isSuccess()) {
-                            observer.onError(new MockLocationException(result));
+                            observer.onError(new StatusException(status));
                         } else {
                             startLocationMocking(apiClient, observer);
                         }
@@ -47,7 +46,7 @@ public class MockLocationObservable extends BaseLocationObservable<MockLocationR
                 });
     }
 
-    private void startLocationMocking(final GoogleApiClient apiClient, final Observer<? super MockLocationResult> observer) {
+    private void startLocationMocking(final GoogleApiClient apiClient, final Observer<? super Status> observer) {
         mockLocationSubscription = locationObservable.subscribe(new Action1<Location>() {
             @Override
             public void call(Location location) {
@@ -55,11 +54,10 @@ public class MockLocationObservable extends BaseLocationObservable<MockLocationR
                         .setResultCallback(new ResultCallback<Status>() {
                             @Override
                             public void onResult(Status status) {
-                                MockLocationResult result = new MockLocationResult(status.getStatusCode());
-                                if (!result.isSuccess()) {
-                                    observer.onError(new MockLocationException(result));
+                                if (!status.isSuccess()) {
+                                    observer.onError(new StatusException(status));
                                 } else {
-                                    observer.onNext(result);
+                                    observer.onNext(status);
                                 }
                             }
                         });

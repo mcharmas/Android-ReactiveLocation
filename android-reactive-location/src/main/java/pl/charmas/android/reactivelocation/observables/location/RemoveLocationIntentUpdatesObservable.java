@@ -9,13 +9,14 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
+import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observable;
 import rx.Observer;
 
-public class RemoveLocationIntentUpdatesObservable extends BaseLocationObservable<LocationUpdatesResult> {
+public class RemoveLocationIntentUpdatesObservable extends BaseLocationObservable<Status> {
     private final PendingIntent intent;
 
-    public static Observable<LocationUpdatesResult> createObservable(Context ctx, PendingIntent intent) {
+    public static Observable<Status> createObservable(Context ctx, PendingIntent intent) {
         return Observable.create(new RemoveLocationIntentUpdatesObservable(ctx, intent));
     }
 
@@ -25,16 +26,15 @@ public class RemoveLocationIntentUpdatesObservable extends BaseLocationObservabl
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super LocationUpdatesResult> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super Status> observer) {
         LocationServices.FusedLocationApi.removeLocationUpdates(apiClient, intent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        LocationUpdatesResult result = new LocationUpdatesResult(status.getStatusCode());
-                        if (!result.isSuccess()) {
-                            observer.onError(new IntentUpdatesException(result));
+                        if (!status.isSuccess()) {
+                            observer.onError(new StatusException(status));
                         } else {
-                            observer.onNext(result);
+                            observer.onNext(status);
                             observer.onCompleted();
                         }
                     }
