@@ -1,14 +1,14 @@
 package pl.charmas.android.reactivelocation.observables.location;
 
 public class IntentUpdatesException extends Throwable {
-    private final IntentUpdatesResult intentUpdatesResult;
+    private final LocationUpdatesResult locationUpdatesResult;
 
-    public IntentUpdatesException(IntentUpdatesResult intentUpdatesResult) {
-        super("Error adding Intent location updates. Status code: " + intentUpdatesResult.getStatusCode());
-        this.intentUpdatesResult = intentUpdatesResult;
+    public IntentUpdatesException(LocationUpdatesResult locationUpdatesResult) {
+        super("Error adding Intent location updates. Status code: " + locationUpdatesResult.getStatusCode());
+        this.locationUpdatesResult = locationUpdatesResult;
     }
 
-    public IntentUpdatesResult getIntentUpdatesResult() {
-        return intentUpdatesResult;
+    public LocationUpdatesResult getLocationUpdatesResult() {
+        return locationUpdatesResult;
     }
 }

@@ -12,25 +12,25 @@ import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
 import rx.Observer;
 
-public class RemoveIntentUpdatesObservable extends BaseLocationObservable<IntentUpdatesResult> {
+public class RemoveLocationIntentUpdatesObservable extends BaseLocationObservable<LocationUpdatesResult> {
     private final PendingIntent intent;
 
-    public static Observable<IntentUpdatesResult> createObservable(Context ctx, PendingIntent intent) {
-        return Observable.create(new RemoveIntentUpdatesObservable(ctx, intent));
+    public static Observable<LocationUpdatesResult> createObservable(Context ctx, PendingIntent intent) {
+        return Observable.create(new RemoveLocationIntentUpdatesObservable(ctx, intent));
     }
 
-    private RemoveIntentUpdatesObservable(Context ctx, PendingIntent intent) {
+    private RemoveLocationIntentUpdatesObservable(Context ctx, PendingIntent intent) {
         super(ctx);
         this.intent = intent;
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super IntentUpdatesResult> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super LocationUpdatesResult> observer) {
         LocationServices.FusedLocationApi.removeLocationUpdates(apiClient, intent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        IntentUpdatesResult result = new IntentUpdatesResult(status.getStatusCode());
+                        LocationUpdatesResult result = new LocationUpdatesResult(status.getStatusCode());
                         if (!result.isSuccess()) {
                             observer.onError(new IntentUpdatesException(result));
                         } else {

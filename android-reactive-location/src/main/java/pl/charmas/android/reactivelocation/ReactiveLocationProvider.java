@@ -34,11 +34,11 @@ import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceObser
 import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceResult;
 import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofenceObservable;
 import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofencesResult;
-import pl.charmas.android.reactivelocation.observables.location.AddIntentUpdatesObservable;
-import pl.charmas.android.reactivelocation.observables.location.IntentUpdatesResult;
+import pl.charmas.android.reactivelocation.observables.location.AddLocationIntentUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.location.LastKnownLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesObservable;
-import pl.charmas.android.reactivelocation.observables.location.RemoveIntentUpdatesObservable;
+import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesResult;
+import pl.charmas.android.reactivelocation.observables.location.RemoveLocationIntentUpdatesObservable;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -92,14 +92,14 @@ public class ReactiveLocationProvider {
      * <p/>
      * This invokes {@link com.google.android.gms.location.FusedLocationProviderApi#requestLocationUpdates(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.LocationRequest, android.app.PendingIntent)}.
      * <p/>
-     * When location updates are no longer required, a call to {@link #removeLocationUpdateIntent(android.app.PendingIntent)}
+     * When location updates are no longer required, a call to {@link #removeLocationUpdates(android.app.PendingIntent)}
      * should be made.
      * @param locationRequest request object with info about what kind of location you need
      * @param intent PendingIntent that will be called with location updates
      * @return observable that adds the request and PendingIntent
      */
-    public Observable<IntentUpdatesResult> addLocationUpdateIntent(LocationRequest locationRequest, PendingIntent intent) {
-        return AddIntentUpdatesObservable.createObservable(ctx, locationRequest, intent);
+    public Observable<LocationUpdatesResult> requestLocationUpdates(LocationRequest locationRequest, PendingIntent intent) {
+        return AddLocationIntentUpdatesObservable.createObservable(ctx, locationRequest, intent);
     }
 
     /**
@@ -107,8 +107,8 @@ public class ReactiveLocationProvider {
      * @param intent PendingIntent to remove location updates for
      * @return observable that removes the PendingIntent
      */
-    public Observable<IntentUpdatesResult> removeLocationUpdateIntent(PendingIntent intent) {
-        return RemoveIntentUpdatesObservable.createObservable(ctx, intent);
+    public Observable<LocationUpdatesResult> removeLocationUpdates(PendingIntent intent) {
+        return RemoveLocationIntentUpdatesObservable.createObservable(ctx, intent);
     }
 
     /**
