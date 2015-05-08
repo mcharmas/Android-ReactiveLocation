@@ -38,9 +38,9 @@ import pl.charmas.android.reactivelocation.observables.location.AddLocationInten
 import pl.charmas.android.reactivelocation.observables.location.LastKnownLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesResult;
-import pl.charmas.android.reactivelocation.observables.location.RemoveLocationIntentUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.location.MockLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.MockLocationResult;
+import pl.charmas.android.reactivelocation.observables.location.RemoveLocationIntentUpdatesObservable;
 import rx.Observable;
 import rx.functions.Func1;
 
@@ -106,11 +106,11 @@ public class ReactiveLocationProvider {
      * <p/>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
-     * @param locationObservable observable that emits {@link android.location.Location} instances suitable to use as mock locations
+     * @param sourceLocationObservable observable that emits {@link android.location.Location} instances suitable to use as mock locations
      * @return observable that emits {@link pl.charmas.android.reactivelocation.observables.location.MockLocationResult}
      */
-    public Observable<MockLocationResult> getMockLocationObservable(Observable<Location> locationObservable) {
-        return MockLocationObservable.createObservable(ctx, locationObservable);
+    public Observable<MockLocationResult> mockLocation(Observable<Location> sourceLocationObservable) {
+        return MockLocationObservable.createObservable(ctx, sourceLocationObservable);
     }
 
     /**

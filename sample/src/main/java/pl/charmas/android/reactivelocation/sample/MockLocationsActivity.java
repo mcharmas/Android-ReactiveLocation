@@ -1,6 +1,5 @@
 package pl.charmas.android.reactivelocation.sample;
 
-import android.annotation.TargetApi;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -118,7 +117,7 @@ public class MockLocationsActivity extends ActionBarActivity {
     private void setMockMode(boolean toggle) {
         if (toggle) {
             mockLocationSubscription =
-                    Observable.zip(locationProvider.getMockLocationObservable(mockLocationObservable),
+                    Observable.zip(locationProvider.mockLocation(mockLocationObservable),
                             mockLocationObservable, new Func2<MockLocationResult, Location, String>() {
                                 int count = 0;
 
@@ -133,7 +132,6 @@ public class MockLocationsActivity extends ActionBarActivity {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private Location createMockLocation() {
         String longitudeString = longitudeInput.getText().toString();
         String latitudeString = latitudeInput.getText().toString();
@@ -146,7 +144,9 @@ public class MockLocationsActivity extends ActionBarActivity {
             mockLocation.setLatitude(latitude);
             mockLocation.setLongitude(longitude);
             mockLocation.setAccuracy(1.0f);
-            mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+            }
             mockLocation.setTime(new Date().getTime());
             return mockLocation;
         } else {
