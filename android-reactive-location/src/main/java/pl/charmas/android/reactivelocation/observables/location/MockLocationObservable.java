@@ -38,14 +38,20 @@ public class MockLocationObservable extends BaseLocationObservable<MockLocationR
                     @Override
                     public void onResult(Status status) {
                         MockLocationResult result = new MockLocationResult(status.getStatusCode());
-                        if (!status.isSuccess())
+                        if (!status.isSuccess()) {
                             observer.onError(new MockLocationException(result));
+                        } else {
+                            startLocationMocking(apiClient, observer);
+                        }
                     }
                 });
+    }
 
+    private void startLocationMocking(final GoogleApiClient apiClient, final Observer<? super MockLocationResult> observer) {
         mockLocationSubscription = locationObservable.subscribe(new Action1<Location>() {
             @Override
-            public void call(Location location) { LocationServices.FusedLocationApi.setMockLocation(apiClient, location)
+            public void call(Location location) {
+                LocationServices.FusedLocationApi.setMockLocation(apiClient, location)
                         .setResultCallback(new ResultCallback<Status>() {
                             @Override
                             public void onResult(Status status) {
