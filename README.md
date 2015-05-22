@@ -86,9 +86,9 @@ Subscription subscription = locationProvider.getDetectedActivity(0) // detection
     .map(...)       // you can map location to sth different
     .flatMap(...)   // or event flat map
     ...             // and do everything else that is provided by RxJava
-    .subscribe(new Action1<DetectedActivity>() {
+    .subscribe(new Action1<ActivityRecognitionResult>() {
         @Override
-        public void call(DetectedActivity detectedActivity) {
+        public void call(ActivityRecognitionResult detectedActivity) {
             doSthImportantWithObtainedActivity(detectedActivity);
         }
     });
