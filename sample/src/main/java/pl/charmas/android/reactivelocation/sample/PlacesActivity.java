@@ -93,7 +93,7 @@ public class PlacesActivity extends ActionBarActivity {
                         if (q.location == null) return Observable.empty();
 
                         double latitude = q.location.getLatitude();
-                        double longitude = q.location.getLatitude();
+                        double longitude = q.location.getLongitude();
                         LatLngBounds bounds = new LatLngBounds(
                                 new LatLng(latitude - 0.05, longitude - 0.05),
                                 new LatLng(latitude + 0.05, longitude + 0.05)
