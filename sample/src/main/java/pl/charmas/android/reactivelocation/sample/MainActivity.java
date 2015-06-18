@@ -1,5 +1,6 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Address;
@@ -18,6 +19,7 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.List;
@@ -78,6 +80,7 @@ public class MainActivity extends ActionBarActivity {
                 .checkLocationSettings(
                         new LocationSettingsRequest.Builder()
                                 .addLocationRequest(locationRequest)
+                                .setAlwaysShow(true)  //Refrence: http://stackoverflow.com/questions/29824408/google-play-services-locationservices-api-new-option-never
                                 .build()
                 )
                 .doOnNext(new Action1<LocationSettingsResult>() {
@@ -195,4 +198,27 @@ public class MainActivity extends ActionBarActivity {
             Log.d("MainActivity", "Error occurred", throwable);
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        final LocationSettingsStates states = LocationSettingsStates.fromIntent(data);//intent);
+        switch (requestCode) {
+            case REQUEST_CHECK_SETTINGS:
+                //Refrence: https://developers.google.com/android/reference/com/google/android/gms/location/SettingsApi
+                switch (resultCode) {
+                    case RESULT_OK:
+                        // All required changes were successfully made
+                        Log.d("yoyo","OKAY");
+                        break;
+                    case RESULT_CANCELED:
+                        // The user was asked to change settings, but chose not to
+                       Log.d("yoyo","CANCELLED");
+                        break;
+                    default:
+                        break;
+                }
+                break;
+        }
+    }
+
 }
