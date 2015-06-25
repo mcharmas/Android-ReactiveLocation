@@ -41,7 +41,7 @@ import static rx.android.app.AppObservable.bindActivity;
 
 public class MainActivity extends ActionBarActivity {
     private static final int REQUEST_CHECK_SETTINGS = 0;
-
+    private final String TAG = getClass().getSimpleName();
     private ReactiveLocationProvider locationProvider;
 
     private TextView lastKnownLocationView;
@@ -208,11 +208,11 @@ public class MainActivity extends ActionBarActivity {
                 switch (resultCode) {
                     case RESULT_OK:
                         // All required changes were successfully made
-                        Log.d("yoyo","OKAY");
+                        Log.d(TAG,"User enabled location");
                         break;
                     case RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
-                       Log.d("yoyo","CANCELLED");
+                       Log.d(TAG,"User Cancelled enabling location");
                         break;
                     default:
                         break;
