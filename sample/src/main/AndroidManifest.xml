@@ -36,6 +36,8 @@
 
         <activity android:name=".PlacesActivity" />
 
+        <activity android:name=".PlacesResultActivity" />
+
         <activity android:name=".MockLocationsActivity" />
 
         <receiver android:name=".GeofenceBroadcastReceiver" />

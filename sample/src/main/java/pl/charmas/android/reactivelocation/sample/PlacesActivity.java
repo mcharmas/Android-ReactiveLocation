@@ -4,6 +4,8 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -16,6 +18,7 @@ import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +40,7 @@ public class PlacesActivity extends ActionBarActivity {
     private ListView placeSuggestionsList;
     private ReactiveLocationProvider reactiveLocationProvider;
     private CompositeSubscription compositeSubscription;
+    private List<AutocompletePrediction> autocompletePredictions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,12 @@ public class PlacesActivity extends ActionBarActivity {
         currentPlaceView = (TextView) findViewById(R.id.current_place_view);
         queryView = (EditText) findViewById(R.id.place_query_view);
         placeSuggestionsList = (ListView) findViewById(R.id.place_suggestions_list);
+        placeSuggestionsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                startActivity(PlacesResultActivity.getStartIntent(PlacesActivity.this, autocompletePredictions.get(position).getPlaceId()));
+            }
+        });
 
         reactiveLocationProvider = new ReactiveLocationProvider(this);
     }
@@ -81,7 +91,7 @@ public class PlacesActivity extends ActionBarActivity {
                     }
                 });
         Observable<Location> lastKnownLocationObservable = reactiveLocationProvider.getLastKnownLocation();
-        Observable<List<String>> suggestionsObservable = Observable
+        Observable<List<AutocompletePrediction>> suggestionsObservable = Observable
                 .combineLatest(queryObservable, lastKnownLocationObservable, new Func2<String, Location, QueryWithCurrentLocation>() {
                     @Override
                     public QueryWithCurrentLocation call(String query, Location currentLocation) {
@@ -100,22 +110,23 @@ public class PlacesActivity extends ActionBarActivity {
                         );
                         return reactiveLocationProvider.getPlaceAutocompletePredictions(q.query, bounds, null);
                     }
-                }).flatMap(new Func1<AutocompletePredictionBuffer, Observable<List<String>>>() {
+                }).flatMap(new Func1<AutocompletePredictionBuffer, Observable<List<AutocompletePrediction>>>() {
                     @Override
-                    public Observable<List<String>> call(AutocompletePredictionBuffer autocompletePredictions) {
-                        return DataBufferObservable.from(autocompletePredictions).map(new Func1<AutocompletePrediction, String>() {
-                            @Override
-                            public String call(AutocompletePrediction autocompletePrediction) {
-                                return autocompletePrediction.getDescription();
-                            }
-                        }).toList();
+                    public Observable<List<AutocompletePrediction>> call(AutocompletePredictionBuffer autocompletePredictions) {
+                        return Observable.from(autocompletePredictions).toList();
                     }
                 });
 
-        compositeSubscription.add(bindActivity(this, suggestionsObservable).subscribe(new Action1<List<String>>() {
+        compositeSubscription.add(bindActivity(this, suggestionsObservable).subscribe(new Action1<List<AutocompletePrediction>>() {
             @Override
-            public void call(List<String> autocompletePredictions) {
-                placeSuggestionsList.setAdapter(new ArrayAdapter<>(PlacesActivity.this, android.R.layout.simple_list_item_1, autocompletePredictions));
+            public void call(List<AutocompletePrediction> autocompletePredictions) {
+                PlacesActivity.this.autocompletePredictions = autocompletePredictions;
+
+                List<String> listItems = new ArrayList<>();
+                for (AutocompletePrediction prediction : autocompletePredictions) {
+                    listItems.add(prediction.getDescription());
+                }
+                placeSuggestionsList.setAdapter(new ArrayAdapter<>(PlacesActivity.this, android.R.layout.simple_list_item_1, listItems));
             }
         }));
     }
