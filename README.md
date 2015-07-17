@@ -158,6 +158,7 @@ You can fetch current place or place suggestions using:
 
 * ```ReactiveLocationProvider.getCurrentPlace()```
 * ```ReactiveLocationProvider.getPlaceAutocompletePredictions()```
+* ```ReactiveLocationProvider.getPlaceById()```
 
 For more info see sample project and ```PlacesActivity```.
 
