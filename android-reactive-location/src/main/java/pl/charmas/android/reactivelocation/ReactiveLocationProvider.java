@@ -267,7 +267,7 @@ public class ReactiveLocationProvider {
      * @param placeFilter filter
      * @return observable that emits current places buffer and completes
      */
-    public final Observable<PlaceLikelihoodBuffer> getCurrentPlace(@Nullable final PlaceFilter placeFilter) {
+    public Observable<PlaceLikelihoodBuffer> getCurrentPlace(@Nullable final PlaceFilter placeFilter) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
                 .flatMap(new Func1<GoogleApiClient, Observable<PlaceLikelihoodBuffer>>() {
                     @Override
@@ -287,7 +287,7 @@ public class ReactiveLocationProvider {
      * @param filter filter
      * @return observable with suggestions buffer and completes
      */
-    public final Observable<AutocompletePredictionBuffer> getPlaceAutocompletePredictions(final String query, final LatLngBounds bounds, final AutocompleteFilter filter) {
+    public Observable<AutocompletePredictionBuffer> getPlaceAutocompletePredictions(final String query, final LatLngBounds bounds, final AutocompleteFilter filter) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
                 .flatMap(new Func1<GoogleApiClient, Observable<AutocompletePredictionBuffer>>() {
                     @Override
@@ -307,7 +307,7 @@ public class ReactiveLocationProvider {
      * @param apis collection of apis to connect to
      * @return observable that emits apis client after successful connection
      */
-    public final Observable<GoogleApiClient> getGoogleApiClientObservable(Api... apis) {
+    public Observable<GoogleApiClient> getGoogleApiClientObservable(Api... apis) {
         //noinspection unchecked
         return GoogleAPIClientObservable.create(ctx, apis);
     }
