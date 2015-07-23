@@ -19,6 +19,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
+import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.PlaceFilter;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
@@ -273,6 +274,22 @@ public class ReactiveLocationProvider {
                     @Override
                     public Observable<PlaceLikelihoodBuffer> call(GoogleApiClient api) {
                         return fromPendingResult(Places.PlaceDetectionApi.getCurrentPlace(api, placeFilter));
+                    }
+                });
+    }
+
+    /**
+     * Returns observable that fetches a place from the Places API using the place ID.
+     *
+     * @param placeId id for place
+     * @return observable that emits places buffer and completes
+     */
+    public final Observable<PlaceBuffer> getPlaceById(@Nullable final String placeId) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(new Func1<GoogleApiClient, Observable<PlaceBuffer>>() {
+                    @Override
+                    public Observable<PlaceBuffer> call(GoogleApiClient api) {
+                        return fromPendingResult(Places.GeoDataApi.getPlaceById(api, placeId));
                     }
                 });
     }
