@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.7
+----------------------------
+
+* Removed ```final``` from methods in ```ReactiveLocationProvider``` to enable mockito mocking.
+* Updated dependencies.
+* Added support to fetch Place by id.
+
 Version 0.6
 ----------------------------
 
