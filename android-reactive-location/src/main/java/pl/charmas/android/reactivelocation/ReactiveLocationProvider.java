@@ -284,7 +284,7 @@ public class ReactiveLocationProvider {
      * @param placeId id for place
      * @return observable that emits places buffer and completes
      */
-    public final Observable<PlaceBuffer> getPlaceById(@Nullable final String placeId) {
+    public Observable<PlaceBuffer> getPlaceById(@Nullable final String placeId) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
                 .flatMap(new Func1<GoogleApiClient, Observable<PlaceBuffer>>() {
                     @Override
