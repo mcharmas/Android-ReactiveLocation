@@ -113,7 +113,7 @@ public class PlacesActivity extends ActionBarActivity {
                 }).flatMap(new Func1<AutocompletePredictionBuffer, Observable<List<AutocompletePrediction>>>() {
                     @Override
                     public Observable<List<AutocompletePrediction>> call(AutocompletePredictionBuffer autocompletePredictions) {
-                        return Observable.from(autocompletePredictions).toList();
+                        return DataBufferObservable.from(autocompletePredictions).toList();
                     }
                 });
 
