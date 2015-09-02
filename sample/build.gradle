@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 22
+      targetSdkVersion 23
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
         resValue "string", "API_KEY", getGooglePlayServicesApiKey()
@@ -35,7 +35,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:22.2.1'
+  compile 'com.android.support:appcompat-v7:23.0.0'
     compile 'io.reactivex:rxandroid:0.25.0'
     compile project(':android-reactive-location')
 }
