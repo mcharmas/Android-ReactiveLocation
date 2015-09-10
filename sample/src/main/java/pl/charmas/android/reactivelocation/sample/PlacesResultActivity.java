@@ -10,11 +10,8 @@ import android.widget.TextView;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 
-import pl.charmas.android.reactivelocation.DataBufferObservable;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import rx.Observable;
 import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.subscriptions.CompositeSubscription;
 
 /**
@@ -67,20 +64,16 @@ public class PlacesResultActivity extends ActionBarActivity {
 
         compositeSubscription = new CompositeSubscription();
         compositeSubscription.add(reactiveLocationProvider.getPlaceById(placeId)
-                .flatMap(new Func1<PlaceBuffer, Observable<Place>>() {
+                .subscribe(new Action1<PlaceBuffer>() {
                     @Override
-                    public Observable<Place> call(PlaceBuffer placeBuffer) {
-                        return DataBufferObservable.from(placeBuffer);
-                    }
-                })
-                .subscribe(new Action1<Place>() {
-                    @Override
-                    public void call(Place place) {
+                    public void call(PlaceBuffer buffer) {
+                        Place place = buffer.get(0);
                         if (place != null) {
                             placeNameView.setText(place.getName());
                             placeLocationView.setText(place.getLatLng().latitude + ", " + place.getLatLng().longitude);
                             placeAddressView.setText(place.getAddress());
                         }
+                        buffer.release();
                     }
                 }));
     }

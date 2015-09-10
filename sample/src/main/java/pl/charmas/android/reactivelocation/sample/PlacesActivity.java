@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import pl.charmas.android.reactivelocation.DataBufferObservable;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import pl.charmas.android.reactivelocation.sample.utils.TextObservable;
 import rx.Observable;
@@ -40,7 +39,6 @@ public class PlacesActivity extends ActionBarActivity {
     private ListView placeSuggestionsList;
     private ReactiveLocationProvider reactiveLocationProvider;
     private CompositeSubscription compositeSubscription;
-    private List<AutocompletePrediction> autocompletePredictions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +50,8 @@ public class PlacesActivity extends ActionBarActivity {
         placeSuggestionsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startActivity(PlacesResultActivity.getStartIntent(PlacesActivity.this, autocompletePredictions.get(position).getPlaceId()));
+                AutocompleteInfo info = (AutocompleteInfo) parent.getAdapter().getItem(position);
+                startActivity(PlacesResultActivity.getStartIntent(PlacesActivity.this, info.id));
             }
         });
 
@@ -65,19 +64,14 @@ public class PlacesActivity extends ActionBarActivity {
         compositeSubscription = new CompositeSubscription();
         compositeSubscription.add(
                 bindActivity(this, reactiveLocationProvider.getCurrentPlace(null))
-                        .flatMap(new Func1<PlaceLikelihoodBuffer, Observable<PlaceLikelihood>>() {
+                        .subscribe(new Action1<PlaceLikelihoodBuffer>() {
                             @Override
-                            public Observable<PlaceLikelihood> call(PlaceLikelihoodBuffer placeLikelihoods) {
-                                return DataBufferObservable.from(placeLikelihoods);
-                            }
-                        })
-                        .firstOrDefault(null)
-                        .subscribe(new Action1<PlaceLikelihood>() {
-                            @Override
-                            public void call(PlaceLikelihood place) {
-                                if (place != null) {
-                                    currentPlaceView.setText(place.getPlace().getName());
+                            public void call(PlaceLikelihoodBuffer buffer) {
+                                PlaceLikelihood likelihood = buffer.get(0);
+                                if (likelihood != null) {
+                                    currentPlaceView.setText(likelihood.getPlace().getName());
                                 }
+                                buffer.release();
                             }
                         })
         );
@@ -91,7 +85,7 @@ public class PlacesActivity extends ActionBarActivity {
                     }
                 });
         Observable<Location> lastKnownLocationObservable = reactiveLocationProvider.getLastKnownLocation();
-        Observable<List<AutocompletePrediction>> suggestionsObservable = Observable
+        Observable<AutocompletePredictionBuffer> suggestionsObservable = Observable
                 .combineLatest(queryObservable, lastKnownLocationObservable, new Func2<String, Location, QueryWithCurrentLocation>() {
                     @Override
                     public QueryWithCurrentLocation call(String query, Location currentLocation) {
@@ -110,23 +104,17 @@ public class PlacesActivity extends ActionBarActivity {
                         );
                         return reactiveLocationProvider.getPlaceAutocompletePredictions(q.query, bounds, null);
                     }
-                }).flatMap(new Func1<AutocompletePredictionBuffer, Observable<List<AutocompletePrediction>>>() {
-                    @Override
-                    public Observable<List<AutocompletePrediction>> call(AutocompletePredictionBuffer autocompletePredictions) {
-                        return DataBufferObservable.from(autocompletePredictions).toList();
-                    }
                 });
 
-        compositeSubscription.add(bindActivity(this, suggestionsObservable).subscribe(new Action1<List<AutocompletePrediction>>() {
+        compositeSubscription.add(bindActivity(this, suggestionsObservable).subscribe(new Action1<AutocompletePredictionBuffer>() {
             @Override
-            public void call(List<AutocompletePrediction> autocompletePredictions) {
-                PlacesActivity.this.autocompletePredictions = autocompletePredictions;
-
-                List<String> listItems = new ArrayList<>();
-                for (AutocompletePrediction prediction : autocompletePredictions) {
-                    listItems.add(prediction.getDescription());
+            public void call(AutocompletePredictionBuffer buffer) {
+                List<AutocompleteInfo> infos = new ArrayList<>();
+                for (AutocompletePrediction prediction : buffer) {
+                    infos.add(new AutocompleteInfo(prediction.getDescription(), prediction.getPlaceId()));
                 }
-                placeSuggestionsList.setAdapter(new ArrayAdapter<>(PlacesActivity.this, android.R.layout.simple_list_item_1, listItems));
+                buffer.release();
+                placeSuggestionsList.setAdapter(new ArrayAdapter<>(PlacesActivity.this, android.R.layout.simple_list_item_1, infos));
             }
         }));
     }
@@ -145,6 +133,21 @@ public class PlacesActivity extends ActionBarActivity {
         private QueryWithCurrentLocation(String query, Location location) {
             this.query = query;
             this.location = location;
+        }
+    }
+
+    private static class AutocompleteInfo {
+        private final String description;
+        private final String id;
+
+        private AutocompleteInfo(String description, String id) {
+            this.description = description;
+            this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return description;
         }
     }
 }
