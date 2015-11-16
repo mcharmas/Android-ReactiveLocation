@@ -79,7 +79,22 @@ public class ReverseGeocodeObservable implements Observable.OnSubscribe<List<Add
         } catch (IOException e) {
             // If it's a service not available error try a different approach
             if (e.getMessage().equalsIgnoreCase("Service not Available")) {
-                (new AlternativeReverseGeocodeQueryThread(subscriber)).start();
+
+                // Check if we are on the main thread, if we are we must start a new thread
+                // for this as it is a network operation that is not allowed on main thread
+                if (Thread.currentThread() == ctx.getMainLooper().getThread()) {
+                    (new AlternativeReverseGeocodeQueryThread(subscriber)).start();
+                    return;
+                }
+
+                // If we are not on the main thread then let's assume rxjava is handling the
+                // threading properly and the observe/subscribe threads are set properly for us
+                try {
+                    subscriber.onNext(alternativeReverseGeocodeQuery());
+                    subscriber.onCompleted();
+                } catch (Exception e2) {
+                    subscriber.onError(e2);
+                }
                 return;
             }
 
