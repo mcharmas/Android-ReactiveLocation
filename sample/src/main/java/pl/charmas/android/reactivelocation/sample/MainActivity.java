@@ -1,8 +1,6 @@
 package pl.charmas.android.reactivelocation.sample;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
@@ -11,16 +9,14 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.List;
 
@@ -48,6 +44,9 @@ public class MainActivity extends ActionBarActivity {
     private TextView updatableLocationView;
     private TextView addressLocationView;
     private TextView currentActivityView;
+    private TextView checkLocationSettingsView;
+
+    private Button checkLocationSettingsButton;
 
     private Observable<Location> lastKnownLocationObservable;
     private Observable<Location> locationUpdatesObservable;
@@ -68,6 +67,9 @@ public class MainActivity extends ActionBarActivity {
         updatableLocationView = (TextView) findViewById(R.id.updated_location_view);
         addressLocationView = (TextView) findViewById(R.id.address_for_location_view);
         currentActivityView = (TextView) findViewById(R.id.activity_recent_view);
+        checkLocationSettingsView = (TextView) findViewById(R.id.check_location_settings_view);
+
+        checkLocationSettingsButton = (Button) findViewById(R.id.check_location_settings_button);
 
         locationProvider = new ReactiveLocationProvider(getApplicationContext());
         lastKnownLocationObservable = locationProvider.getLastKnownLocation();
@@ -76,32 +78,21 @@ public class MainActivity extends ActionBarActivity {
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setNumUpdates(5)
                 .setInterval(100);
-        locationUpdatesObservable = locationProvider
-                .checkLocationSettings(
-                        new LocationSettingsRequest.Builder()
-                                .addLocationRequest(locationRequest)
-                                .setAlwaysShow(true)  //Refrence: http://stackoverflow.com/questions/29824408/google-play-services-locationservices-api-new-option-never
-                                .build()
-                )
-                .doOnNext(new Action1<LocationSettingsResult>() {
-                    @Override
-                    public void call(LocationSettingsResult locationSettingsResult) {
-                        Status status = locationSettingsResult.getStatus();
-                        if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                            try {
-                                status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
-                            } catch (IntentSender.SendIntentException th) {
-                                Log.e("MainActivity", "Error opening settings activity.", th);
+
+        checkLocationSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                locationProvider.checkLocationSettings(MainActivity.this, locationRequest)
+                        .subscribe(new Action1<Boolean>() {
+                            @Override
+                            public void call(Boolean success) {
+                                checkLocationSettingsView.setText(success ? "Location settings changed/already appropriate for location request." : "Location settings did not change.");
                             }
-                        }
-                    }
-                })
-                .flatMap(new Func1<LocationSettingsResult, Observable<Location>>() {
-                    @Override
-                    public Observable<Location> call(LocationSettingsResult locationSettingsResult) {
-                        return locationProvider.getUpdatedLocation(locationRequest);
-                    }
-                });
+                        });
+            }
+        });
+
+        locationUpdatesObservable = locationProvider.getUpdatedLocation(locationRequest);
 
         addressObservable = locationProvider.getUpdatedLocation(locationRequest)
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
