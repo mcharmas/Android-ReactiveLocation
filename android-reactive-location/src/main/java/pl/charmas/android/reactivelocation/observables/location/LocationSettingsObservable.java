@@ -28,17 +28,21 @@ public class LocationSettingsObservable extends BaseLocationObservable<Boolean> 
     private static final Map<String, WeakReference<LocationSettingsObservable>> observableMap = new HashMap<>();
 
     private final LocationSettingsRequest locationSettingsRequest;
-    private final WeakReference<Activity> contextWeakRef;
+    private final WeakReference<Context> contextWeakRef;
     private WeakReference<Observer<? super Boolean>> observerWeakRef;
 
-    public static Observable<Boolean> createObservable(Activity ctx, LocationRequest locationRequest) {
-        return Observable.create(new LocationSettingsObservable(ctx, locationRequest));
+    public static Observable<Boolean> createObservable(Context ctx, LocationRequest locationRequest) {
+        return Observable.create(new LocationSettingsObservable(ctx, locationRequest, false));
     }
 
-    private LocationSettingsObservable(Activity ctx, LocationRequest locationRequest) {
+    public static Observable<Boolean> createObservable(Context ctx, LocationRequest locationRequest, boolean alwaysShow) {
+        return Observable.create(new LocationSettingsObservable(ctx, locationRequest, alwaysShow));
+    }
+
+    private LocationSettingsObservable(Context ctx, LocationRequest locationRequest, boolean alwaysShow) {
         super(ctx);
         this.contextWeakRef = new WeakReference<>(ctx);
-        this.locationSettingsRequest = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build();
+        this.locationSettingsRequest = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest).setAlwaysShow(alwaysShow).build();
     }
 
     @Override
@@ -72,7 +76,11 @@ public class LocationSettingsObservable extends BaseLocationObservable<Boolean> 
                             Intent intent = new Intent(context, LocationSettingsActivity.class);
                             intent.putExtra(LocationSettingsActivity.ARG_STATUS, status);
                             intent.putExtra(LocationSettingsActivity.ARG_ID, observableId);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             context.startActivity(intent);
+                        } else {
+                            observer.onNext(false);
+                            observer.onCompleted();
                         }
 
                         break;

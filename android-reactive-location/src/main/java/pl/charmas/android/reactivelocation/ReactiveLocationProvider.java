@@ -249,13 +249,25 @@ public class ReactiveLocationProvider {
      * Observable that can be used to check settings state for given location request,
      * initiating a location settings dialog if needed.
      *
-     * @param activity Activity used for initiating the settings dialog
      * @param locationRequest location request
      * @return observable that emits result of changing location settings (whether location settings are satisfied)
      * @see com.google.android.gms.location.SettingsApi
      */
-    public Observable<Boolean> checkLocationSettings(Activity activity, LocationRequest locationRequest) {
-        return LocationSettingsObservable.createObservable(activity, locationRequest);
+    public Observable<Boolean> checkLocationSettings(LocationRequest locationRequest) {
+        return LocationSettingsObservable.createObservable(ctx, locationRequest);
+    }
+
+    /**
+     * Observable that can be used to check settings state for given location request,
+     * initiating a location settings dialog if needed.
+     *
+     * @param locationRequest location request
+     * @param alwaysShow Always show location settings dialog if needed by location request (no "Never" option)
+     * @return observable that emits result of changing location settings (whether location settings are satisfied)
+     * @see com.google.android.gms.location.SettingsApi
+     */
+    public Observable<Boolean> checkLocationSettings(LocationRequest locationRequest, boolean alwaysShow) {
+        return LocationSettingsObservable.createObservable(ctx, locationRequest, alwaysShow);
     }
 
     /**

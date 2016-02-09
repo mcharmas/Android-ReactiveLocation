@@ -82,7 +82,7 @@ public class MainActivity extends ActionBarActivity {
         checkLocationSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                locationProvider.checkLocationSettings(MainActivity.this, locationRequest)
+                locationProvider.checkLocationSettings(locationRequest, true)
                         .subscribe(new Action1<Boolean>() {
                             @Override
                             public void call(Boolean success) {
