@@ -19,17 +19,18 @@ public class LocationSettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         if(savedInstanceState == null) {
-            handleIntent(getIntent());
+            handleIntent();
         }
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
-        handleIntent(intent);
+        setIntent(intent);
+        handleIntent();
     }
 
-    private void handleIntent(Intent intent) {
-        Status status = intent.getParcelableExtra(ARG_STATUS);
+    private void handleIntent() {
+        Status status = getIntent().getParcelableExtra(ARG_STATUS);
 
         try {
             status.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
