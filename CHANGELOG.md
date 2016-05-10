@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 0.8.1
+----------------------------
+* Updated dependencies
+* Added fallback reverse geocode observable that uses web apis to obtain address
+
 Version 0.8
 ----------------------------
 * Updated dependencies to Google Play Services 8.1
