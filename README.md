@@ -239,7 +239,7 @@ example in ```~/.gradle/gradle.properties```.
 References
 ------
 
-If you need Google Fit library rxified please take a look at [https://github.com/patloew/RxFit](RxFit).
+If you need Google Fit library rxified please take a look at [RxFit](https://github.com/patloew/RxFit).
 
 License
 =======
