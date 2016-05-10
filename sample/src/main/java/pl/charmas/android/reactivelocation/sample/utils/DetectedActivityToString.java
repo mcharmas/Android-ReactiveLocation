@@ -12,6 +12,8 @@ public class DetectedActivityToString implements Func1<DetectedActivity, String>
 
     private String getNameFromType(int activityType) {
         switch (activityType) {
+            case DetectedActivity.RUNNING:
+                return "running";
             case DetectedActivity.IN_VEHICLE:
                 return "in_vehicle";
             case DetectedActivity.ON_BICYCLE:
