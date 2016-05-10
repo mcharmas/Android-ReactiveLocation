@@ -7,7 +7,7 @@ Small library that wraps Google Play Services API in brilliant [RxJava](https://
 Current stable version - 0.8
 ---------------
 
-**This version works with Google Play Services 8.1.0 and RxJava 1.0.+**
+**This version works with Google Play Services 8.4.0 and RxJava 1.1.+**
 
 What can you do with that?
 --------------------------
@@ -201,10 +201,10 @@ along with Google Play Services and RxJava.
 dependencies {
     ...
     compile 'pl.charmas.android:android-reactive-location:0.8@aar'
-    compile 'com.google.android.gms:play-services-location:8.1.0'
-    compile 'io.reactivex:rxjava:1.0.14'
+    compile 'com.google.android.gms:play-services-location:8.4.0' //you can use newer GMS version if you need
+    compile 'io.reactivex:rxjava:1.1.5' //you can override RxJava version if you need
 
-    //RxAndroid or NotRxAndroid is not required by library
+    //RxAndroid nor NotRxAndroid is not required by library
     compile 'io.reactivex:rxandroid:0.25.0'
 }
 ```
