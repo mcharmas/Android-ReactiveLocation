@@ -235,6 +235,12 @@ and obtain API Key using this [guide](https://developers.google.com/places/andro
 Obtained key should be exported as gradle property named: ```REACTIVE_LOCATION_GMS_API_KEY``` for
 example in ```~/.gradle/gradle.properties```.
 
+
+References
+------
+
+If you need Google Fit library rxified please take a look at (https://github.com/patloew/RxFit)[RxFit].
+
 License
 =======
 
