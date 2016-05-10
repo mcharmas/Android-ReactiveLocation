@@ -21,11 +21,13 @@ import rx.Observable;
 import rx.Subscriber;
 
 class FallbackReverseGeocodeObservable implements Observable.OnSubscribe<List<Address>> {
+    private final Locale locale;
     private final double latitude;
     private final double longitude;
     private final int maxResults;
 
-    FallbackReverseGeocodeObservable(double latitude, double longitude, int maxResults) {
+    FallbackReverseGeocodeObservable(Locale locale, double latitude, double longitude, int maxResults) {
+        this.locale = locale;
         this.latitude = latitude;
         this.longitude = longitude;
         this.maxResults = maxResults;
@@ -53,7 +55,7 @@ class FallbackReverseGeocodeObservable implements Observable.OnSubscribe<List<Ad
         URL url = new URL(String.format(Locale.ENGLISH,
                 "http://maps.googleapis.com/maps/api/geocode/json?"
                         + "latlng=%1$f,%2$f&sensor=true&language=%3$s",
-                latitude, longitude, Locale.getDefault().getLanguage()
+                latitude, longitude, locale.getLanguage()
         ));
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         StringBuilder stringBuilder = new StringBuilder();

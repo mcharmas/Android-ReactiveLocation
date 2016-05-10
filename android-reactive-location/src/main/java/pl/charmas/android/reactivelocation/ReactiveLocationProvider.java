@@ -26,6 +26,7 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.List;
+import java.util.Locale;
 
 import pl.charmas.android.reactivelocation.observables.GoogleAPIClientObservable;
 import pl.charmas.android.reactivelocation.observables.PendingResultObservable;
@@ -139,7 +140,8 @@ public class ReactiveLocationProvider {
 
     /**
      * Creates observable that translates latitude and longitude to list of possible addresses using
-     * included Geocoder class. You should subscribe for this observable on I/O thread.
+     * included Geocoder class. In case geocoder fails with IOException("Service not Available") fallback
+     * decoder is used using google web api. You should subscribe for this observable on I/O thread.
      * The stream finishes after address list is available.
      *
      * @param lat        latitude
@@ -148,7 +150,23 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx, lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctx, Locale.getDefault(), lat, lng, maxResults);
+    }
+
+    /**
+     * Creates observable that translates latitude and longitude to list of possible addresses using
+     * included Geocoder class. In case geocoder fails with IOException("Service not Available") fallback
+     * decoder is used using google web api. You should subscribe for this observable on I/O thread.
+     * The stream finishes after address list is available.
+     *
+     * @param locale     locale for address language
+     * @param lat        latitude
+     * @param lng        longitude
+     * @param maxResults maximal number of results you are interested in
+     * @return observable that serves list of address based on location
+     */
+    public Observable<List<Address>> getReverseGeocodeObservable(Locale locale, double lat, double lng, int maxResults) {
+        return ReverseGeocodeObservable.createObservable(ctx, locale, lat, lng, maxResults);
     }
 
     /**

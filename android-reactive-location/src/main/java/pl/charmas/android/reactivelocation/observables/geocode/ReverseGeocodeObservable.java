@@ -6,6 +6,7 @@ import android.location.Geocoder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -13,24 +14,26 @@ import rx.schedulers.Schedulers;
 
 public class ReverseGeocodeObservable implements Observable.OnSubscribe<List<Address>> {
     private final Context ctx;
+    private final Locale locale;
     private final double latitude;
     private final double longitude;
     private final int maxResults;
 
-    public static Observable<List<Address>> createObservable(Context ctx, double latitude, double longitude, int maxResults) {
-        return Observable.create(new ReverseGeocodeObservable(ctx, latitude, longitude, maxResults));
+    public static Observable<List<Address>> createObservable(Context ctx, Locale locale, double latitude, double longitude, int maxResults) {
+        return Observable.create(new ReverseGeocodeObservable(ctx, locale, latitude, longitude, maxResults));
     }
 
-    private ReverseGeocodeObservable(Context ctx, double latitude, double longitude, int maxResults) {
+    private ReverseGeocodeObservable(Context ctx, Locale locale, double latitude, double longitude, int maxResults) {
         this.ctx = ctx;
         this.latitude = latitude;
         this.longitude = longitude;
         this.maxResults = maxResults;
+        this.locale = locale;
     }
 
     @Override
     public void call(final Subscriber<? super List<Address>> subscriber) {
-        Geocoder geocoder = new Geocoder(ctx);
+        Geocoder geocoder = new Geocoder(ctx, locale);
         try {
             subscriber.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
             subscriber.onCompleted();
@@ -38,7 +41,7 @@ public class ReverseGeocodeObservable implements Observable.OnSubscribe<List<Add
             // If it's a service not available error try a different approach using google web api
             if (e.getMessage().equalsIgnoreCase("Service not Available")) {
                 Observable
-                        .create(new FallbackReverseGeocodeObservable(latitude, longitude, maxResults))
+                        .create(new FallbackReverseGeocodeObservable(locale, latitude, longitude, maxResults))
                         .subscribeOn(Schedulers.io())
                         .subscribe(subscriber);
             } else {
