@@ -22,6 +22,9 @@ import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.PlaceFilter;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.PlacePhotoMetadata;
+import com.google.android.gms.location.places.PlacePhotoMetadataResult;
+import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLngBounds;
 
@@ -55,10 +58,21 @@ public class ReactiveLocationProvider {
     }
 
     /**
+     * Util method that wraps {@link com.google.android.gms.common.api.PendingResult} in Observable.
+     *
+     * @param result pending result to wrap
+     * @param <T>    parameter type of result
+     * @return observable that emits pending result and completes
+     */
+    public static <T extends Result> Observable<T> fromPendingResult(PendingResult<T> result) {
+        return Observable.create(new PendingResultObservable<>(result));
+    }
+
+    /**
      * Creates observable that obtains last known location and than completes.
      * Delivered location is never null - when it is unavailable Observable completes without emitting
      * any value.
-     * <p/>
+     * <p>
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException}
      * when there are trouble connecting with Google Play Services and other exceptions that
      * can be thrown on {@link com.google.android.gms.location.FusedLocationProviderApi#getLastLocation(com.google.android.gms.common.api.GoogleApiClient)}.
@@ -74,7 +88,7 @@ public class ReactiveLocationProvider {
      * Creates observable that allows to observe infinite stream of location updates.
      * To stop the stream you have to unsubscribe from observable - location updates are
      * then disconnected.
-     * <p/>
+     * <p>
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException}
      * when there are trouble connecting with Google Play Services and other exceptions that
      * can be thrown on {@link com.google.android.gms.location.FusedLocationProviderApi#requestLocationUpdates(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.LocationRequest, com.google.android.gms.location.LocationListener)}.
@@ -92,13 +106,13 @@ public class ReactiveLocationProvider {
      * supplied observable as a source of mock locations. Mock locations will replace normal
      * location information for all users of the FusedLocationProvider API on the device while this
      * observable is subscribed to.
-     * <p/>
+     * <p>
      * To use this method, mock locations must be enabled in developer options and your application
      * must hold the android.permission.ACCESS_MOCK_LOCATION permission, or a {@link java.lang.SecurityException}
      * will be thrown.
-     * <p/>
+     * <p>
      * All statuses that are not successful will be reported as {@link pl.charmas.android.reactivelocation.observables.StatusException}.
-     * <p/>
+     * <p>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param sourceLocationObservable observable that emits {@link android.location.Location} instances suitable to use as mock locations
@@ -110,12 +124,12 @@ public class ReactiveLocationProvider {
 
     /**
      * Creates an observable that adds a {@link android.app.PendingIntent} as a location listener.
-     * <p/>
+     * <p>
      * This invokes {@link com.google.android.gms.location.FusedLocationProviderApi#requestLocationUpdates(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.LocationRequest, android.app.PendingIntent)}.
-     * <p/>
+     * <p>
      * When location updates are no longer required, a call to {@link #removeLocationUpdates(android.app.PendingIntent)}
      * should be made.
-     * <p/>
+     * <p>
      * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
      *
      * @param locationRequest request object with info about what kind of location you need
@@ -128,7 +142,7 @@ public class ReactiveLocationProvider {
 
     /**
      * Observable that can be used to remove {@link android.app.PendingIntent} location updates.
-     * <p/>
+     * <p>
      * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
      *
      * @param intent PendingIntent to remove location updates for
@@ -188,7 +202,7 @@ public class ReactiveLocationProvider {
      * possible addresses using included Geocoder class. You should subscribe for this
      * observable on I/O thread.
      * The stream finishes after address list is available.
-     * <p/>
+     * <p>
      * You may specify a bounding box for the search results.
      *
      * @param locationName a user-supplied description of a location
@@ -202,12 +216,12 @@ public class ReactiveLocationProvider {
 
     /**
      * Creates observable that adds request and completes when the action is done.
-     * <p/>
+     * <p>
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException}
      * when there are trouble connecting with Google Play Services.
-     * <p/>
+     * <p>
      * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
-     * <p/>
+     * <p>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#addGeofences(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.GeofencingRequest, android.app.PendingIntent)}
      *
      * @param geofenceTransitionPendingIntent pending intent to register on geofence transition
@@ -220,11 +234,11 @@ public class ReactiveLocationProvider {
 
     /**
      * Observable that can be used to remove geofences from LocationClient.
-     * <p/>
+     * <p>
      * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
-     * <p/>
+     * <p>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, android.app.PendingIntent)}.
-     * <p/>
+     * <p>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param pendingIntent key of registered geofences
@@ -236,11 +250,11 @@ public class ReactiveLocationProvider {
 
     /**
      * Observable that can be used to remove geofences from LocationClient.
-     * <p/>
+     * <p>
      * In case of unsuccessful status {@link pl.charmas.android.reactivelocation.observables.StatusException} is delivered.
-     * <p/>
+     * <p>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, java.util.List)}.
-     * <p/>
+     * <p>
      * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
      *
      * @param requestIds geofences to remove
@@ -249,7 +263,6 @@ public class ReactiveLocationProvider {
     public Observable<Status> removeGeofences(List<String> requestIds) {
         return RemoveGeofenceObservable.createObservable(ctx, requestIds);
     }
-
 
     /**
      * Observable that can be used to observe activity provided by Actity Recognition mechanism.
@@ -333,6 +346,39 @@ public class ReactiveLocationProvider {
     }
 
     /**
+     * Returns observable that fetches photo metadata from the Places API using the place ID.
+     *
+     * @param placeId id for place
+     * @return observable that emits metadata buffer and completes
+     */
+    public Observable<PlacePhotoMetadataResult> getPhotoMetadataById(@Nullable final String placeId) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoMetadataResult>>() {
+                    @Override
+                    public Observable<PlacePhotoMetadataResult> call(GoogleApiClient api) {
+                        return fromPendingResult(Places.GeoDataApi.getPlacePhotos(api, placeId));
+                    }
+                });
+    }
+
+    /**
+     * Returns observable that fetches a placePhotoMetadata from the Places API using the place placePhotoMetadata metadata.
+     * Use after fetching the place placePhotoMetadata metadata with {@link ReactiveLocationProvider#getPhotoMetadataById(String)}
+     *
+     * @param placePhotoMetadata the place photo meta data
+     * @return observable that emits the photo result and completes
+     */
+    public Observable<PlacePhotoResult> getPhotoForMetadata(@Nullable final PlacePhotoMetadata placePhotoMetadata) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoResult>>() {
+                    @Override
+                    public Observable<PlacePhotoResult> call(GoogleApiClient api) {
+                        return fromPendingResult(placePhotoMetadata.getPhoto(api));
+                    }
+                });
+    }
+
+    /**
      * Observable that emits {@link com.google.android.gms.common.api.GoogleApiClient} object after connection.
      * In case of error {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException} is emmited.
      * When connection to Google Play Services is suspended {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionSuspendedException}
@@ -345,16 +391,5 @@ public class ReactiveLocationProvider {
     public Observable<GoogleApiClient> getGoogleApiClientObservable(Api... apis) {
         //noinspection unchecked
         return GoogleAPIClientObservable.create(ctx, apis);
-    }
-
-    /**
-     * Util method that wraps {@link com.google.android.gms.common.api.PendingResult} in Observable.
-     *
-     * @param result pending result to wrap
-     * @param <T>    parameter type of result
-     * @return observable that emits pending result and completes
-     */
-    public static <T extends Result> Observable<T> fromPendingResult(PendingResult<T> result) {
-        return Observable.create(new PendingResultObservable<>(result));
     }
 }
