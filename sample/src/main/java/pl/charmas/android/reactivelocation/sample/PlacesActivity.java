@@ -111,7 +111,7 @@ public class PlacesActivity extends ActionBarActivity {
             public void call(AutocompletePredictionBuffer buffer) {
                 List<AutocompleteInfo> infos = new ArrayList<>();
                 for (AutocompletePrediction prediction : buffer) {
-                    infos.add(new AutocompleteInfo(prediction.getDescription(), prediction.getPlaceId()));
+                    infos.add(new AutocompleteInfo(prediction.getFullText(null).toString(), prediction.getPlaceId()));
                 }
                 buffer.release();
                 placeSuggestionsList.setAdapter(new ArrayAdapter<>(PlacesActivity.this, android.R.layout.simple_list_item_1, infos));
