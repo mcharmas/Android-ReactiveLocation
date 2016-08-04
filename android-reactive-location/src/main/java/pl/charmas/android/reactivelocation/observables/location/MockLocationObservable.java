@@ -37,10 +37,10 @@ public class MockLocationObservable extends BaseLocationObservable<Status> {
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        if (!status.isSuccess()) {
-                            observer.onError(new StatusException(status));
-                        } else {
+                        if (status.isSuccess()) {
                             startLocationMocking(apiClient, observer);
+                        } else {
+                            observer.onError(new StatusException(status));
                         }
                     }
                 });
@@ -54,10 +54,10 @@ public class MockLocationObservable extends BaseLocationObservable<Status> {
                         .setResultCallback(new ResultCallback<Status>() {
                             @Override
                             public void onResult(Status status) {
-                                if (!status.isSuccess()) {
-                                    observer.onError(new StatusException(status));
-                                } else {
+                                if (status.isSuccess()) {
                                     observer.onNext(status);
+                                } else {
+                                    observer.onError(new StatusException(status));
                                 }
                             }
                         });

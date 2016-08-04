@@ -5,6 +5,7 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -66,6 +67,9 @@ public class ReactiveLocationProvider {
      *
      * @return observable that serves last know location
      */
+    @RequiresPermission(
+            anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
+    )
     public Observable<Location> getLastKnownLocation() {
         return LastKnownLocationObservable.createObservable(ctx);
     }
@@ -83,6 +87,9 @@ public class ReactiveLocationProvider {
      * @param locationRequest request object with info about what kind of location you need
      * @return observable that serves infinite stream of location updates
      */
+    @RequiresPermission(
+            anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
+    )
     public Observable<Location> getUpdatedLocation(LocationRequest locationRequest) {
         return LocationUpdatesObservable.createObservable(ctx, locationRequest);
     }
@@ -104,6 +111,10 @@ public class ReactiveLocationProvider {
      * @param sourceLocationObservable observable that emits {@link android.location.Location} instances suitable to use as mock locations
      * @return observable that emits {@link com.google.android.gms.common.api.Status}
      */
+    @RequiresPermission(
+            allOf = {"android.permission.ACCESS_COARSE_LOCATION",
+                    "android.permission.ACCESS_MOCK_LOCATION"}
+    )
     public Observable<Status> mockLocation(Observable<Location> sourceLocationObservable) {
         return MockLocationObservable.createObservable(ctx, sourceLocationObservable);
     }
@@ -122,6 +133,9 @@ public class ReactiveLocationProvider {
      * @param intent          PendingIntent that will be called with location updates
      * @return observable that adds the request and PendingIntent
      */
+    @RequiresPermission(
+            anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
+    )
     public Observable<Status> requestLocationUpdates(LocationRequest locationRequest, PendingIntent intent) {
         return AddLocationIntentUpdatesObservable.createObservable(ctx, locationRequest, intent);
     }
@@ -214,6 +228,7 @@ public class ReactiveLocationProvider {
      * @param request                         list of request to add
      * @return observable that adds request
      */
+    @RequiresPermission("android.permission.ACCESS_FINE_LOCATION")
     public Observable<Status> addGeofences(PendingIntent geofenceTransitionPendingIntent, GeofencingRequest request) {
         return AddGeofenceObservable.createObservable(ctx, request, geofenceTransitionPendingIntent);
     }

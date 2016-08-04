@@ -1,6 +1,5 @@
 package pl.charmas.android.reactivelocation.sample;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Address;
