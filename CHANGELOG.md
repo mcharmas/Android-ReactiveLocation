@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version 0.10
+----------------------------
+* Updated dependencies
+* Added permission annotations
+* Minor improvements and cleanups in sample app
+
 Version 0.8.1
 ----------------------------
 * Updated dependencies
