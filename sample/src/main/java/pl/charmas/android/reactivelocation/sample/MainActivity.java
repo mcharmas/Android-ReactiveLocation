@@ -201,7 +201,7 @@ public class MainActivity extends BaseActivity {
         final LocationSettingsStates states = LocationSettingsStates.fromIntent(data);//intent);
         switch (requestCode) {
             case REQUEST_CHECK_SETTINGS:
-                //Refrence: https://developers.google.com/android/reference/com/google/android/gms/location/SettingsApi
+                //Reference: https://developers.google.com/android/reference/com/google/android/gms/location/SettingsApi
                 switch (resultCode) {
                     case RESULT_OK:
                         // All required changes were successfully made
