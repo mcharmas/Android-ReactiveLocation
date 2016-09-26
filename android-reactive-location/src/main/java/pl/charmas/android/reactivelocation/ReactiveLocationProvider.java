@@ -22,6 +22,9 @@ import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.PlaceFilter;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.PlacePhotoMetadata;
+import com.google.android.gms.location.places.PlacePhotoMetadataResult;
+import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLngBounds;
 
@@ -328,6 +331,39 @@ public class ReactiveLocationProvider {
                     @Override
                     public Observable<AutocompletePredictionBuffer> call(GoogleApiClient api) {
                         return fromPendingResult(Places.GeoDataApi.getAutocompletePredictions(api, query, bounds, filter));
+                    }
+                });
+    }
+
+    /**
+     * Returns observable that fetches photo metadata from the Places API using the place ID.
+     *
+     * @param placeId id for place
+     * @return observable that emits metadata buffer and completes
+     */
+    public Observable<PlacePhotoMetadataResult> getPhotoMetadataById(final String placeId) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoMetadataResult>>() {
+                    @Override
+                    public Observable<PlacePhotoMetadataResult> call(GoogleApiClient api) {
+                        return fromPendingResult(Places.GeoDataApi.getPlacePhotos(api, placeId));
+                    }
+                });
+    }
+
+    /**
+     * Returns observable that fetches a placePhotoMetadata from the Places API using the place placePhotoMetadata metadata.
+     * Use after fetching the place placePhotoMetadata metadata with {@link ReactiveLocationProvider#getPhotoMetadataById(String)}
+     *
+     * @param placePhotoMetadata the place photo meta data
+     * @return observable that emits the photo result and completes
+     */
+    public Observable<PlacePhotoResult> getPhotoForMetadata(final PlacePhotoMetadata placePhotoMetadata) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoResult>>() {
+                    @Override
+                    public Observable<PlacePhotoResult> call(GoogleApiClient api) {
+                        return fromPendingResult(placePhotoMetadata.getPhoto(api));
                     }
                 });
     }
