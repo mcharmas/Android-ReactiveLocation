@@ -3,7 +3,6 @@ package pl.charmas.android.reactivelocation.sample;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -22,7 +21,9 @@ import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
-public class GeofenceActivity extends ActionBarActivity {
+import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
+
+public class GeofenceActivity extends BaseActivity {
     private static final String TAG = "GeofenceActivity";
 
     private ReactiveLocationProvider reactiveLocationProvider;
@@ -60,8 +61,7 @@ public class GeofenceActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onLocationPermissionGranted() {
         lastKnownLocationSubscription = reactiveLocationProvider
                 .getLastKnownLocation()
                 .map(new LocationToStringFunc())
@@ -71,7 +71,7 @@ public class GeofenceActivity extends ActionBarActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        lastKnownLocationSubscription.unsubscribe();
+        unsubscribe(lastKnownLocationSubscription);
     }
 
     private void clearGeofence() {

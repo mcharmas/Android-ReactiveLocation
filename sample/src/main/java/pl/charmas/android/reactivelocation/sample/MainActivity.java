@@ -1,12 +1,10 @@
 package pl.charmas.android.reactivelocation.sample;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -37,11 +35,11 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-import static rx.android.app.AppObservable.bindActivity;
+import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
 
-public class MainActivity extends ActionBarActivity {
-    private static final int REQUEST_CHECK_SETTINGS = 0;
-    private final String TAG = getClass().getSimpleName();
+public class MainActivity extends BaseActivity {
+    private final static int REQUEST_CHECK_SETTINGS = 0;
+    private final static String TAG = "MainActivity";
     private ReactiveLocationProvider locationProvider;
 
     private TextView lastKnownLocationView;
@@ -124,8 +122,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onLocationPermissionGranted() {
         lastKnownLocationSubscription = lastKnownLocationObservable
                 .map(new LocationToStringFunc())
                 .subscribe(new DisplayTextOnViewAction(lastKnownLocationView), new ErrorHandler());
@@ -143,10 +140,10 @@ public class MainActivity extends ActionBarActivity {
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView), new ErrorHandler());
 
 
-        addressSubscription = bindActivity(this, addressObservable)
+        addressSubscription = addressObservable
                 .subscribe(new DisplayTextOnViewAction(addressLocationView), new ErrorHandler());
 
-        activitySubscription = bindActivity(this, activityObservable)
+        activitySubscription = activityObservable
                 .map(new ToMostProbableActivity())
                 .map(new DetectedActivityToString())
                 .subscribe(new DisplayTextOnViewAction(currentActivityView), new ErrorHandler());
@@ -155,10 +152,10 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        updatableLocationSubscription.unsubscribe();
-        addressSubscription.unsubscribe();
-        lastKnownLocationSubscription.unsubscribe();
-        activitySubscription.unsubscribe();
+        unsubscribe(updatableLocationSubscription);
+        unsubscribe(addressSubscription);
+        unsubscribe(lastKnownLocationSubscription);
+        unsubscribe(activitySubscription);
     }
 
     @Override
@@ -208,11 +205,11 @@ public class MainActivity extends ActionBarActivity {
                 switch (resultCode) {
                     case RESULT_OK:
                         // All required changes were successfully made
-                        Log.d(TAG,"User enabled location");
+                        Log.d(TAG, "User enabled location");
                         break;
                     case RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
-                       Log.d(TAG,"User Cancelled enabling location");
+                        Log.d(TAG, "User Cancelled enabling location");
                         break;
                     default:
                         break;

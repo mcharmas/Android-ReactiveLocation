@@ -4,7 +4,6 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,7 +28,9 @@ import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.subjects.PublishSubject;
 
-public class MockLocationsActivity extends ActionBarActivity {
+import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
+
+public class MockLocationsActivity extends BaseActivity {
     private static final String TAG = "MockLocationsActivity";
 
     private EditText latitudeInput;
@@ -83,9 +84,7 @@ public class MockLocationsActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
+    protected void onLocationPermissionGranted() {
         mockModeToggleButton.setChecked(true);
 
         final LocationRequest locationRequest = LocationRequest.create()
@@ -103,7 +102,6 @@ public class MockLocationsActivity extends ActionBarActivity {
                     }
                 })
                 .subscribe(new DisplayTextOnViewAction(updatedLocationView));
-
     }
 
     private void addMockLocation() {
@@ -157,8 +155,8 @@ public class MockLocationsActivity extends ActionBarActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        mockLocationSubscription.unsubscribe();
-        updatedLocationSubscription.unsubscribe();
+        unsubscribe(mockLocationSubscription);
+        unsubscribe(updatedLocationSubscription);
     }
 
     private class ErrorHandler implements Action1<Throwable> {

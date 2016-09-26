@@ -5,21 +5,16 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.android.tools.build:gradle:2.2.0'
     }
 }
 
 // To avoid manually setting the same values in all Android modules, set the value on the root
 // project and then reference this from the modules
 ext {
-    compileSdkVersion = 23
-    buildToolsVersion = "23.0.1"
-}
-
-allprojects {
-    repositories {
-        mavenCentral()
-    }
+    compileSdkVersion = 24
+    targetSdkVersion = 24
+    buildToolsVersion = "24.0.2"
 }
 
 def isReleaseBuild() {
@@ -32,7 +27,6 @@ allprojects {
 
     repositories {
         mavenCentral()
+        jcenter()
     }
 }
-
-apply plugin: 'android-reporting'

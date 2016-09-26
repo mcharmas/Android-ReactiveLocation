@@ -2,7 +2,6 @@ package pl.charmas.android.reactivelocation.sample;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,22 +16,22 @@ import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.jakewharton.rxbinding.widget.RxTextView;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import pl.charmas.android.reactivelocation.sample.utils.TextObservable;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.subscriptions.CompositeSubscription;
 
-import static rx.android.app.AppObservable.bindActivity;
+import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
 
-public class PlacesActivity extends ActionBarActivity {
+public class PlacesActivity extends BaseActivity {
 
     private TextView currentPlaceView;
     private EditText queryView;
@@ -59,11 +58,10 @@ public class PlacesActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onLocationPermissionGranted() {
         compositeSubscription = new CompositeSubscription();
         compositeSubscription.add(
-                bindActivity(this, reactiveLocationProvider.getCurrentPlace(null))
+                reactiveLocationProvider.getCurrentPlace(null)
                         .subscribe(new Action1<PlaceLikelihoodBuffer>() {
                             @Override
                             public void call(PlaceLikelihoodBuffer buffer) {
@@ -76,7 +74,14 @@ public class PlacesActivity extends ActionBarActivity {
                         })
         );
 
-        Observable<String> queryObservable = TextObservable.create(queryView)
+        Observable<String> queryObservable = RxTextView
+                .textChanges(queryView)
+                .map(new Func1<CharSequence, String>() {
+                    @Override
+                    public String call(CharSequence charSequence) {
+                        return charSequence.toString();
+                    }
+                })
                 .debounce(1, TimeUnit.SECONDS)
                 .filter(new Func1<String, Boolean>() {
                     @Override
@@ -106,12 +111,12 @@ public class PlacesActivity extends ActionBarActivity {
                     }
                 });
 
-        compositeSubscription.add(bindActivity(this, suggestionsObservable).subscribe(new Action1<AutocompletePredictionBuffer>() {
+        compositeSubscription.add(suggestionsObservable.subscribe(new Action1<AutocompletePredictionBuffer>() {
             @Override
             public void call(AutocompletePredictionBuffer buffer) {
                 List<AutocompleteInfo> infos = new ArrayList<>();
                 for (AutocompletePrediction prediction : buffer) {
-                    infos.add(new AutocompleteInfo(prediction.getDescription(), prediction.getPlaceId()));
+                    infos.add(new AutocompleteInfo(prediction.getFullText(null).toString(), prediction.getPlaceId()));
                 }
                 buffer.release();
                 placeSuggestionsList.setAdapter(new ArrayAdapter<>(PlacesActivity.this, android.R.layout.simple_list_item_1, infos));
@@ -122,8 +127,7 @@ public class PlacesActivity extends ActionBarActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        compositeSubscription.unsubscribe();
-        compositeSubscription = null;
+        unsubscribe(compositeSubscription);
     }
 
     private static class QueryWithCurrentLocation {

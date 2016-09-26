@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBarActivity;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.Place;
@@ -14,10 +13,9 @@ import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
-/**
- * Created by jamesnewman on 17/07/15.
- */
-public class PlacesResultActivity extends ActionBarActivity {
+import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
+
+public class PlacesResultActivity extends BaseActivity {
 
     private static final String EXTRA_PLACE_ID = "EXTRA_PLACE_ID";
 
@@ -59,9 +57,7 @@ public class PlacesResultActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
+    protected void onLocationPermissionGranted() {
         compositeSubscription = new CompositeSubscription();
         compositeSubscription.add(reactiveLocationProvider.getPlaceById(placeId)
                 .subscribe(new Action1<PlaceBuffer>() {
@@ -81,7 +77,6 @@ public class PlacesResultActivity extends ActionBarActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        compositeSubscription.unsubscribe();
-        compositeSubscription = null;
+        unsubscribe(compositeSubscription);
     }
 }
