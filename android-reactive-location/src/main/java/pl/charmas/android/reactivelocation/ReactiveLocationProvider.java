@@ -341,7 +341,7 @@ public class ReactiveLocationProvider {
      * @param placeId id for place
      * @return observable that emits metadata buffer and completes
      */
-    public Observable<PlacePhotoMetadataResult> getPhotoMetadataById(@Nullable final String placeId) {
+    public Observable<PlacePhotoMetadataResult> getPhotoMetadataById(final String placeId) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
                 .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoMetadataResult>>() {
                     @Override
@@ -358,7 +358,7 @@ public class ReactiveLocationProvider {
      * @param placePhotoMetadata the place photo meta data
      * @return observable that emits the photo result and completes
      */
-    public Observable<PlacePhotoResult> getPhotoForMetadata(@Nullable final PlacePhotoMetadata placePhotoMetadata) {
+    public Observable<PlacePhotoResult> getPhotoForMetadata(final PlacePhotoMetadata placePhotoMetadata) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
                 .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoResult>>() {
                     @Override
