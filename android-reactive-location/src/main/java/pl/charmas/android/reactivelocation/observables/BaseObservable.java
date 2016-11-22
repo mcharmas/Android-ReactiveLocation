@@ -18,7 +18,7 @@ import rx.subscriptions.Subscriptions;
 
 
 public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
-    private final Context ctx;
+    private Context ctx;
     private final List<Api<? extends Api.ApiOptions.NotRequiredOptions>> services;
 
     @SafeVarargs
@@ -72,6 +72,7 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
     }
 
     protected void onUnsubscribed(GoogleApiClient locationClient) {
+        ctx = null;
     }
 
     protected abstract void onGoogleApiClientReady(GoogleApiClient apiClient, Observer<? super T> observer);
