@@ -25,6 +25,8 @@ public class LastKnownLocationObservable extends BaseLocationObservable<Location
         Location location = LocationServices.FusedLocationApi.getLastLocation(apiClient);
         if (location != null) {
             observer.onNext(location);
+        } else {
+            observer.onError(new StatusException("Location not found.));
         }
         observer.onCompleted();
     }
