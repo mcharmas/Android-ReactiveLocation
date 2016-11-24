@@ -9,6 +9,7 @@
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
+        android:name="SampleApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -41,6 +42,12 @@
         <activity android:name=".MockLocationsActivity" />
 
         <receiver android:name=".GeofenceBroadcastReceiver" />
+
+        <service
+            android:name=".LocationService"
+            android:icon="@drawable/ic_launcher"
+            android:label="LocationService"/>
+
     </application>
 
 </manifest>
