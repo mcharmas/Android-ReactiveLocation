@@ -1,5 +1,6 @@
 package pl.charmas.android.reactivelocation;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.location.Address;
@@ -41,6 +42,7 @@ import pl.charmas.android.reactivelocation.observables.geofence.AddGeofenceObser
 import pl.charmas.android.reactivelocation.observables.geofence.RemoveGeofenceObservable;
 import pl.charmas.android.reactivelocation.observables.location.AddLocationIntentUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.location.LastKnownLocationObservable;
+import pl.charmas.android.reactivelocation.observables.location.LocationSettingsObservable;
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.location.MockLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.RemoveLocationIntentUpdatesObservable;
@@ -280,20 +282,28 @@ public class ReactiveLocationProvider {
     }
 
     /**
-     * Observable that can be used to check settings state for given location request.
+     * Observable that can be used to check settings state for given location request,
+     * initiating a location settings dialog if needed.
      *
      * @param locationRequest location request
-     * @return observable that emits check result of location settings
+     * @return observable that emits result of changing location settings (whether location settings are satisfied)
      * @see com.google.android.gms.location.SettingsApi
      */
-    public Observable<LocationSettingsResult> checkLocationSettings(final LocationSettingsRequest locationRequest) {
-        return getGoogleApiClientObservable(LocationServices.API)
-                .flatMap(new Func1<GoogleApiClient, Observable<LocationSettingsResult>>() {
-                    @Override
-                    public Observable<LocationSettingsResult> call(GoogleApiClient googleApiClient) {
-                        return fromPendingResult(LocationServices.SettingsApi.checkLocationSettings(googleApiClient, locationRequest));
-                    }
-                });
+    public Observable<Boolean> checkLocationSettings(LocationRequest locationRequest) {
+        return LocationSettingsObservable.createObservable(ctx, locationRequest);
+    }
+
+    /**
+     * Observable that can be used to check settings state for given location request,
+     * initiating a location settings dialog if needed.
+     *
+     * @param locationRequest location request
+     * @param alwaysShow Always show location settings dialog if needed by location request (no "Never" option)
+     * @return observable that emits result of changing location settings (whether location settings are satisfied)
+     * @see com.google.android.gms.location.SettingsApi
+     */
+    public Observable<Boolean> checkLocationSettings(LocationRequest locationRequest, boolean alwaysShow) {
+        return LocationSettingsObservable.createObservable(ctx, locationRequest, alwaysShow);
     }
 
     /**

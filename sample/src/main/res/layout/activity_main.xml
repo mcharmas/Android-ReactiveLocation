@@ -68,5 +68,27 @@
             android:layout_height="wrap_content"
             tools:text="No activities detected yet" />
 
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Location Settings"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/check_location_settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Check Location Settings"/>
+
+        <TextView
+            android:id="@+id/check_location_settings_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            tools:text="No result yet" />
+
     </LinearLayout>
 </ScrollView>
