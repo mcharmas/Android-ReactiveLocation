@@ -38,7 +38,7 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
 
     @Override
     protected void onUnsubscribed(LocationClient locationClient) {
-        if (locationClient.isConnected()) {
+        if (locationClient.isConnected() && listener != null) {
             locationClient.removeLocationUpdates(listener);
         }
     }
