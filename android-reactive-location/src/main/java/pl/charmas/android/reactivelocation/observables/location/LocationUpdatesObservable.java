@@ -8,6 +8,8 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.lang.ref.WeakReference;
+
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
 import rx.Observer;
@@ -30,12 +32,7 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super Location> observer) {
-        listener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                observer.onNext(location);
-            }
-        };
+        listener = new LocationUpdatesLocationListener(observer);
         LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, listener);
     }
 
@@ -46,4 +43,19 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
         }
     }
 
+    private static class LocationUpdatesLocationListener implements LocationListener {
+        private final WeakReference<Observer<? super Location>> weakRef;
+
+        LocationUpdatesLocationListener(Observer<? super Location> observer) {
+            this.weakRef = new WeakReference<Observer<? super Location>>(observer);
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+            if (weakRef.get() == null) {
+                return;
+            }
+            weakRef.get().onNext(location);
+        }
+    }
 }
