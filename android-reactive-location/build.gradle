@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         minSdkVersion 9
@@ -19,9 +19,9 @@ android {
 //TODO: local maven deployment
 
 dependencies {
-    compile 'com.google.android.gms:play-services-location:9.4.0'
-    compile 'com.google.android.gms:play-services-places:9.4.0'
-    compile 'io.reactivex:rxjava:1.2.0'
+    compile 'com.google.android.gms:play-services-location:10.0.1'
+    compile 'com.google.android.gms:play-services-places:10.0.1'
+    compile 'io.reactivex.rxjava2:rxjava:2.0.3'
 }
 
 // Comment this to deploy to local maven repository

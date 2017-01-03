@@ -1,12 +1,14 @@
 package pl.charmas.android.reactivelocation.sample.utils;
 
-import rx.Subscription;
+import io.reactivex.disposables.Disposable;
 
 public final class UnsubscribeIfPresent {
     private UnsubscribeIfPresent() {//no instance
     }
 
-    public static void unsubscribe(Subscription subscription) {
-        if (subscription != null) subscription.unsubscribe();
+    public static void unsubscribe(Disposable disposable) {
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
     }
 }

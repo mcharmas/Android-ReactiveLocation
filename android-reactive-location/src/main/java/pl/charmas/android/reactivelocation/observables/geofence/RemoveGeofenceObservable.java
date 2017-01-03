@@ -8,9 +8,10 @@ import com.google.android.gms.common.api.Status;
 
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
-import rx.Observable;
-import rx.Observer;
+
 
 public abstract class RemoveGeofenceObservable<T> extends BaseLocationObservable<T> {
 
@@ -29,10 +30,10 @@ public abstract class RemoveGeofenceObservable<T> extends BaseLocationObservable
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super T> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<T> observer) {
         removeGeofences(apiClient, observer);
     }
 
-    protected abstract void removeGeofences(GoogleApiClient locationClient, Observer<? super T> observer);
+    protected abstract void removeGeofences(GoogleApiClient locationClient, ObservableEmitter<T> observer);
 
 }

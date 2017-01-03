@@ -9,9 +9,10 @@ import android.widget.TextView;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import rx.functions.Action1;
-import rx.subscriptions.CompositeSubscription;
+
 
 import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
 
@@ -20,7 +21,7 @@ public class PlacesResultActivity extends BaseActivity {
     private static final String EXTRA_PLACE_ID = "EXTRA_PLACE_ID";
 
     private ReactiveLocationProvider reactiveLocationProvider;
-    private CompositeSubscription compositeSubscription;
+    private CompositeDisposable compositeSubscription;
     private TextView placeNameView;
     private TextView placeLocationView;
     private TextView placeAddressView;
@@ -58,11 +59,11 @@ public class PlacesResultActivity extends BaseActivity {
 
     @Override
     protected void onLocationPermissionGranted() {
-        compositeSubscription = new CompositeSubscription();
+        compositeSubscription = new CompositeDisposable();
         compositeSubscription.add(reactiveLocationProvider.getPlaceById(placeId)
-                .subscribe(new Action1<PlaceBuffer>() {
+                .subscribe(new Consumer<PlaceBuffer>() {
                     @Override
-                    public void call(PlaceBuffer buffer) {
+                    public void accept(PlaceBuffer buffer) {
                         Place place = buffer.get(0);
                         if (place != null) {
                             placeNameView.setText(place.getName());

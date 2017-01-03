@@ -2,11 +2,11 @@ package pl.charmas.android.reactivelocation.sample.utils;
 
 import android.location.Location;
 
-import rx.functions.Func1;
+import io.reactivex.functions.Function;
 
-public class LocationToStringFunc implements Func1<Location, String> {
+public class LocationToStringFunc implements Function<Location, String> {
     @Override
-    public String call(Location location) {
+    public String apply(Location location) {
         if (location != null)
             return location.getLatitude() + " " + location.getLongitude() + " (" + location.getAccuracy() + ")";
         return "no location available";

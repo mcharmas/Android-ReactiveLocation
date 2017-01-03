@@ -1,11 +1,13 @@
 package pl.charmas.android.reactivelocation;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
+import android.support.v4.app.ActivityCompat;
 
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,6 +34,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import java.util.List;
 import java.util.Locale;
 
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 import pl.charmas.android.reactivelocation.observables.GoogleAPIClientObservable;
 import pl.charmas.android.reactivelocation.observables.PendingResultObservable;
 import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
@@ -44,8 +48,9 @@ import pl.charmas.android.reactivelocation.observables.location.LastKnownLocatio
 import pl.charmas.android.reactivelocation.observables.location.LocationUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.location.MockLocationObservable;
 import pl.charmas.android.reactivelocation.observables.location.RemoveLocationIntentUpdatesObservable;
-import rx.Observable;
-import rx.functions.Func1;
+
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 
 /**
  * Factory of observables that can manipulate location
@@ -66,7 +71,7 @@ public class ReactiveLocationProvider {
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException}
      * when there are trouble connecting with Google Play Services and other exceptions that
      * can be thrown on {@link com.google.android.gms.location.FusedLocationProviderApi#getLastLocation(com.google.android.gms.common.api.GoogleApiClient)}.
-     * Everything is delivered by {@link rx.Observer#onError(Throwable)}.
+     * Everything is delivered by {@link io.reactivex.Observer#onError(Throwable)}.
      *
      * @return observable that serves last know location
      */
@@ -85,7 +90,7 @@ public class ReactiveLocationProvider {
      * Observable can report {@link pl.charmas.android.reactivelocation.observables.GoogleAPIConnectionException}
      * when there are trouble connecting with Google Play Services and other exceptions that
      * can be thrown on {@link com.google.android.gms.location.FusedLocationProviderApi#requestLocationUpdates(com.google.android.gms.common.api.GoogleApiClient, com.google.android.gms.location.LocationRequest, com.google.android.gms.location.LocationListener)}.
-     * Everything is delivered by {@link rx.Observer#onError(Throwable)}.
+     * Everything is delivered by {@link io.reactivex.Observer#onError(Throwable)}.
      *
      * @param locationRequest request object with info about what kind of location you need
      * @return observable that serves infinite stream of location updates
@@ -109,7 +114,7 @@ public class ReactiveLocationProvider {
      * <p/>
      * All statuses that are not successful will be reported as {@link pl.charmas.android.reactivelocation.observables.StatusException}.
      * <p/>
-     * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
+     * Every exception is delivered by {@link io.reactivex.Observer#onError(Throwable)}.
      *
      * @param sourceLocationObservable observable that emits {@link android.location.Location} instances suitable to use as mock locations
      * @return observable that emits {@link com.google.android.gms.common.api.Status}
@@ -243,7 +248,7 @@ public class ReactiveLocationProvider {
      * <p/>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, android.app.PendingIntent)}.
      * <p/>
-     * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
+     * Every exception is delivered by {@link io.reactivex.Observer#onError(Throwable)}.
      *
      * @param pendingIntent key of registered geofences
      * @return observable that removed geofences
@@ -259,7 +264,7 @@ public class ReactiveLocationProvider {
      * <p/>
      * Other exceptions will be reported that can be thrown on {@link com.google.android.gms.location.GeofencingApi#removeGeofences(com.google.android.gms.common.api.GoogleApiClient, java.util.List)}.
      * <p/>
-     * Every exception is delivered by {@link rx.Observer#onError(Throwable)}.
+     * Every exception is delivered by {@link io.reactivex.Observer#onError(Throwable)}.
      *
      * @param requestIds geofences to remove
      * @return observable that removed geofences
@@ -288,9 +293,9 @@ public class ReactiveLocationProvider {
      */
     public Observable<LocationSettingsResult> checkLocationSettings(final LocationSettingsRequest locationRequest) {
         return getGoogleApiClientObservable(LocationServices.API)
-                .flatMap(new Func1<GoogleApiClient, Observable<LocationSettingsResult>>() {
+                .flatMap(new Function<GoogleApiClient, Observable<LocationSettingsResult>>() {
                     @Override
-                    public Observable<LocationSettingsResult> call(GoogleApiClient googleApiClient) {
+                    public Observable<LocationSettingsResult> apply(GoogleApiClient googleApiClient) {
                         return fromPendingResult(LocationServices.SettingsApi.checkLocationSettings(googleApiClient, locationRequest));
                     }
                 });
@@ -306,9 +311,15 @@ public class ReactiveLocationProvider {
      */
     public Observable<PlaceLikelihoodBuffer> getCurrentPlace(@Nullable final PlaceFilter placeFilter) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(new Func1<GoogleApiClient, Observable<PlaceLikelihoodBuffer>>() {
+                .flatMap(new Function<GoogleApiClient, Observable<PlaceLikelihoodBuffer>>() {
                     @Override
-                    public Observable<PlaceLikelihoodBuffer> call(GoogleApiClient api) {
+                    public Observable<PlaceLikelihoodBuffer> apply(GoogleApiClient api) {
+                        if (ActivityCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED ||
+                                ActivityCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
+
+                            throw new IllegalStateException("no permissions");
+                        }
+
                         return fromPendingResult(Places.PlaceDetectionApi.getCurrentPlace(api, placeFilter));
                     }
                 });
@@ -322,9 +333,9 @@ public class ReactiveLocationProvider {
      */
     public Observable<PlaceBuffer> getPlaceById(@Nullable final String placeId) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(new Func1<GoogleApiClient, Observable<PlaceBuffer>>() {
+                .flatMap(new Function<GoogleApiClient, Observable<PlaceBuffer>>() {
                     @Override
-                    public Observable<PlaceBuffer> call(GoogleApiClient api) {
+                    public Observable<PlaceBuffer> apply(GoogleApiClient api) {
                         return fromPendingResult(Places.GeoDataApi.getPlaceById(api, placeId));
                     }
                 });
@@ -342,9 +353,9 @@ public class ReactiveLocationProvider {
      */
     public Observable<AutocompletePredictionBuffer> getPlaceAutocompletePredictions(final String query, final LatLngBounds bounds, final AutocompleteFilter filter) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(new Func1<GoogleApiClient, Observable<AutocompletePredictionBuffer>>() {
+                .flatMap(new Function<GoogleApiClient, Observable<AutocompletePredictionBuffer>>() {
                     @Override
-                    public Observable<AutocompletePredictionBuffer> call(GoogleApiClient api) {
+                    public Observable<AutocompletePredictionBuffer> apply(GoogleApiClient api) {
                         return fromPendingResult(Places.GeoDataApi.getAutocompletePredictions(api, query, bounds, filter));
                     }
                 });
@@ -358,9 +369,9 @@ public class ReactiveLocationProvider {
      */
     public Observable<PlacePhotoMetadataResult> getPhotoMetadataById(final String placeId) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoMetadataResult>>() {
+                .flatMap(new Function<GoogleApiClient, Observable<PlacePhotoMetadataResult>>() {
                     @Override
-                    public Observable<PlacePhotoMetadataResult> call(GoogleApiClient api) {
+                    public Observable<PlacePhotoMetadataResult> apply(GoogleApiClient api) {
                         return fromPendingResult(Places.GeoDataApi.getPlacePhotos(api, placeId));
                     }
                 });
@@ -375,9 +386,9 @@ public class ReactiveLocationProvider {
      */
     public Observable<PlacePhotoResult> getPhotoForMetadata(final PlacePhotoMetadata placePhotoMetadata) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(new Func1<GoogleApiClient, Observable<PlacePhotoResult>>() {
+                .flatMap(new Function<GoogleApiClient, Observable<PlacePhotoResult>>() {
                     @Override
-                    public Observable<PlacePhotoResult> call(GoogleApiClient api) {
+                    public Observable<PlacePhotoResult> apply(GoogleApiClient api) {
                         return fromPendingResult(placePhotoMetadata.getPhoto(api));
                     }
                 });

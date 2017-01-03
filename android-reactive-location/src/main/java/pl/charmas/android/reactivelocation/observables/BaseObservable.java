@@ -10,14 +10,13 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import java.util.Arrays;
 import java.util.List;
 
-import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Action;
 
 
-public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
+public abstract class BaseObservable<T> implements ObservableOnSubscribe<T> {
     private final Context ctx;
     private final List<Api<? extends Api.ApiOptions.NotRequiredOptions>> services;
 
@@ -28,18 +27,19 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
     }
 
     @Override
-    public void call(Subscriber<? super T> subscriber) {
+    public void subscribe(ObservableEmitter<T> emitter) throws Exception {
+        final GoogleApiClient apiClient = createApiClient(emitter);
 
-        final GoogleApiClient apiClient = createApiClient(subscriber);
         try {
             apiClient.connect();
+
         } catch (Throwable ex) {
-            subscriber.onError(ex);
+            emitter.onError(ex);
         }
 
-        subscriber.add(Subscriptions.create(new Action0() {
+        emitter.setDisposable(Disposables.fromAction(new Action() {
             @Override
-            public void call() {
+            public void run() throws Exception {
                 if (apiClient.isConnected() || apiClient.isConnecting()) {
                     onUnsubscribed(apiClient);
                     apiClient.disconnect();
@@ -48,10 +48,14 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
         }));
     }
 
+    public Context getContext() {
+        return ctx;
+    }
 
-    protected GoogleApiClient createApiClient(Subscriber<? super T> subscriber) {
 
-        ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(subscriber);
+    private GoogleApiClient createApiClient(ObservableEmitter<T> emitter) {
+
+        ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(emitter);
 
         GoogleApiClient.Builder apiClientBuilder = new GoogleApiClient.Builder(ctx);
 
@@ -74,18 +78,18 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
     protected void onUnsubscribed(GoogleApiClient locationClient) {
     }
 
-    protected abstract void onGoogleApiClientReady(GoogleApiClient apiClient, Observer<? super T> observer);
+    protected abstract void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<T> observer);
 
     private class ApiClientConnectionCallbacks implements
             GoogleApiClient.ConnectionCallbacks,
             GoogleApiClient.OnConnectionFailedListener {
 
-        final private Observer<? super T> observer;
+        final private ObservableEmitter<T> observer;
 
         private GoogleApiClient apiClient;
 
-        private ApiClientConnectionCallbacks(Observer<? super T> observer) {
-            this.observer = observer;
+        private ApiClientConnectionCallbacks(ObservableEmitter<T> emitter) {
+            this.observer = emitter;
         }
 
         @Override

@@ -9,8 +9,9 @@ import com.google.android.gms.location.LocationServices;
 
 import java.util.List;
 
+import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation.observables.StatusException;
-import rx.Observer;
+
 
 class RemoveGeofenceRequestIdsObservable extends RemoveGeofenceObservable<Status> {
     private final List<String> geofenceRequestIds;
@@ -21,14 +22,14 @@ class RemoveGeofenceRequestIdsObservable extends RemoveGeofenceObservable<Status
     }
 
     @Override
-    protected void removeGeofences(GoogleApiClient locationClient, final Observer<? super Status> observer) {
+    protected void removeGeofences(GoogleApiClient locationClient, final ObservableEmitter<Status> observer) {
         LocationServices.GeofencingApi.removeGeofences(locationClient, geofenceRequestIds)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
                         if (status.isSuccess()) {
                             observer.onNext(status);
-                            observer.onCompleted();
+                            observer.onComplete();
                         } else {
                             observer.onError(new StatusException(status));
                         }

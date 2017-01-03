@@ -5,8 +5,9 @@ import android.content.Context;
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import rx.Observable;
-import rx.Observer;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+
 
 public class GoogleAPIClientObservable extends BaseObservable<GoogleApiClient> {
 
@@ -21,8 +22,8 @@ public class GoogleAPIClientObservable extends BaseObservable<GoogleApiClient> {
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, Observer<? super GoogleApiClient> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<GoogleApiClient> observer) {
         observer.onNext(apiClient);
-        observer.onCompleted();
+        observer.onComplete();
     }
 }
