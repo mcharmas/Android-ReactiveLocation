@@ -1,9 +1,12 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,15 +21,15 @@ import com.google.android.gms.location.LocationRequest;
 
 import java.util.Date;
 
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.subjects.PublishSubject;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import pl.charmas.android.reactivelocation.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.functions.Func2;
-import rx.subjects.PublishSubject;
 
 import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
 
@@ -42,8 +45,8 @@ public class MockLocationsActivity extends BaseActivity {
 
     private ReactiveLocationProvider locationProvider;
     private Observable<Location> mockLocationObservable;
-    private Subscription mockLocationSubscription;
-    private Subscription updatedLocationSubscription;
+    private Disposable mockLocationDisposable;
+    private Disposable updatedLocationDisposable;
 
     private PublishSubject<Location> mockLocationSubject;
 
@@ -55,7 +58,7 @@ public class MockLocationsActivity extends BaseActivity {
         locationProvider = new ReactiveLocationProvider(this);
         mockLocationSubject = PublishSubject.create();
 
-        mockLocationObservable = mockLocationSubject.asObservable();
+        mockLocationObservable = mockLocationSubject.hide();
 
         initViews();
     }
@@ -90,14 +93,19 @@ public class MockLocationsActivity extends BaseActivity {
         final LocationRequest locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(2000);
-        updatedLocationSubscription = locationProvider
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        updatedLocationDisposable = locationProvider
                 .getUpdatedLocation(locationRequest)
                 .map(new LocationToStringFunc())
-                .map(new Func1<String, String>() {
+                .map(new Function<String, String>() {
                     int count = 0;
 
                     @Override
-                    public String call(String s) {
+                    public String apply(String s) {
                         return s + " " + count++;
                     }
                 })
@@ -114,19 +122,23 @@ public class MockLocationsActivity extends BaseActivity {
 
     private void setMockMode(boolean toggle) {
         if (toggle) {
-            mockLocationSubscription =
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+
+            mockLocationDisposable =
                     Observable.zip(locationProvider.mockLocation(mockLocationObservable),
-                            mockLocationObservable, new Func2<Status, Location, String>() {
+                            mockLocationObservable, new BiFunction<Status, Location, String>() {
                                 int count = 0;
 
                                 @Override
-                                public String call(Status result, Location location) {
-                                    return new LocationToStringFunc().call(location) + " " + count++;
+                                public String apply(Status result, Location location) {
+                                    return new LocationToStringFunc().apply(location) + " " + count++;
                                 }
                             })
                             .subscribe(new DisplayTextOnViewAction(mockLocationView), new ErrorHandler());
         } else {
-            mockLocationSubscription.unsubscribe();
+            mockLocationDisposable.dispose();
         }
     }
 
@@ -155,13 +167,13 @@ public class MockLocationsActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        unsubscribe(mockLocationSubscription);
-        unsubscribe(updatedLocationSubscription);
+        unsubscribe(mockLocationDisposable);
+        unsubscribe(updatedLocationDisposable);
     }
 
-    private class ErrorHandler implements Action1<Throwable> {
+    private class ErrorHandler implements Consumer<Throwable> {
         @Override
-        public void call(Throwable throwable) {
+        public void accept(Throwable throwable) {
             if (throwable instanceof SecurityException) {
                 Toast.makeText(MockLocationsActivity.this, "You need to enable mock locations in Developer Options.", Toast.LENGTH_SHORT).show();
             } else {

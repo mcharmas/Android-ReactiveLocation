@@ -8,10 +8,11 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import pl.charmas.android.reactivelocation.observables.StatusException;
-import rx.Observable;
-import rx.Observer;
+
 
 public class RemoveLocationIntentUpdatesObservable extends BaseLocationObservable<Status> {
     private final PendingIntent intent;
@@ -26,14 +27,14 @@ public class RemoveLocationIntentUpdatesObservable extends BaseLocationObservabl
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super Status> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<Status> observer) {
         LocationServices.FusedLocationApi.removeLocationUpdates(apiClient, intent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
                         if (status.isSuccess()) {
                             observer.onNext(status);
-                            observer.onCompleted();
+                            observer.onComplete();
                         } else {
                             observer.onError(new StatusException(status));
                         }

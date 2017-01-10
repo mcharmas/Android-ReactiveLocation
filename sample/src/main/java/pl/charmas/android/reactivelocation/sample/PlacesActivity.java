@@ -1,7 +1,10 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
@@ -16,19 +19,21 @@ import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.jakewharton.rxbinding.widget.RxTextView;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.functions.Func2;
-import rx.subscriptions.CompositeSubscription;
+import pl.charmas.android.reactivelocation.sample.utils.RxTextView2;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
 
 public class PlacesActivity extends BaseActivity {
@@ -37,7 +42,7 @@ public class PlacesActivity extends BaseActivity {
     private EditText queryView;
     private ListView placeSuggestionsList;
     private ReactiveLocationProvider reactiveLocationProvider;
-    private CompositeSubscription compositeSubscription;
+    private CompositeDisposable compositeDisposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +64,12 @@ public class PlacesActivity extends BaseActivity {
 
     @Override
     protected void onLocationPermissionGranted() {
-        compositeSubscription = new CompositeSubscription();
-        compositeSubscription.add(
+        compositeDisposable = new CompositeDisposable();
+        compositeDisposable.add(
                 reactiveLocationProvider.getCurrentPlace(null)
-                        .subscribe(new Action1<PlaceLikelihoodBuffer>() {
+                        .subscribe(new Consumer<PlaceLikelihoodBuffer>() {
                             @Override
-                            public void call(PlaceLikelihoodBuffer buffer) {
+                            public void accept(PlaceLikelihoodBuffer buffer) {
                                 PlaceLikelihood likelihood = buffer.get(0);
                                 if (likelihood != null) {
                                     currentPlaceView.setText(likelihood.getPlace().getName());
@@ -74,31 +79,38 @@ public class PlacesActivity extends BaseActivity {
                         })
         );
 
-        Observable<String> queryObservable = RxTextView
+        Observable<String> queryObservable = RxTextView2
                 .textChanges(queryView)
-                .map(new Func1<CharSequence, String>() {
+                .map(new Function<CharSequence, String>() {
                     @Override
-                    public String call(CharSequence charSequence) {
+                    public String apply(CharSequence charSequence) {
                         return charSequence.toString();
                     }
                 })
                 .debounce(1, TimeUnit.SECONDS)
-                .filter(new Func1<String, Boolean>() {
+                .filter(new Predicate<String>() {
                     @Override
-                    public Boolean call(String s) {
+                    public boolean test(String s) {
                         return !TextUtils.isEmpty(s);
                     }
                 });
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
+            return;
+        }
+
         Observable<Location> lastKnownLocationObservable = reactiveLocationProvider.getLastKnownLocation();
         Observable<AutocompletePredictionBuffer> suggestionsObservable = Observable
-                .combineLatest(queryObservable, lastKnownLocationObservable, new Func2<String, Location, QueryWithCurrentLocation>() {
+                .combineLatest(queryObservable, lastKnownLocationObservable,
+                        new BiFunction<String, Location, QueryWithCurrentLocation>() {
                     @Override
-                    public QueryWithCurrentLocation call(String query, Location currentLocation) {
+                    public QueryWithCurrentLocation apply(String query, Location currentLocation) {
                         return new QueryWithCurrentLocation(query, currentLocation);
                     }
-                }).flatMap(new Func1<QueryWithCurrentLocation, Observable<AutocompletePredictionBuffer>>() {
+                }).flatMap(new Function<QueryWithCurrentLocation, Observable<AutocompletePredictionBuffer>>() {
                     @Override
-                    public Observable<AutocompletePredictionBuffer> call(QueryWithCurrentLocation q) {
+                    public Observable<AutocompletePredictionBuffer> apply(QueryWithCurrentLocation q) {
                         if (q.location == null) return Observable.empty();
 
                         double latitude = q.location.getLatitude();
@@ -111,9 +123,9 @@ public class PlacesActivity extends BaseActivity {
                     }
                 });
 
-        compositeSubscription.add(suggestionsObservable.subscribe(new Action1<AutocompletePredictionBuffer>() {
+        compositeDisposable.add(suggestionsObservable.subscribe(new Consumer<AutocompletePredictionBuffer>() {
             @Override
-            public void call(AutocompletePredictionBuffer buffer) {
+            public void accept(AutocompletePredictionBuffer buffer) {
                 List<AutocompleteInfo> infos = new ArrayList<>();
                 for (AutocompletePrediction prediction : buffer) {
                     infos.add(new AutocompleteInfo(prediction.getFullText(null).toString(), prediction.getPlaceId()));
@@ -127,7 +139,7 @@ public class PlacesActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        unsubscribe(compositeSubscription);
+        unsubscribe(compositeDisposable);
     }
 
     private static class QueryWithCurrentLocation {

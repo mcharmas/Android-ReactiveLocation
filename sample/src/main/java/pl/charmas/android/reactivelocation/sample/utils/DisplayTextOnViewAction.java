@@ -2,9 +2,9 @@ package pl.charmas.android.reactivelocation.sample.utils;
 
 import android.widget.TextView;
 
-import rx.functions.Action1;
+import io.reactivex.functions.Consumer;
 
-public class DisplayTextOnViewAction implements Action1<String> {
+public class DisplayTextOnViewAction implements Consumer<String> {
     private final TextView target;
 
     public DisplayTextOnViewAction(TextView target) {
@@ -12,7 +12,7 @@ public class DisplayTextOnViewAction implements Action1<String> {
     }
 
     @Override
-    public void call(String s) {
+    public void accept(String s) throws Exception {
         target.setText(s);
     }
 }

@@ -2,11 +2,11 @@ package pl.charmas.android.reactivelocation.sample.utils;
 
 import android.location.Address;
 
-import rx.functions.Func1;
+import io.reactivex.functions.Function;
 
-public class AddressToStringFunc implements Func1<Address, String> {
+public class AddressToStringFunc implements Function<Address, String> {
     @Override
-    public String call(Address address) {
+    public String apply(Address address) {
         if (address == null) return "";
 
         String addressLines = "";

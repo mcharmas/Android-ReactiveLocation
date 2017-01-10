@@ -1,15 +1,18 @@
 package pl.charmas.android.reactivelocation.observables;
 
+import android.support.annotation.NonNull;
+
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Action;
 
-public class PendingResultObservable<T extends Result> implements Observable.OnSubscribe<T> {
+
+public class PendingResultObservable<T extends Result> implements ObservableOnSubscribe<T> {
     private final PendingResult<T> result;
     private boolean complete = false;
 
@@ -18,18 +21,19 @@ public class PendingResultObservable<T extends Result> implements Observable.OnS
     }
 
     @Override
-    public void call(final Subscriber<? super T> subscriber) {
+    public void subscribe(final ObservableEmitter<T> emitter) throws Exception {
         result.setResultCallback(new ResultCallback<T>() {
             @Override
-            public void onResult(T t) {
-                subscriber.onNext(t);
+            public void onResult(@NonNull T t) {
+                emitter.onNext(t);
                 complete = true;
-                subscriber.onCompleted();
+                emitter.onComplete();
             }
         });
-        subscriber.add(Subscriptions.create(new Action0() {
+
+        emitter.setDisposable(Disposables.fromAction(new Action() {
             @Override
-            public void call() {
+            public void run() {
                 if (!complete) {
                     result.cancel();
                 }

@@ -2,10 +2,12 @@ package pl.charmas.android.reactivelocation;
 
 import com.google.android.gms.common.data.AbstractDataBuffer;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Action;
+
 
 /**
  * Util class that creates observable from buffer.
@@ -24,13 +26,15 @@ public final class DataBufferObservable {
      * @return observable that emits all items from buffer and on unsubscription releases it
      */
     public static <T> Observable<T> from(final AbstractDataBuffer<T> buffer) {
-        return Observable.create(new Observable.OnSubscribe<T>() {
+        return Observable.create(new ObservableOnSubscribe<T>() {
+
             @Override
-            public void call(Subscriber<? super T> subscriber) {
-                Observable.from(buffer).subscribe(subscriber);
-                subscriber.add(Subscriptions.create(new Action0() {
+            public void subscribe(ObservableEmitter<T> emitter) {
+                Observable.fromIterable(buffer).subscribe();
+
+                emitter.setDisposable(Disposables.fromAction(new Action() {
                     @Override
-                    public void call() {
+                    public void run() throws Exception {
                         buffer.release();
                     }
                 }));

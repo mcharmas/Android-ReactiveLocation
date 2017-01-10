@@ -8,11 +8,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.schedulers.Schedulers;
 
-public class ReverseGeocodeObservable implements Observable.OnSubscribe<List<Address>> {
+
+public class ReverseGeocodeObservable implements ObservableOnSubscribe<List<Address>> {
     private final Context ctx;
     private final Locale locale;
     private final double latitude;
@@ -32,20 +34,21 @@ public class ReverseGeocodeObservable implements Observable.OnSubscribe<List<Add
     }
 
     @Override
-    public void call(final Subscriber<? super List<Address>> subscriber) {
+    public void subscribe(ObservableEmitter<List<Address>> emitter) throws Exception {
         Geocoder geocoder = new Geocoder(ctx, locale);
         try {
-            subscriber.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
-            subscriber.onCompleted();
+            emitter.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
+            emitter.onComplete();
+
         } catch (IOException e) {
             // If it's a service not available error try a different approach using google web api
             if (e.getMessage().equalsIgnoreCase("Service not Available")) {
                 Observable
                         .create(new FallbackReverseGeocodeObservable(locale, latitude, longitude, maxResults))
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(subscriber);
+                        .subscribeOn(Schedulers.io());
+//                        .subscribe(subscriber);
             } else {
-                subscriber.onError(e);
+                emitter.onError(e);
             }
         }
     }

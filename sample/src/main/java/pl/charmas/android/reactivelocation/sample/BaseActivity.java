@@ -4,21 +4,22 @@ import android.Manifest;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.tbruyelle.rxpermissions.RxPermissions;
+import com.tbruyelle.rxpermissions2.RxPermissions;
 
-import rx.functions.Action1;
+import io.reactivex.functions.Consumer;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
         super.onStart();
-        RxPermissions
-                .getInstance(this)
-                .request(Manifest.permission.ACCESS_FINE_LOCATION)
-                .subscribe(new Action1<Boolean>() {
+
+        RxPermissions rxPermissions = new RxPermissions(this);
+        rxPermissions
+                .request(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                .subscribe(new Consumer<Boolean>() {
                     @Override
-                    public void call(Boolean granted) {
+                    public void accept(Boolean granted) throws Exception {
                         if (granted) {
                             onLocationPermissionGranted();
                         } else {

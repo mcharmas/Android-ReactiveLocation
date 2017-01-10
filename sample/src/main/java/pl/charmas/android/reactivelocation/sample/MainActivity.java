@@ -1,10 +1,13 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -22,18 +25,18 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import pl.charmas.android.reactivelocation.sample.utils.AddressToStringFunc;
 import pl.charmas.android.reactivelocation.sample.utils.DetectedActivityToString;
 import pl.charmas.android.reactivelocation.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
 import pl.charmas.android.reactivelocation.sample.utils.ToMostProbableActivity;
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
 
@@ -51,10 +54,10 @@ public class MainActivity extends BaseActivity {
     private Observable<Location> locationUpdatesObservable;
     private Observable<ActivityRecognitionResult> activityObservable;
 
-    private Subscription lastKnownLocationSubscription;
-    private Subscription updatableLocationSubscription;
-    private Subscription addressSubscription;
-    private Subscription activitySubscription;
+    private Disposable lastKnownLocationDisposable;
+    private Disposable updatableLocationDisposable;
+    private Disposable addressDisposable;
+    private Disposable activityDisposable;
     private Observable<String> addressObservable;
 
     @Override
@@ -68,6 +71,11 @@ public class MainActivity extends BaseActivity {
         currentActivityView = (TextView) findViewById(R.id.activity_recent_view);
 
         locationProvider = new ReactiveLocationProvider(getApplicationContext());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // shouldn't happen
+            return;
+        }
+
         lastKnownLocationObservable = locationProvider.getLastKnownLocation();
 
         final LocationRequest locationRequest = LocationRequest.create()
@@ -81,9 +89,9 @@ public class MainActivity extends BaseActivity {
                                 .setAlwaysShow(true)  //Refrence: http://stackoverflow.com/questions/29824408/google-play-services-locationservices-api-new-option-never
                                 .build()
                 )
-                .doOnNext(new Action1<LocationSettingsResult>() {
+                .doOnNext(new Consumer<LocationSettingsResult>() {
                     @Override
-                    public void call(LocationSettingsResult locationSettingsResult) {
+                    public void accept(LocationSettingsResult locationSettingsResult) {
                         Status status = locationSettingsResult.getStatus();
                         if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
                             try {
@@ -94,23 +102,28 @@ public class MainActivity extends BaseActivity {
                         }
                     }
                 })
-                .flatMap(new Func1<LocationSettingsResult, Observable<Location>>() {
+                .flatMap(new Function<LocationSettingsResult, Observable<Location>>() {
                     @Override
-                    public Observable<Location> call(LocationSettingsResult locationSettingsResult) {
+                    public Observable<Location> apply(LocationSettingsResult locationSettingsResult) {
+                        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                            throw new IllegalStateException("location permission denied");
+                        }
+
                         return locationProvider.getUpdatedLocation(locationRequest);
                     }
                 });
 
         addressObservable = locationProvider.getUpdatedLocation(locationRequest)
-                .flatMap(new Func1<Location, Observable<List<Address>>>() {
+                .flatMap(new Function<Location, Observable<List<Address>>>() {
                     @Override
-                    public Observable<List<Address>> call(Location location) {
+                    public Observable<List<Address>> apply(Location location) {
                         return locationProvider.getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
                     }
                 })
-                .map(new Func1<List<Address>, Address>() {
+                .map(new Function<List<Address>, Address>() {
                     @Override
-                    public Address call(List<Address> addresses) {
+                    public Address apply(List<Address> addresses) {
                         return addresses != null && !addresses.isEmpty() ? addresses.get(0) : null;
                     }
                 })
@@ -123,27 +136,27 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onLocationPermissionGranted() {
-        lastKnownLocationSubscription = lastKnownLocationObservable
+        lastKnownLocationDisposable = lastKnownLocationObservable
                 .map(new LocationToStringFunc())
                 .subscribe(new DisplayTextOnViewAction(lastKnownLocationView), new ErrorHandler());
 
-        updatableLocationSubscription = locationUpdatesObservable
+        updatableLocationDisposable = locationUpdatesObservable
                 .map(new LocationToStringFunc())
-                .map(new Func1<String, String>() {
+                .map(new Function<String, String>() {
                     int count = 0;
 
                     @Override
-                    public String call(String s) {
+                    public String apply(String s) {
                         return s + " " + count++;
                     }
                 })
                 .subscribe(new DisplayTextOnViewAction(updatableLocationView), new ErrorHandler());
 
 
-        addressSubscription = addressObservable
+        addressDisposable = addressObservable
                 .subscribe(new DisplayTextOnViewAction(addressLocationView), new ErrorHandler());
 
-        activitySubscription = activityObservable
+        activityDisposable = activityObservable
                 .map(new ToMostProbableActivity())
                 .map(new DetectedActivityToString())
                 .subscribe(new DisplayTextOnViewAction(currentActivityView), new ErrorHandler());
@@ -152,10 +165,10 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        unsubscribe(updatableLocationSubscription);
-        unsubscribe(addressSubscription);
-        unsubscribe(lastKnownLocationSubscription);
-        unsubscribe(activitySubscription);
+        unsubscribe(updatableLocationDisposable);
+        unsubscribe(addressDisposable);
+        unsubscribe(lastKnownLocationDisposable);
+        unsubscribe(activityDisposable);
     }
 
     @Override
@@ -188,9 +201,9 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 
-    private class ErrorHandler implements Action1<Throwable> {
+    private class ErrorHandler implements Consumer<Throwable> {
         @Override
-        public void call(Throwable throwable) {
+        public void accept(Throwable throwable) {
             Toast.makeText(MainActivity.this, "Error occurred.", Toast.LENGTH_SHORT).show();
             Log.d("MainActivity", "Error occurred", throwable);
         }

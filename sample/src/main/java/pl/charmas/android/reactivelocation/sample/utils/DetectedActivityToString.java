@@ -2,11 +2,11 @@ package pl.charmas.android.reactivelocation.sample.utils;
 
 import com.google.android.gms.location.DetectedActivity;
 
-import rx.functions.Func1;
+import io.reactivex.functions.Function;
 
-public class DetectedActivityToString implements Func1<DetectedActivity, String> {
+public class DetectedActivityToString implements Function<DetectedActivity, String> {
     @Override
-    public String call(DetectedActivity detectedActivity) {
+    public String apply(DetectedActivity detectedActivity) {
         return getNameFromType(detectedActivity.getType()) + " with confidence " + detectedActivity.getConfidence();
     }
 

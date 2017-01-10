@@ -1,8 +1,11 @@
 package pl.charmas.android.reactivelocation.sample;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -13,14 +16,17 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import pl.charmas.android.reactivelocation.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation.sample.utils.LocationToStringFunc;
-import rx.Observable;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.functions.Func1;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static pl.charmas.android.reactivelocation.sample.utils.UnsubscribeIfPresent.unsubscribe;
 
 public class GeofenceActivity extends BaseActivity {
@@ -31,7 +37,7 @@ public class GeofenceActivity extends BaseActivity {
     private EditText longitudeInput;
     private EditText radiusInput;
     private TextView lastKnownLocationView;
-    private Subscription lastKnownLocationSubscription;
+    private Disposable lastKnownLocationDisposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +68,12 @@ public class GeofenceActivity extends BaseActivity {
 
     @Override
     protected void onLocationPermissionGranted() {
-        lastKnownLocationSubscription = reactiveLocationProvider
+        if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
+            // shouldn't happen
+            return;
+        }
+
+        lastKnownLocationDisposable = reactiveLocationProvider
                 .getLastKnownLocation()
                 .map(new LocationToStringFunc())
                 .subscribe(new DisplayTextOnViewAction(lastKnownLocationView));
@@ -71,22 +82,24 @@ public class GeofenceActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        unsubscribe(lastKnownLocationSubscription);
+        unsubscribe(lastKnownLocationDisposable);
     }
 
     private void clearGeofence() {
-        reactiveLocationProvider.removeGeofences(createNotificationBroadcastPendingIntent()).subscribe(new Action1<Status>() {
-            @Override
-            public void call(Status status) {
-                toast("Geofences removed");
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                toast("Error removing geofences");
-                Log.d(TAG, "Error removing geofences", throwable);
-            }
-        });
+        reactiveLocationProvider
+                .removeGeofences(createNotificationBroadcastPendingIntent())
+                .subscribe(new Consumer<Status>() {
+                    @Override
+                    public void accept(Status status) throws Exception {
+                        toast("Geofences removed");
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        toast("Error removing geofences");
+                        Log.d(TAG, "Error removing geofences", throwable);
+                    }
+                });
     }
 
     private void toast(String text) {
@@ -102,22 +115,30 @@ public class GeofenceActivity extends BaseActivity {
         if (geofencingRequest == null) return;
 
         final PendingIntent pendingIntent = createNotificationBroadcastPendingIntent();
+
         reactiveLocationProvider
                 .removeGeofences(pendingIntent)
-                .flatMap(new Func1<Status, Observable<Status>>() {
+                .flatMap(new Function<Status, Observable<Status>>() {
                     @Override
-                    public Observable<Status> call(Status pendingIntentRemoveGeofenceResult) {
+                    public Observable<Status> apply(Status status) throws Exception {
+                        if (ActivityCompat.checkSelfPermission(GeofenceActivity.this, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED &&
+                                ActivityCompat.checkSelfPermission(GeofenceActivity.this, ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
+                            // shouldn't happen
+                            throw new IllegalStateException("location permission rejected");
+                        }
+
                         return reactiveLocationProvider.addGeofences(pendingIntent, geofencingRequest);
                     }
+
                 })
-                .subscribe(new Action1<Status>() {
+                .subscribe(new Consumer<Status>() {
                     @Override
-                    public void call(Status addGeofenceResult) {
+                    public void accept(Status addGeofenceResult) {
                         toast("Geofence added, success: " + addGeofenceResult.isSuccess());
                     }
-                }, new Action1<Throwable>() {
+                }, new Consumer<Throwable>() {
                     @Override
-                    public void call(Throwable throwable) {
+                    public void accept(Throwable throwable) {
                         toast("Error adding geofence.");
                         Log.d(TAG, "Error adding geofence.", throwable);
                     }

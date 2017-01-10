@@ -9,10 +9,12 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import java.io.IOException;
 import java.util.List;
 
-import rx.Observable;
-import rx.Subscriber;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 
-public class GeocodeObservable implements Observable.OnSubscribe<List<Address>> {
+
+public class GeocodeObservable implements ObservableOnSubscribe<List<Address>> {
     private final Context ctx;
     private final String locationName;
     private final int maxResults;
@@ -30,24 +32,26 @@ public class GeocodeObservable implements Observable.OnSubscribe<List<Address>> 
     }
 
     @Override
-    public void call(Subscriber<? super List<Address>> subscriber) {
+    public void subscribe(ObservableEmitter<List<Address>> emitter) throws Exception {
         Geocoder geocoder = new Geocoder(ctx);
         List<Address> result;
 
         try {
             if (bounds != null) {
                 result = geocoder.getFromLocationName(locationName, maxResults, bounds.southwest.latitude, bounds.southwest.longitude, bounds.northeast.latitude, bounds.northeast.longitude);
+
             } else {
                 result = geocoder.getFromLocationName(locationName, maxResults);
             }
 
-            if (!subscriber.isUnsubscribed()) {
-                subscriber.onNext(result);
-                subscriber.onCompleted();
+            if (!emitter.isDisposed()) {
+                emitter.onNext(result);
+                emitter.onComplete();
             }
+
         } catch (IOException e) {
-            if (!subscriber.isUnsubscribed()) {
-                subscriber.onError(e);
+            if (!emitter.isDisposed()) {
+                emitter.onError(e);
             }
         }
     }

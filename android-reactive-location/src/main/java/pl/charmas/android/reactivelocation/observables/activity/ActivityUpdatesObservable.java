@@ -10,8 +10,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionResult;
 
-import rx.Observable;
-import rx.Observer;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+
 
 public class ActivityUpdatesObservable extends BaseActivityObservable<ActivityRecognitionResult> {
     private static final String ACTION_ACTIVITY_DETECTED = "pl.charmas.android.reactivelocation.ACTION_ACTIVITY_UPDATE_DETECTED";
@@ -31,7 +32,7 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<ActivityRe
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, Observer<? super ActivityRecognitionResult> observer) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<ActivityRecognitionResult> observer) {
         receiver = new ActivityUpdatesBroadcastReceiver(observer);
         context.registerReceiver(receiver, new IntentFilter(ACTION_ACTIVITY_DETECTED));
         PendingIntent receiverIntent = getReceiverPendingIntent();
@@ -52,9 +53,9 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<ActivityRe
     }
 
     private static class ActivityUpdatesBroadcastReceiver extends BroadcastReceiver {
-        private final Observer<? super ActivityRecognitionResult> observer;
+        private final ObservableEmitter<ActivityRecognitionResult> observer;
 
-        public ActivityUpdatesBroadcastReceiver(Observer<? super ActivityRecognitionResult> observer) {
+        public ActivityUpdatesBroadcastReceiver(ObservableEmitter<ActivityRecognitionResult> observer) {
             this.observer = observer;
         }
 

@@ -17,10 +17,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import rx.Observable;
-import rx.Subscriber;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 
-class FallbackReverseGeocodeObservable implements Observable.OnSubscribe<List<Address>> {
+class FallbackReverseGeocodeObservable implements ObservableOnSubscribe<List<Address>> {
     private final Locale locale;
     private final double latitude;
     private final double longitude;
@@ -34,12 +34,12 @@ class FallbackReverseGeocodeObservable implements Observable.OnSubscribe<List<Ad
     }
 
     @Override
-    public void call(Subscriber<? super List<Address>> subscriber) {
+    public void subscribe(ObservableEmitter<List<Address>> emitter) throws Exception {
         try {
-            subscriber.onNext(alternativeReverseGeocodeQuery());
-            subscriber.onCompleted();
+            emitter.onNext(alternativeReverseGeocodeQuery());
+            emitter.onComplete();
         } catch (Exception ex) {
-            subscriber.onError(ex);
+            emitter.onError(ex);
         }
     }
 
@@ -149,4 +149,5 @@ class FallbackReverseGeocodeObservable implements Observable.OnSubscribe<List<Ad
 
         return Collections.unmodifiableList(outResult);
     }
+
 }
