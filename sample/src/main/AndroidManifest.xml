@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="pl.charmas.android.reactivelocation.sample">
+    package="pl.charmas.android.reactivelocation2.sample">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"
@@ -23,7 +23,7 @@
             android:value="@string/API_KEY" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="pl.charmas.android.reactivelocation2.sample.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,15 +32,15 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".GeofenceActivity" />
+        <activity android:name="pl.charmas.android.reactivelocation2.sample.GeofenceActivity" />
 
-        <activity android:name=".PlacesActivity" />
+        <activity android:name="pl.charmas.android.reactivelocation2.sample.PlacesActivity" />
 
-        <activity android:name=".PlacesResultActivity" />
+        <activity android:name="pl.charmas.android.reactivelocation2.sample.PlacesResultActivity" />
 
-        <activity android:name=".MockLocationsActivity" />
+        <activity android:name="pl.charmas.android.reactivelocation2.sample.MockLocationsActivity" />
 
-        <receiver android:name=".GeofenceBroadcastReceiver" />
+        <receiver android:name="pl.charmas.android.reactivelocation2.sample.GeofenceBroadcastReceiver" />
     </application>
 
 </manifest>

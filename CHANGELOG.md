@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 0.11
+----------------------------
+* Updated dependencies
+* RxJava 2 support
+
 Version 0.10
 ----------------------------
 * Updated dependencies
