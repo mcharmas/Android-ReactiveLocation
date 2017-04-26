@@ -4,7 +4,6 @@ import android.content.Context;
 import android.location.Location;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
@@ -21,7 +20,7 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
     }
 
     private final LocationRequest locationRequest;
-    private LocationListener listener;
+    private UnSubcribeableLocationListener listener;
 
     private LocationUpdatesObservable(Context ctx, LocationRequest locationRequest) {
         super(ctx);
@@ -30,12 +29,7 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final Observer<? super Location> observer) {
-        listener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                observer.onNext(location);
-            }
-        };
+        listener = new UnSubcribeableLocationListener(observer);
         LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, listener);
     }
 
@@ -44,6 +38,27 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
         if (locationClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(locationClient, listener);
         }
+        listener.unSubscribe();
     }
 
+    static class UnSubcribeableLocationListener implements com.google.android.gms.location.LocationListener {
+        private Observer<? super Location> observer;
+
+        public UnSubcribeableLocationListener(Observer<? super Location> observer) {
+            this.observer = observer;
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+            if (observer != null) {
+                observer.onNext(location);
+            }
+        }
+
+        void unSubscribe() {
+            this.observer = null;
+        }
+
+
+    }
 }
