@@ -30,7 +30,20 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
     @Override
     public void call(Subscriber<? super T> subscriber) {
 
-        final GoogleApiClient apiClient = createApiClient(subscriber);
+        final ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(subscriber);
+
+        GoogleApiClient.Builder apiClientBuilder = new GoogleApiClient.Builder(ctx);
+
+        for (Api<? extends Api.ApiOptions.NotRequiredOptions> service : services) {
+            apiClientBuilder.addApi(service);
+        }
+
+        apiClientBuilder.addConnectionCallbacks(apiClientConnectionCallbacks);
+        apiClientBuilder.addOnConnectionFailedListener(apiClientConnectionCallbacks);
+
+        final GoogleApiClient apiClient = apiClientBuilder.build();
+        apiClientConnectionCallbacks.setClient(apiClient);
+
         try {
             apiClient.connect();
         } catch (Throwable ex) {
@@ -43,33 +56,13 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
                 if (apiClient.isConnected() || apiClient.isConnecting()) {
                     onUnsubscribed(apiClient);
                     apiClient.disconnect();
+                    apiClient.unregisterConnectionFailedListener(apiClientConnectionCallbacks);
+                    apiClient.unregisterConnectionCallbacks(apiClientConnectionCallbacks);
                 }
             }
         }));
     }
 
-
-    protected GoogleApiClient createApiClient(Subscriber<? super T> subscriber) {
-
-        ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(subscriber);
-
-        GoogleApiClient.Builder apiClientBuilder = new GoogleApiClient.Builder(ctx);
-
-
-        for (Api<? extends Api.ApiOptions.NotRequiredOptions> service : services) {
-            apiClientBuilder.addApi(service);
-        }
-
-        apiClientBuilder.addConnectionCallbacks(apiClientConnectionCallbacks);
-        apiClientBuilder.addOnConnectionFailedListener(apiClientConnectionCallbacks);
-
-        GoogleApiClient apiClient = apiClientBuilder.build();
-
-        apiClientConnectionCallbacks.setClient(apiClient);
-
-        return apiClient;
-
-    }
 
     protected void onUnsubscribed(GoogleApiClient locationClient) {
     }
