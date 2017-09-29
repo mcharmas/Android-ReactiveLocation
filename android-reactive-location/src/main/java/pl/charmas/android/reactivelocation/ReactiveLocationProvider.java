@@ -201,6 +201,15 @@ public class ReactiveLocationProvider {
     }
 
     /**
+     * Creates geocoder with default Locale.
+     *
+     * @see ReactiveLocationProvider#getGeocodeObservable(String, int, LatLngBounds, Locale)
+     */
+    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds) {
+        return getGeocodeObservable(locationName, maxResults, bounds, null);
+    }
+
+    /**
      * Creates observable that translates a street address or other description into a list of
      * possible addresses using included Geocoder class. You should subscribe for this
      * observable on I/O thread.
@@ -211,10 +220,11 @@ public class ReactiveLocationProvider {
      * @param locationName a user-supplied description of a location
      * @param maxResults   max number of results you are interested in
      * @param bounds       restricts the results to geographical bounds. May be null
+     * @param locale       locale passed to geocoder
      * @return observable that serves list of address based on location name
      */
-    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds) {
-        return GeocodeObservable.createObservable(ctx, locationName, maxResults, bounds);
+    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
+        return GeocodeObservable.createObservable(ctx, locationName, maxResults, bounds, locale);
     }
 
     /**
