@@ -7,6 +7,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,12 +19,12 @@ import rx.subscriptions.Subscriptions;
 
 
 public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
-    private final Context ctx;
+    private WeakReference<Context> ctx;
     private final List<Api<? extends Api.ApiOptions.NotRequiredOptions>> services;
 
     @SafeVarargs
     protected BaseObservable(Context ctx, Api<? extends Api.ApiOptions.NotRequiredOptions>... services) {
-        this.ctx = ctx;
+        this.ctx = new WeakReference<>(ctx);
         this.services = Arrays.asList(services);
     }
 
@@ -55,7 +56,9 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
 
         ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(subscriber);
 
-        GoogleApiClient.Builder apiClientBuilder = new GoogleApiClient.Builder(ctx);
+        if (ctx.get() == null)
+            return null;
+        GoogleApiClient.Builder apiClientBuilder = new GoogleApiClient.Builder(ctx.get());
 
 
         for (Api<? extends Api.ApiOptions.NotRequiredOptions> service : services) {

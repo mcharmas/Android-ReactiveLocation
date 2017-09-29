@@ -19,9 +19,9 @@ android {
 //TODO: local maven deployment
 
 dependencies {
-    compile 'com.google.android.gms:play-services-location:9.4.0'
-    compile 'com.google.android.gms:play-services-places:9.4.0'
-    compile 'io.reactivex:rxjava:1.2.0'
+    compile 'com.google.android.gms:play-services-location:9.8.0'
+    compile 'com.google.android.gms:play-services-places:9.8.0'
+    compile 'io.reactivex:rxjava:1.2.2'
 }
 
 // Comment this to deploy to local maven repository

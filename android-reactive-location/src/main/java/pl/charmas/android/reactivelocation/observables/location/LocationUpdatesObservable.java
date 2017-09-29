@@ -2,11 +2,14 @@ package pl.charmas.android.reactivelocation.observables.location;
 
 import android.content.Context;
 import android.location.Location;
+import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.lang.ref.WeakReference;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
 import rx.Observable;
@@ -20,12 +23,12 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
         return Observable.create(new LocationUpdatesObservable(ctx, locationRequest));
     }
 
-    private final LocationRequest locationRequest;
+    private WeakReference<LocationRequest> locationRequest;
     private LocationListener listener;
 
     private LocationUpdatesObservable(Context ctx, LocationRequest locationRequest) {
         super(ctx);
-        this.locationRequest = locationRequest;
+        this.locationRequest = new WeakReference<>(locationRequest);
     }
 
     @Override
@@ -36,7 +39,12 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
                 observer.onNext(location);
             }
         };
-        LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, listener);
+        LocationRequest req = locationRequest.get();
+        if (req != null) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, req, listener);
+        } else {
+            Log.w("LocUpdatesObservable" ,"Null locationRequest");
+        }
     }
 
     @Override
@@ -44,6 +52,7 @@ public class LocationUpdatesObservable extends BaseLocationObservable<Location> 
         if (locationClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(locationClient, listener);
         }
+        listener = null;
     }
 
 }
