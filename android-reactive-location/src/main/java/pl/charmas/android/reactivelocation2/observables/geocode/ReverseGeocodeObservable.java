@@ -40,7 +40,7 @@ public class ReverseGeocodeObservable implements ObservableOnSubscribe<List<Addr
         try {
             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, maxResults);
             if (!emitter.isDisposed()) {
-                emitter.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
+                emitter.onNext(addresses);
                 emitter.onComplete();
             }
         } catch (IOException e) {

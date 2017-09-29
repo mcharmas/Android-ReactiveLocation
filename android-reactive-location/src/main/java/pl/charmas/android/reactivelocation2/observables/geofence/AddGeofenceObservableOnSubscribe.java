@@ -11,10 +11,8 @@ import com.google.android.gms.location.LocationServices;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
-import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
-import pl.charmas.android.reactivelocation.observables.ObservableContext;
-import pl.charmas.android.reactivelocation.observables.StatusException;
 
 
 public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
@@ -33,7 +31,7 @@ public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSu
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<Status> emitter) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<? super Status> emitter) {
         LocationServices.GeofencingApi.addGeofences(apiClient, request, geofenceTransitionPendingIntent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override

@@ -1,6 +1,5 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
-import android.content.Context;
 import android.location.Location;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -14,23 +13,24 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 public class MockLocationObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
     private Observable<Location> locationObservable;
     private Disposable mockLocationSubscription;
 
-    public static Observable<Status> createObservable(Context context, Observable<Location> locationObservable) {
+    public static Observable<Status> createObservable(ObservableContext context, Observable<Location> locationObservable) {
         return Observable.create(new MockLocationObservableOnSubscribe(context, locationObservable));
     }
 
-    private MockLocationObservableOnSubscribe(Context ctx, Observable<Location> locationObservable) {
+    private MockLocationObservableOnSubscribe(ObservableContext ctx, Observable<Location> locationObservable) {
         super(ctx);
         this.locationObservable = locationObservable;
     }
 
     @Override
-    protected void onGoogleApiClientReady(final GoogleApiClient apiClient, final ObservableEmitter<Status> emitter) {
+    protected void onGoogleApiClientReady(final GoogleApiClient apiClient, final ObservableEmitter<? super Status> emitter) {
         // this throws SecurityException if permissions are bad or mock locations are not enabled,
         // which is passed to observer's onError by BaseObservable
         LocationServices.FusedLocationApi.setMockMode(apiClient, true)
@@ -46,7 +46,7 @@ public class MockLocationObservableOnSubscribe extends BaseLocationObservableOnS
                 });
     }
 
-    private void startLocationMocking(final GoogleApiClient apiClient, final ObservableEmitter<Status> emitter) {
+    private void startLocationMocking(final GoogleApiClient apiClient, final ObservableEmitter<? super Status> emitter) {
         mockLocationSubscription = locationObservable
                 .subscribe(new Consumer<Location>() {
                                @Override

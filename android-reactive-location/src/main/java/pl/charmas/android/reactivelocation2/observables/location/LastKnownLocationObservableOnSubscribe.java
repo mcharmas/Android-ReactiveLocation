@@ -7,8 +7,8 @@ import com.google.android.gms.location.LocationServices;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 
 public class LastKnownLocationObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Location> {
     public static Observable<Location> createObservable(ObservableContext ctx) {
@@ -20,7 +20,7 @@ public class LastKnownLocationObservableOnSubscribe extends BaseLocationObservab
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<Location> emitter) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<? super Location> emitter) {
         Location location = LocationServices.FusedLocationApi.getLastLocation(apiClient);
         if (location != null) {
             emitter.onNext(location);

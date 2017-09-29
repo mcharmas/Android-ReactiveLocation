@@ -8,7 +8,7 @@ import com.google.android.gms.location.LocationServices;
 import java.util.List;
 
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
@@ -21,7 +21,7 @@ class RemoveGeofenceRequestIdsObservableOnSubscribe extends RemoveGeofenceObserv
     }
 
     @Override
-    protected void removeGeofences(GoogleApiClient locationClient, final ObservableEmitter<Status> emitter) {
+    protected void removeGeofences(GoogleApiClient locationClient, final ObservableEmitter<? super Status> emitter) {
         LocationServices.GeofencingApi.removeGeofences(locationClient, geofenceRequestIds)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override

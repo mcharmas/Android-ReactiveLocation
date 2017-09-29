@@ -1,4 +1,4 @@
-package pl.charmas.android.reactivelocation.observables;
+package pl.charmas.android.reactivelocation2.observables;
 
 import android.content.Context;
 import android.os.Handler;
@@ -16,7 +16,7 @@ public class ObservableContext {
         return context;
     }
 
-    public Handler getHandler() {
+    Handler getHandler() {
         return handler;
     }
 }

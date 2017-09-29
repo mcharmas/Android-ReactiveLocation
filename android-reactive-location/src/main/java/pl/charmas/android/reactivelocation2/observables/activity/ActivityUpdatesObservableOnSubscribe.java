@@ -12,7 +12,7 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 
 
 public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservableOnSubscribe<ActivityRecognitionResult> {
@@ -26,14 +26,14 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
         return Observable.create(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
     }
 
-    private ActivityUpdatesObservable(ObservableContext context, int detectionIntervalMilliseconds) {
+    private ActivityUpdatesObservableOnSubscribe(ObservableContext context, int detectionIntervalMilliseconds) {
         super(context);
         this.context = context.getContext();
         this.detectionIntervalMilliseconds = detectionIntervalMilliseconds;
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<ActivityRecognitionResult> emitter) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<? super ActivityRecognitionResult> emitter) {
         receiver = new ActivityUpdatesBroadcastReceiver(emitter);
         context.registerReceiver(receiver, new IntentFilter(ACTION_ACTIVITY_DETECTED));
         PendingIntent receiverIntent = getReceiverPendingIntent();
@@ -56,9 +56,9 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
     }
 
     private static class ActivityUpdatesBroadcastReceiver extends BroadcastReceiver {
-        private final ObservableEmitter<ActivityRecognitionResult> emitter;
+        private final ObservableEmitter<? super ActivityRecognitionResult> emitter;
 
-        public ActivityUpdatesBroadcastReceiver(ObservableEmitter<ActivityRecognitionResult> emitter) {
+        public ActivityUpdatesBroadcastReceiver(ObservableEmitter<? super ActivityRecognitionResult> emitter) {
             this.emitter = emitter;
         }
 

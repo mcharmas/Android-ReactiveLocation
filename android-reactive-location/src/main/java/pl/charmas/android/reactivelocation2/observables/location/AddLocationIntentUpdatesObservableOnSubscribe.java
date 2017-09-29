@@ -10,8 +10,8 @@ import com.google.android.gms.location.LocationServices;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
@@ -30,7 +30,7 @@ public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationO
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<Status> emitter) {
+    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<? super Status> emitter) {
         LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, intent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override

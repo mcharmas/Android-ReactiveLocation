@@ -36,6 +36,7 @@ import java.util.Locale;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.PendingResultObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.activity.ActivityUpdatesObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.geocode.GeocodeObservable;

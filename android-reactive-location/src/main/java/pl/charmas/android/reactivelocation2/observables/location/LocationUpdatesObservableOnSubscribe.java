@@ -7,16 +7,17 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.lang.ref.WeakReference;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
-import java.lang.ref.WeakReference;
+import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 
 
 public class LocationUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Location> {
     public static Observable<Location> createObservable(ObservableContext ctx, LocationRequest locationRequest) {
-        Observable<Location> observable = Observable.create(new LocationUpdatesObservable(ctx, locationRequest));
+        Observable<Location> observable = Observable.create(new LocationUpdatesObservableOnSubscribe(ctx, locationRequest));
         int requestedNumberOfUpdates = locationRequest.getNumUpdates();
         if (requestedNumberOfUpdates > 0 && requestedNumberOfUpdates < Integer.MAX_VALUE) {
             observable = observable.take(requestedNumberOfUpdates);

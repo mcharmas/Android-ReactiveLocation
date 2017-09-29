@@ -73,9 +73,9 @@ public class PlacesActivity extends BaseActivity {
                                 }
                                 buffer.release();
                             }
-                        }, new Action1<Throwable>() {
+                        }, new Consumer<Throwable>() {
                             @Override
-                            public void call(Throwable throwable) {
+                            public void accept(Throwable throwable) throws Exception {
                                 Log.e("PlacesActivity", "Error in observable", throwable);
                             }
                         })
@@ -100,10 +100,10 @@ public class PlacesActivity extends BaseActivity {
         Observable<AutocompletePredictionBuffer> suggestionsObservable = Observable
                 .combineLatest(queryObservable, lastKnownLocationObservable,
                         new BiFunction<String, Location, QueryWithCurrentLocation>() {
-                    @Override
-                    public QueryWithCurrentLocation apply(String query, Location currentLocation) {
-                        return new QueryWithCurrentLocation(query, currentLocation);
-                    }
+                            @Override
+                            public QueryWithCurrentLocation apply(String query, Location currentLocation) {
+                                return new QueryWithCurrentLocation(query, currentLocation);
+                            }
                         }).flatMap(new Function<QueryWithCurrentLocation, Observable<AutocompletePredictionBuffer>>() {
                     @Override
                     public Observable<AutocompletePredictionBuffer> apply(QueryWithCurrentLocation q) {

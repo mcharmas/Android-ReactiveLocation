@@ -36,27 +36,28 @@ public class GeocodeObservable implements ObservableOnSubscribe<List<Address>> {
 
     @Override
     public void subscribe(ObservableEmitter<List<Address>> emitter) throws Exception {
-        Geocoder geocoder = new Geocoder(ctx);
-        List<Address> result;
-
+        Geocoder geocoder = createGeocoder();
         try {
-            if (bounds != null) {
-                result = geocoder.getFromLocationName(locationName, maxResults, bounds.southwest.latitude, bounds.southwest.longitude, bounds.northeast.latitude, bounds.northeast.longitude);
-
-            } else {
-                result = geocoder.getFromLocationName(locationName, maxResults);
-            }
-
+            List<Address> result = getAddresses(geocoder);
             if (!emitter.isDisposed()) {
                 emitter.onNext(result);
                 emitter.onComplete();
             }
-
         } catch (IOException e) {
             if (!emitter.isDisposed()) {
                 emitter.onError(e);
             }
         }
+    }
+
+    private List<Address> getAddresses(Geocoder geocoder) throws IOException {
+        List<Address> result;
+        if (bounds != null) {
+            result = geocoder.getFromLocationName(locationName, maxResults, bounds.southwest.latitude, bounds.southwest.longitude, bounds.northeast.latitude, bounds.northeast.longitude);
+        } else {
+            result = geocoder.getFromLocationName(locationName, maxResults);
+        }
+        return result;
     }
 
     @NonNull

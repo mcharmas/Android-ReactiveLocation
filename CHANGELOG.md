@@ -9,11 +9,6 @@ Version 1.0
 * Fixed memory leak in location observable
 * Checking if subscripion is still on before emitting values in few places
 
-Version 0.11
-----------------------------
-* Updated dependencies
-* RxJava 2 support
-
 Version 0.10
 ----------------------------
 * Updated dependencies
