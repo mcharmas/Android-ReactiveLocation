@@ -1,7 +1,8 @@
 package pl.charmas.android.reactivelocation.observables;
 
-import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.Api;
@@ -18,12 +19,14 @@ import rx.subscriptions.Subscriptions;
 
 
 public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
-    private final Context ctx;
+    private final android.content.Context ctx;
+    private final Handler handler;
     private final List<Api<? extends Api.ApiOptions.NotRequiredOptions>> services;
 
     @SafeVarargs
-    protected BaseObservable(Context ctx, Api<? extends Api.ApiOptions.NotRequiredOptions>... services) {
-        this.ctx = ctx;
+    protected BaseObservable(ObservableContext ctx, Api<? extends Api.ApiOptions.NotRequiredOptions>... services) {
+        this.ctx = ctx.getContext();
+        this.handler = ctx.getHandler();
         this.services = Arrays.asList(services);
     }
 
@@ -34,7 +37,7 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
         try {
             apiClient.connect();
         } catch (Throwable ex) {
-            if(!subscriber.isUnsubscribed()) {
+            if (!subscriber.isUnsubscribed()) {
                 subscriber.onError(ex);
             }
         }
@@ -51,26 +54,25 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
     }
 
 
-    protected GoogleApiClient createApiClient(Subscriber<? super T> subscriber) {
-
+    private GoogleApiClient createApiClient(Subscriber<? super T> subscriber) {
         ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(subscriber);
-
         GoogleApiClient.Builder apiClientBuilder = new GoogleApiClient.Builder(ctx);
 
-
         for (Api<? extends Api.ApiOptions.NotRequiredOptions> service : services) {
-            apiClientBuilder.addApi(service);
+            apiClientBuilder = apiClientBuilder.addApi(service);
         }
 
-        apiClientBuilder.addConnectionCallbacks(apiClientConnectionCallbacks);
-        apiClientBuilder.addOnConnectionFailedListener(apiClientConnectionCallbacks);
+        apiClientBuilder = apiClientBuilder
+                .addConnectionCallbacks(apiClientConnectionCallbacks)
+                .addOnConnectionFailedListener(apiClientConnectionCallbacks);
+
+        if (this.handler != null) {
+            apiClientBuilder = apiClientBuilder.setHandler(handler);
+        }
 
         GoogleApiClient apiClient = apiClientBuilder.build();
-
         apiClientConnectionCallbacks.setClient(apiClient);
-
         return apiClient;
-
     }
 
     protected void onUnsubscribed(GoogleApiClient locationClient) {
@@ -105,11 +107,11 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
         }
 
         @Override
-        public void onConnectionFailed(ConnectionResult connectionResult) {
+        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
             observer.onError(new GoogleAPIConnectionException("Error connecting to GoogleApiClient.", connectionResult));
         }
 
-        public void setClient(GoogleApiClient client) {
+        void setClient(GoogleApiClient client) {
             this.apiClient = client;
         }
     }

@@ -1,20 +1,20 @@
 package pl.charmas.android.reactivelocation.observables.geofence;
 
 import android.app.PendingIntent;
-import android.content.Context;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observer;
 
 class RemoveGeofenceByPendingIntentObservable extends RemoveGeofenceObservable<Status> {
     private final PendingIntent pendingIntent;
 
-    RemoveGeofenceByPendingIntentObservable(Context ctx, PendingIntent pendingIntent) {
+    RemoveGeofenceByPendingIntentObservable(ObservableContext ctx, PendingIntent pendingIntent) {
         super(ctx);
         this.pendingIntent = pendingIntent;
     }

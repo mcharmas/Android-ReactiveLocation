@@ -1,7 +1,6 @@
 package pl.charmas.android.reactivelocation.observables.geofence;
 
 import android.app.PendingIntent;
-import android.content.Context;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -10,6 +9,7 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observable;
 import rx.Observer;
@@ -18,11 +18,11 @@ public class AddGeofenceObservable extends BaseLocationObservable<Status> {
     private final GeofencingRequest request;
     private final PendingIntent geofenceTransitionPendingIntent;
 
-    public static Observable<Status> createObservable(Context ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
+    public static Observable<Status> createObservable(ObservableContext ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
         return Observable.create(new AddGeofenceObservable(ctx, request, geofenceTransitionPendingIntent));
     }
 
-    private AddGeofenceObservable(Context ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
+    private AddGeofenceObservable(ObservableContext ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
         super(ctx);
         this.request = request;
         this.geofenceTransitionPendingIntent = geofenceTransitionPendingIntent;

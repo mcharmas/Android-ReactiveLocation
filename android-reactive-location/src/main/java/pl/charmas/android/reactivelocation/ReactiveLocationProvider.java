@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.location.Address;
 import android.location.Location;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
 
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 import pl.charmas.android.reactivelocation.observables.GoogleAPIClientObservable;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation.observables.PendingResultObservable;
 import pl.charmas.android.reactivelocation.observables.activity.ActivityUpdatesObservable;
 import pl.charmas.android.reactivelocation.observables.geocode.GeocodeObservable;
@@ -52,10 +54,26 @@ import rx.functions.Func1;
  * delivered by Google Play Services.
  */
 public class ReactiveLocationProvider {
-    private final Context ctx;
+    private final ObservableContext ctx;
 
+    /**
+     * Creates location provider instance.
+     *
+     * @param ctx preferably application context
+     */
     public ReactiveLocationProvider(Context ctx) {
-        this.ctx = ctx;
+        this(ctx, null);
+    }
+
+    /**
+     * Creates location provider with custom handler in which all GooglePlayServices callbacks are called.
+     *
+     * @param ctx preferably application context
+     * @param handler on which all GooglePlayServices callbacks are called
+     * @see com.google.android.gms.common.api.GoogleApiClient.Builder#setHandler(android.os.Handler)
+     */
+    public ReactiveLocationProvider(Context ctx, Handler handler) {
+        this.ctx = new ObservableContext(ctx, handler);
     }
 
     /**
@@ -167,7 +185,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx, Locale.getDefault(), lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctx.getContext(), Locale.getDefault(), lat, lng, maxResults);
     }
 
     /**
@@ -183,7 +201,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(Locale locale, double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx, locale, lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctx.getContext(), locale, lat, lng, maxResults);
     }
 
     /**
@@ -224,7 +242,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location name
      */
     public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
-        return GeocodeObservable.createObservable(ctx, locationName, maxResults, bounds, locale);
+        return GeocodeObservable.createObservable(ctx.getContext(), locationName, maxResults, bounds, locale);
     }
 
     /**

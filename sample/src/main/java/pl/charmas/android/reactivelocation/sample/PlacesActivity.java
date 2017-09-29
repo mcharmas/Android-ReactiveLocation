@@ -3,6 +3,7 @@ package pl.charmas.android.reactivelocation.sample;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -65,11 +66,18 @@ public class PlacesActivity extends BaseActivity {
                         .subscribe(new Action1<PlaceLikelihoodBuffer>() {
                             @Override
                             public void call(PlaceLikelihoodBuffer buffer) {
-                                PlaceLikelihood likelihood = buffer.get(0);
-                                if (likelihood != null) {
-                                    currentPlaceView.setText(likelihood.getPlace().getName());
+                                if (buffer.getCount() > 0) {
+                                    PlaceLikelihood likelihood = buffer.get(0);
+                                    if (likelihood != null) {
+                                        currentPlaceView.setText(likelihood.getPlace().getName());
+                                    }
                                 }
                                 buffer.release();
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Log.e("PlacesActivity", "Error in observable", throwable);
                             }
                         })
         );

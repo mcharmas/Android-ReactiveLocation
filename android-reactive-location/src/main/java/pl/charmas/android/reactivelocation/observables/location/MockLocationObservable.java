@@ -1,6 +1,5 @@
 package pl.charmas.android.reactivelocation.observables.location;
 
-import android.content.Context;
 import android.location.Location;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -9,6 +8,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
 import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation.observables.StatusException;
 import rx.Observable;
 import rx.Observer;
@@ -20,11 +20,11 @@ public class MockLocationObservable extends BaseLocationObservable<Status> {
     private Observable<Location> locationObservable;
     private Subscription mockLocationSubscription;
 
-    public static Observable<Status> createObservable(Context context, Observable<Location> locationObservable) {
+    public static Observable<Status> createObservable(ObservableContext context, Observable<Location> locationObservable) {
         return Observable.create(new MockLocationObservable(context, locationObservable));
     }
 
-    protected MockLocationObservable(Context ctx, Observable<Location> locationObservable) {
+    protected MockLocationObservable(ObservableContext ctx, Observable<Location> locationObservable) {
         super(ctx);
         this.locationObservable = locationObservable;
     }

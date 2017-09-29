@@ -68,7 +68,10 @@ public class MainActivity extends BaseActivity {
         currentActivityView = (TextView) findViewById(R.id.activity_recent_view);
 
         locationProvider = new ReactiveLocationProvider(getApplicationContext());
-        lastKnownLocationObservable = locationProvider.getLastKnownLocation();
+
+        lastKnownLocationObservable = locationProvider
+                .getLastKnownLocation()
+                .observeOn(AndroidSchedulers.mainThread());
 
         final LocationRequest locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -99,7 +102,8 @@ public class MainActivity extends BaseActivity {
                     public Observable<Location> call(LocationSettingsResult locationSettingsResult) {
                         return locationProvider.getUpdatedLocation(locationRequest);
                     }
-                });
+                })
+                .observeOn(AndroidSchedulers.mainThread());
 
         addressObservable = locationProvider.getUpdatedLocation(locationRequest)
                 .flatMap(new Func1<Location, Observable<List<Address>>>() {
@@ -118,7 +122,9 @@ public class MainActivity extends BaseActivity {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
 
-        activityObservable = locationProvider.getDetectedActivity(50);
+        activityObservable = locationProvider
+                .getDetectedActivity(50)
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     @Override

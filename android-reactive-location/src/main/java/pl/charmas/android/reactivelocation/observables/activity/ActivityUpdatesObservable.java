@@ -10,6 +10,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionResult;
 
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import rx.Observable;
 import rx.Observer;
 
@@ -20,13 +21,13 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<ActivityRe
     private final int detectionIntervalMilliseconds;
     private ActivityUpdatesBroadcastReceiver receiver;
 
-    public static Observable<ActivityRecognitionResult> createObservable(Context ctx, int detectionIntervalMiliseconds) {
+    public static Observable<ActivityRecognitionResult> createObservable(ObservableContext ctx, int detectionIntervalMiliseconds) {
         return Observable.create(new ActivityUpdatesObservable(ctx, detectionIntervalMiliseconds));
     }
 
-    private ActivityUpdatesObservable(Context context, int detectionIntervalMilliseconds) {
+    private ActivityUpdatesObservable(ObservableContext context, int detectionIntervalMilliseconds) {
         super(context);
-        this.context = context;
+        this.context = context.getContext();
         this.detectionIntervalMilliseconds = detectionIntervalMilliseconds;
     }
 
