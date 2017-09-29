@@ -4,10 +4,18 @@ ReactiveLocation library for Android
 Small library that wraps Google Play Services API in brilliant [RxJava](https://github.com/ReactiveX/RxJava)
 ```Observables``` reducing boilerplate to minimum.
 
-Current stable version - 0.11
+Current stable version - 2.0
 ---------------
 
-**This version works with Google Play Services 10.0 and RxJava 2.0.+**
+**This version works with Google Play Services 11+ and RxJava 2.+**
+
+Artifact name: ```android-reactive-location2```
+
+RxJava1 stable version - 1.0
+--------------
+**RxJava1 version:**
+
+Artifact name: ```android-reactive-location```
 
 What can you do with that?
 --------------------------
@@ -34,7 +42,7 @@ All observables are already there. Examples are worth more than 1000 words:
 ```java
 ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(context);
 locationProvider.getLastKnownLocation()
-    .subscribe(new Action1<Location>() {
+    .subscribe(new Consumer<Location>() {
         @Override
         public void call(Location location) {
             doSthImportantWithObtainedLocation(location);
@@ -60,7 +68,7 @@ Subscription subscription = locationProvider.getUpdatedLocation(request)
     .map(...)       // you can map location to sth different
     .flatMap(...)   // or event flat map
     ...             // and do everything else that is provided by RxJava
-    .subscribe(new Action1<Location>() {
+    .subscribe(new Consumer<Location>() {
         @Override
         public void call(Location location) {
             doSthImportantWithObtainedLocation(location);
@@ -86,7 +94,7 @@ Subscription subscription = locationProvider.getDetectedActivity(0) // detection
     .map(...)       // you can map location to sth different
     .flatMap(...)   // or event flat map
     ...             // and do everything else that is provided by RxJava
-    .subscribe(new Action1<ActivityRecognitionResult>() {
+    .subscribe(new Consumer<ActivityRecognitionResult>() {
         @Override
         public void call(ActivityRecognitionResult detectedActivity) {
             doSthImportantWithObtainedActivity(detectedActivity);
@@ -200,9 +208,9 @@ along with Google Play Services and RxJava.
 ```groovy
 dependencies {
     ...
-    compile 'pl.charmas.android:android-reactive-location2:0.11@aar'
-    compile 'com.google.android.gms:play-services-location:10.0.0' //you can use newer GMS version if you need
-    compile 'com.google.android.gms:play-services-places:10.0.0'
+    compile 'pl.charmas.android:android-reactive-location2:2.0@aar'
+    compile 'com.google.android.gms:play-services-location:11.0.4' //you can use newer GMS version if you need
+    compile 'com.google.android.gms:play-services-places:11.0.4'
     compile 'io.reactivex:rxjava:2.0.5' //you can override RxJava version if you need
 }
 ```
@@ -216,7 +224,7 @@ following dependency:
 <dependency>
     <groupId>pl.charmas.android</groupId>
     <artifactId>android-reactive-location2</artifactId>
-    <version>0.11</version>
+    <version>2.0</version>
     <type>aar</type>
 </dependency>
 ```
