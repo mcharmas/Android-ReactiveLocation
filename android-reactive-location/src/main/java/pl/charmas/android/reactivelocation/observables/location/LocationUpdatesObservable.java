@@ -16,10 +16,13 @@ import rx.Observer;
 
 public class LocationUpdatesObservable extends BaseLocationObservable<Location> {
 
-    private static final String TAG = LocationUpdatesObservable.class.getSimpleName();
-
     public static Observable<Location> createObservable(Context ctx, LocationRequest locationRequest) {
-        return Observable.create(new LocationUpdatesObservable(ctx, locationRequest));
+        Observable<Location> observable = Observable.create(new LocationUpdatesObservable(ctx, locationRequest));
+        int requestedNumberOfUpdates = locationRequest.getNumUpdates();
+        if (requestedNumberOfUpdates > 0 && requestedNumberOfUpdates < Integer.MAX_VALUE) {
+            observable = observable.take(requestedNumberOfUpdates);
+        }
+        return observable;
     }
 
     private final LocationRequest locationRequest;
