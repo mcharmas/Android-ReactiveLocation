@@ -1,6 +1,7 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
 import android.app.PendingIntent;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -25,7 +26,7 @@ class RemoveGeofenceByPendingIntentObservableOnSubscribe extends RemoveGeofenceO
         LocationServices.GeofencingApi.removeGeofences(locationClient, pendingIntent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
-                    public void onResult(Status status) {
+                    public void onResult(@NonNull Status status) {
                         if (status.isSuccess()) {
                             emitter.onNext(status);
                             emitter.onComplete();

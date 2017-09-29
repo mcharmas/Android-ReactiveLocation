@@ -1,5 +1,7 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
+import android.support.annotation.NonNull;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -25,7 +27,7 @@ class RemoveGeofenceRequestIdsObservableOnSubscribe extends RemoveGeofenceObserv
         LocationServices.GeofencingApi.removeGeofences(locationClient, geofenceRequestIds)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
-                    public void onResult(Status status) {
+                    public void onResult(@NonNull Status status) {
                         if (status.isSuccess()) {
                             emitter.onNext(status);
                             emitter.onComplete();

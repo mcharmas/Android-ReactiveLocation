@@ -1,6 +1,7 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
 import android.location.Location;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -16,8 +17,9 @@ import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOn
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
+@SuppressWarnings("MissingPermission")
 public class MockLocationObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
-    private Observable<Location> locationObservable;
+    private final Observable<Location> locationObservable;
     private Disposable mockLocationSubscription;
 
     public static Observable<Status> createObservable(ObservableContext context, Observable<Location> locationObservable) {
@@ -36,7 +38,7 @@ public class MockLocationObservableOnSubscribe extends BaseLocationObservableOnS
         LocationServices.FusedLocationApi.setMockMode(apiClient, true)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
-                    public void onResult(Status status) {
+                    public void onResult(@NonNull Status status) {
                         if (status.isSuccess()) {
                             startLocationMocking(apiClient, emitter);
                         } else {
@@ -54,7 +56,7 @@ public class MockLocationObservableOnSubscribe extends BaseLocationObservableOnS
                                    LocationServices.FusedLocationApi.setMockLocation(apiClient, location)
                                            .setResultCallback(new ResultCallback<Status>() {
                                                @Override
-                                               public void onResult(Status status) {
+                                               public void onResult(@NonNull Status status) {
                                                    if (status.isSuccess()) {
                                                        emitter.onNext(status);
                                                    } else {

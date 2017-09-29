@@ -1,6 +1,7 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
 import android.app.PendingIntent;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -15,6 +16,7 @@ import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
+@SuppressWarnings("MissingPermission")
 public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
     private final GeofencingRequest request;
     private final PendingIntent geofenceTransitionPendingIntent;
@@ -35,7 +37,7 @@ public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSu
         LocationServices.GeofencingApi.addGeofences(apiClient, request, geofenceTransitionPendingIntent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
-                    public void onResult(Status status) {
+                    public void onResult(@NonNull Status status) {
                         if (status.isSuccess()) {
                             emitter.onNext(status);
                             emitter.onComplete();

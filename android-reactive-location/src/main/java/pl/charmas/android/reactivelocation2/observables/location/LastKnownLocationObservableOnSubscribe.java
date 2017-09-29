@@ -10,6 +10,7 @@ import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 
+@SuppressWarnings("MissingPermission")
 public class LastKnownLocationObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Location> {
     public static Observable<Location> createObservable(ObservableContext ctx) {
         return Observable.create(new LastKnownLocationObservableOnSubscribe(ctx));

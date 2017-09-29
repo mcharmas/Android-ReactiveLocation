@@ -15,8 +15,9 @@ import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 
 
+@SuppressWarnings("MissingPermission")
 public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservableOnSubscribe<ActivityRecognitionResult> {
-    private static final String ACTION_ACTIVITY_DETECTED = "pl.charmas.android.reactivelocation.ACTION_ACTIVITY_UPDATE_DETECTED";
+    private static final String ACTION_ACTIVITY_DETECTED = "pl.charmas.android.reactivelocation2.ACTION_ACTIVITY_UPDATE_DETECTED";
 
     private final Context context;
     private final int detectionIntervalMilliseconds;

@@ -1,6 +1,7 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
 import android.app.PendingIntent;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -15,6 +16,7 @@ import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
+@SuppressWarnings("MissingPermission")
 public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
     private final LocationRequest locationRequest;
     private final PendingIntent intent;
@@ -34,7 +36,7 @@ public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationO
         LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, intent)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
-                    public void onResult(Status status) {
+                    public void onResult(@NonNull Status status) {
                         if (!status.isSuccess()) {
                             emitter.onError(new StatusException(status));
                         } else {

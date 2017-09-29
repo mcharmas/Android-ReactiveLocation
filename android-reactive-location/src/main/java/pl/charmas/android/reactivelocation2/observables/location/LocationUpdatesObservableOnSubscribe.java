@@ -15,6 +15,7 @@ import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOn
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 
 
+@SuppressWarnings("MissingPermission")
 public class LocationUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Location> {
     public static Observable<Location> createObservable(ObservableContext ctx, LocationRequest locationRequest) {
         Observable<Location> observable = Observable.create(new LocationUpdatesObservableOnSubscribe(ctx, locationRequest));
@@ -55,7 +56,7 @@ public class LocationUpdatesObservableOnSubscribe extends BaseLocationObservable
 
         @Override
         public void onLocationChanged(Location location) {
-            final Observer<? super Location> observer = weakRef.get();
+            final ObservableEmitter<? super Location> observer = weakRef.get();
             if (observer != null) {
                 observer.onNext(location);
             }
