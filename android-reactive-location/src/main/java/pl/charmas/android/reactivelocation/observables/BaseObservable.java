@@ -34,7 +34,9 @@ public abstract class BaseObservable<T> implements Observable.OnSubscribe<T> {
         try {
             apiClient.connect();
         } catch (Throwable ex) {
-            subscriber.onError(ex);
+            if(!subscriber.isUnsubscribed()) {
+                subscriber.onError(ex);
+            }
         }
 
         subscriber.add(Subscriptions.create(new Action0() {
