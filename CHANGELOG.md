@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 2.0
+----------------------------
+* Support for RxJava2
+
 Version 1.0
 ----------------------------
 * Add Locale to geocode observable
