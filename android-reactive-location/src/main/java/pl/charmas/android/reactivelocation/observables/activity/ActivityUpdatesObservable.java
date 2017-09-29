@@ -47,8 +47,10 @@ public class ActivityUpdatesObservable extends BaseActivityObservable<ActivityRe
         if (apiClient.isConnected()) {
             ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(apiClient, getReceiverPendingIntent());
         }
-        context.unregisterReceiver(receiver);
-        receiver = null;
+        if (receiver != null) {
+            context.unregisterReceiver(receiver);
+            receiver = null;
+        }
     }
 
     private static class ActivityUpdatesBroadcastReceiver extends BroadcastReceiver {
