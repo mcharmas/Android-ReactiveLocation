@@ -35,14 +35,14 @@ public class ReverseGeocodeObservable implements Observable.OnSubscribe<List<Add
     public void call(final Subscriber<? super List<Address>> subscriber) {
         Geocoder geocoder = new Geocoder(ctx, locale);
         try {
-            List <Address> addresses = geocoder.getFromLocation(latitude, longitude, maxResults);
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, maxResults);
             if (!subscriber.isUnsubscribed()) {
                 subscriber.onNext(addresses);
                 subscriber.onCompleted();
             }
         } catch (IOException e) {
             // If it's a service not available error try a different approach using google web api
-            if (!subscriber.isUnsubscribed() && e.getMessage().equalsIgnoreCase("Service not Available")) {
+            if (!subscriber.isUnsubscribed()) {
                 Observable
                         .create(new FallbackReverseGeocodeObservable(locale, latitude, longitude, maxResults))
                         .subscribeOn(Schedulers.io())
