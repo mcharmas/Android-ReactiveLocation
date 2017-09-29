@@ -1,7 +1,6 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
 import android.app.PendingIntent;
-import android.content.Context;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -9,13 +8,14 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
 import io.reactivex.ObservableEmitter;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
 class RemoveGeofenceByPendingIntentObservableOnSubscribe extends RemoveGeofenceObservableOnSubscribe<Status> {
     private final PendingIntent pendingIntent;
 
-    RemoveGeofenceByPendingIntentObservableOnSubscribe(Context ctx, PendingIntent pendingIntent) {
+    RemoveGeofenceByPendingIntentObservableOnSubscribe(ObservableContext ctx, PendingIntent pendingIntent) {
         super(ctx);
         this.pendingIntent = pendingIntent;
     }

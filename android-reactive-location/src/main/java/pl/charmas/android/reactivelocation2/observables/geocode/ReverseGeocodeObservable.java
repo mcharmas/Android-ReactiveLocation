@@ -38,11 +38,14 @@ public class ReverseGeocodeObservable implements ObservableOnSubscribe<List<Addr
     public void subscribe(ObservableEmitter<List<Address>> emitter) throws Exception {
         Geocoder geocoder = new Geocoder(ctx, locale);
         try {
-            emitter.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
-            emitter.onComplete();
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, maxResults);
+            if (!emitter.isDisposed()) {
+                emitter.onNext(geocoder.getFromLocation(latitude, longitude, maxResults));
+                emitter.onComplete();
+            }
         } catch (IOException e) {
             // If it's a service not available error try a different approach using google web api
-            if (e.getMessage().equalsIgnoreCase("Service not Available")) {
+            if (!emitter.isDisposed()) {
                 Observable
                         .create(new FallbackReverseGeocodeObservable(locale, latitude, longitude, maxResults))
                         .subscribeOn(Schedulers.io())

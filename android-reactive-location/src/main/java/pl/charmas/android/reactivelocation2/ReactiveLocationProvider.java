@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.location.Address;
 import android.location.Location;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
 
@@ -53,10 +54,26 @@ import pl.charmas.android.reactivelocation2.observables.location.RemoveLocationI
  * delivered by Google Play Services.
  */
 public class ReactiveLocationProvider {
-    private final Context ctx;
+    private final ObservableContext ctx;
 
+    /**
+     * Creates location provider instance.
+     *
+     * @param ctx preferably application context
+     */
     public ReactiveLocationProvider(Context ctx) {
-        this.ctx = ctx;
+        this(ctx, null);
+    }
+
+    /**
+     * Creates location provider with custom handler in which all GooglePlayServices callbacks are called.
+     *
+     * @param ctx preferably application context
+     * @param handler on which all GooglePlayServices callbacks are called
+     * @see com.google.android.gms.common.api.GoogleApiClient.Builder#setHandler(android.os.Handler)
+     */
+    public ReactiveLocationProvider(Context ctx, Handler handler) {
+        this.ctx = new ObservableContext(ctx, handler);
     }
 
     /**
@@ -168,7 +185,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx, Locale.getDefault(), lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctx.getContext(), Locale.getDefault(), lat, lng, maxResults);
     }
 
     /**
@@ -184,7 +201,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(Locale locale, double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx, locale, lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctx.getContext(), locale, lat, lng, maxResults);
     }
 
     /**
@@ -202,6 +219,15 @@ public class ReactiveLocationProvider {
     }
 
     /**
+     * Creates geocoder with default Locale.
+     *
+     * @see ReactiveLocationProvider#getGeocodeObservable(String, int, LatLngBounds, Locale)
+     */
+    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds) {
+        return getGeocodeObservable(locationName, maxResults, bounds, null);
+    }
+
+    /**
      * Creates observable that translates a street address or other description into a list of
      * possible addresses using included Geocoder class. You should subscribe for this
      * observable on I/O thread.
@@ -212,10 +238,11 @@ public class ReactiveLocationProvider {
      * @param locationName a user-supplied description of a location
      * @param maxResults   max number of results you are interested in
      * @param bounds       restricts the results to geographical bounds. May be null
+     * @param locale       locale passed to geocoder
      * @return observable that serves list of address based on location name
      */
-    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds) {
-        return GeocodeObservable.createObservable(ctx, locationName, maxResults, bounds);
+    public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
+        return GeocodeObservable.createObservable(ctx.getContext(), locationName, maxResults, bounds, locale);
     }
 
     /**

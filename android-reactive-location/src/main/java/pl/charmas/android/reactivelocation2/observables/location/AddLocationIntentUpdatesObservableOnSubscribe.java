@@ -1,7 +1,6 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
 import android.app.PendingIntent;
-import android.content.Context;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -11,6 +10,7 @@ import com.google.android.gms.location.LocationServices;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
@@ -19,11 +19,11 @@ public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationO
     private final LocationRequest locationRequest;
     private final PendingIntent intent;
 
-    public static Observable<Status> createObservable(Context ctx, LocationRequest locationRequest, PendingIntent intent) {
+    public static Observable<Status> createObservable(ObservableContext ctx, LocationRequest locationRequest, PendingIntent intent) {
         return Observable.create(new AddLocationIntentUpdatesObservableOnSubscribe(ctx, locationRequest, intent));
     }
 
-    private AddLocationIntentUpdatesObservableOnSubscribe(Context ctx, LocationRequest locationRequest, PendingIntent intent) {
+    private AddLocationIntentUpdatesObservableOnSubscribe(ObservableContext ctx, LocationRequest locationRequest, PendingIntent intent) {
         super(ctx);
         this.locationRequest = locationRequest;
         this.intent = intent;

@@ -1,6 +1,5 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
-import android.content.Context;
 import android.location.Location;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -8,14 +7,15 @@ import com.google.android.gms.location.LocationServices;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 
 public class LastKnownLocationObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Location> {
-    public static Observable<Location> createObservable(Context ctx) {
+    public static Observable<Location> createObservable(ObservableContext ctx) {
         return Observable.create(new LastKnownLocationObservableOnSubscribe(ctx));
     }
 
-    private LastKnownLocationObservableOnSubscribe(Context ctx) {
+    private LastKnownLocationObservableOnSubscribe(ObservableContext ctx) {
         super(ctx);
     }
 

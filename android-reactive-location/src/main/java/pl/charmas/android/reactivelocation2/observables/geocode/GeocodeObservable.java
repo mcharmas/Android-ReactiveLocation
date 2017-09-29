@@ -3,11 +3,13 @@ package pl.charmas.android.reactivelocation2.observables.geocode;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.support.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -18,16 +20,18 @@ public class GeocodeObservable implements ObservableOnSubscribe<List<Address>> {
     private final String locationName;
     private final int maxResults;
     private final LatLngBounds bounds;
+    private final Locale locale;
 
-    public static Observable<List<Address>> createObservable(Context ctx, String locationName, int maxResults, LatLngBounds bounds) {
-        return Observable.create(new GeocodeObservable(ctx, locationName, maxResults, bounds));
+    public static Observable<List<Address>> createObservable(Context ctx, String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
+        return Observable.create(new GeocodeObservable(ctx, locationName, maxResults, bounds, locale));
     }
 
-    private GeocodeObservable(Context ctx, String locationName, int maxResults, LatLngBounds bounds) {
+    private GeocodeObservable(Context ctx, String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
         this.ctx = ctx;
         this.locationName = locationName;
         this.maxResults = maxResults;
         this.bounds = bounds;
+        this.locale = locale;
     }
 
     @Override
@@ -53,5 +57,11 @@ public class GeocodeObservable implements ObservableOnSubscribe<List<Address>> {
                 emitter.onError(e);
             }
         }
+    }
+
+    @NonNull
+    private Geocoder createGeocoder() {
+        if (locale != null) return new Geocoder(ctx, locale);
+        return new Geocoder(ctx);
     }
 }

@@ -6,6 +6,7 @@ public class StatusException extends Throwable {
     private final Status status;
 
     public StatusException(Status status) {
+        super(status.getStatusCode() + ": " + status.getStatusMessage());
         this.status = status;
     }
 

@@ -1,7 +1,6 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
 import android.app.PendingIntent;
-import android.content.Context;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -13,17 +12,20 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
+import pl.charmas.android.reactivelocation.observables.BaseLocationObservable;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
+import pl.charmas.android.reactivelocation.observables.StatusException;
 
 
 public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
     private final GeofencingRequest request;
     private final PendingIntent geofenceTransitionPendingIntent;
 
-    public static Observable<Status> createObservable(Context ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
+    public static Observable<Status> createObservable(ObservableContext ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
         return Observable.create(new AddGeofenceObservableOnSubscribe(ctx, request, geofenceTransitionPendingIntent));
     }
 
-    private AddGeofenceObservableOnSubscribe(Context ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
+    private AddGeofenceObservableOnSubscribe(ObservableContext ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
         super(ctx);
 
         this.request = request;

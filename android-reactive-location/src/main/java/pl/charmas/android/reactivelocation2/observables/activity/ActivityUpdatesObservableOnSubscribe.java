@@ -12,6 +12,7 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import pl.charmas.android.reactivelocation.observables.ObservableContext;
 
 
 public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservableOnSubscribe<ActivityRecognitionResult> {
@@ -21,13 +22,13 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
     private final int detectionIntervalMilliseconds;
     private ActivityUpdatesBroadcastReceiver receiver;
 
-    public static Observable<ActivityRecognitionResult> createObservable(Context ctx, int detectionIntervalMiliseconds) {
+    public static Observable<ActivityRecognitionResult> createObservable(ObservableContext ctx, int detectionIntervalMiliseconds) {
         return Observable.create(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
     }
 
-    private ActivityUpdatesObservableOnSubscribe(Context context, int detectionIntervalMilliseconds) {
+    private ActivityUpdatesObservable(ObservableContext context, int detectionIntervalMilliseconds) {
         super(context);
-        this.context = context;
+        this.context = context.getContext();
         this.detectionIntervalMilliseconds = detectionIntervalMilliseconds;
     }
 
@@ -48,8 +49,10 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
         if (apiClient.isConnected()) {
             ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(apiClient, getReceiverPendingIntent());
         }
-        context.unregisterReceiver(receiver);
-        receiver = null;
+        if (receiver != null) {
+            context.unregisterReceiver(receiver);
+            receiver = null;
+        }
     }
 
     private static class ActivityUpdatesBroadcastReceiver extends BroadcastReceiver {
