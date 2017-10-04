@@ -29,6 +29,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation2.ReactiveLocationProviderConfiguration;
 import pl.charmas.android.reactivelocation2.sample.utils.AddressToStringFunc;
 import pl.charmas.android.reactivelocation2.sample.utils.DetectedActivityToString;
 import pl.charmas.android.reactivelocation2.sample.utils.DisplayTextOnViewAction;
@@ -67,7 +68,11 @@ public class MainActivity extends BaseActivity {
         addressLocationView = (TextView) findViewById(R.id.address_for_location_view);
         currentActivityView = (TextView) findViewById(R.id.activity_recent_view);
 
-        locationProvider = new ReactiveLocationProvider(getApplicationContext());
+        locationProvider = new ReactiveLocationProvider(getApplicationContext(), ReactiveLocationProviderConfiguration
+                .builder()
+                .setRetryOnConnectionSuspended(true)
+                .build()
+        );
 
         lastKnownLocationObservable = locationProvider
                 .getLastKnownLocation()

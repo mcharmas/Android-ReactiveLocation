@@ -11,16 +11,17 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 
 public abstract class RemoveGeofenceObservableOnSubscribe<T> extends BaseLocationObservableOnSubscribe<T> {
 
-    public static Observable<Status> createObservable(ObservableContext ctx, PendingIntent pendingIntent) {
-        return Observable.create(new RemoveGeofenceByPendingIntentObservableOnSubscribe(ctx, pendingIntent));
+    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, PendingIntent pendingIntent) {
+        return factory.createObservable(new RemoveGeofenceByPendingIntentObservableOnSubscribe(ctx, pendingIntent));
     }
 
-    public static Observable<Status> createObservable(ObservableContext ctx, List<String> requestIds) {
-        return Observable.create(new RemoveGeofenceRequestIdsObservableOnSubscribe(ctx, requestIds));
+    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, List<String> requestIds) {
+        return factory.createObservable(new RemoveGeofenceRequestIdsObservableOnSubscribe(ctx, requestIds));
     }
 
     RemoveGeofenceObservableOnSubscribe(ObservableContext ctx) {

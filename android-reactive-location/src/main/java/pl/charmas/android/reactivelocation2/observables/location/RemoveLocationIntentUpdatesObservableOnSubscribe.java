@@ -12,14 +12,15 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
 public class RemoveLocationIntentUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
     private final PendingIntent intent;
 
-    public static Observable<Status> createObservable(ObservableContext ctx, PendingIntent intent) {
-        return Observable.create(new RemoveLocationIntentUpdatesObservableOnSubscribe(ctx, intent));
+    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, PendingIntent intent) {
+        return factory.createObservable(new RemoveLocationIntentUpdatesObservableOnSubscribe(ctx, intent));
     }
 
     private RemoveLocationIntentUpdatesObservableOnSubscribe(ObservableContext ctx, PendingIntent intent) {
