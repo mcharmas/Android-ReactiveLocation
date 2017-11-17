@@ -50,8 +50,6 @@ public class ReverseGeocodeObservable implements ObservableOnSubscribe<List<Addr
                         .create(new FallbackReverseGeocodeObservable(locale, latitude, longitude, maxResults))
                         .subscribeOn(Schedulers.io())
                         .subscribe(new ObservableEmitterWrapper<>(emitter));
-            } else {
-                emitter.onError(e);
             }
         }
     }
