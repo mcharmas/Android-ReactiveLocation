@@ -36,10 +36,15 @@ class FallbackReverseGeocodeObservable implements ObservableOnSubscribe<List<Add
     @Override
     public void subscribe(ObservableEmitter<List<Address>> emitter) throws Exception {
         try {
-            emitter.onNext(alternativeReverseGeocodeQuery());
-            emitter.onComplete();
+            List<Address> addresses = alternativeReverseGeocodeQuery();
+            if (!emitter.isDisposed()) {
+                emitter.onNext(addresses);
+                emitter.onComplete();
+            }
         } catch (Exception ex) {
-            emitter.onError(ex);
+            if (!emitter.isDisposed()) {
+                emitter.onError(ex);
+            }
         }
     }
 
