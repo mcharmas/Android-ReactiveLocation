@@ -17,16 +17,22 @@ public class ObservableEmitterWrapper<T> implements Observer<T> {
 
     @Override
     public void onNext(T t) {
-        emitter.onNext(t);
+        if (!emitter.isDisposed()){
+            emitter.onNext(t);
+        }
     }
 
     @Override
     public void onError(Throwable e) {
-        emitter.onError(e);
+        if (!emitter.isDisposed()) {
+            emitter.onError(e);
+        }
     }
 
     @Override
     public void onComplete() {
-        emitter.onComplete();
+        if (!emitter.isDisposed()) {
+            emitter.onComplete();
+        }
     }
 }
