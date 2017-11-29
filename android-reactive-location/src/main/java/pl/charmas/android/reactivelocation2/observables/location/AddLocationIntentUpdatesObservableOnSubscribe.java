@@ -37,6 +37,7 @@ public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationO
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull Status status) {
+                        if (emitter.isDisposed()) return;
                         if (!status.isSuccess()) {
                             emitter.onError(new StatusException(status));
                         } else {

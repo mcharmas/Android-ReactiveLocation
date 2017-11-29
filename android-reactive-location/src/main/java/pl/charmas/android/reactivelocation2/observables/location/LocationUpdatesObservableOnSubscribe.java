@@ -57,7 +57,7 @@ public class LocationUpdatesObservableOnSubscribe extends BaseLocationObservable
         @Override
         public void onLocationChanged(Location location) {
             final ObservableEmitter<? super Location> observer = weakRef.get();
-            if (observer != null) {
+            if (observer != null && !observer.isDisposed()) {
                 observer.onNext(location);
             }
         }

@@ -27,6 +27,7 @@ class RemoveGeofenceByPendingIntentObservableOnSubscribe extends RemoveGeofenceO
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull Status status) {
+                        if (emitter.isDisposed()) return;
                         if (status.isSuccess()) {
                             emitter.onNext(status);
                             emitter.onComplete();

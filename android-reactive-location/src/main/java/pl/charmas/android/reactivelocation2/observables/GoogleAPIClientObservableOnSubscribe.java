@@ -20,6 +20,7 @@ public class GoogleAPIClientObservableOnSubscribe extends BaseObservableOnSubscr
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<? super GoogleApiClient> emitter) {
+        if (emitter.isDisposed()) return;
         emitter.onNext(apiClient);
     }
 }
