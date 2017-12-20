@@ -327,7 +327,7 @@ public class ReactiveLocationProvider {
      * Observable that can be used to check settings state for given location request.
      *
      * @param locationRequest location request
-     * @return observable that emits check result of location settings
+     * @return observable that emits single check result of location settings
      * @see com.google.android.gms.location.SettingsApi
      */
     public Observable<LocationSettingsResult> checkLocationSettings(final LocationSettingsRequest locationRequest) {
@@ -337,7 +337,8 @@ public class ReactiveLocationProvider {
                     public Observable<LocationSettingsResult> apply(GoogleApiClient googleApiClient) {
                         return fromPendingResult(LocationServices.SettingsApi.checkLocationSettings(googleApiClient, locationRequest));
                     }
-                });
+                })
+                .take(1);
     }
 
     /**
