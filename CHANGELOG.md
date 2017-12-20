@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 2.1
+----------------------------
+* Fix issues with emitting values when observable is disposed
+* Add option to auto reconnect to GMS when connection is suspended 
+
 Version 2.0
 ----------------------------
 * Support for RxJava2
