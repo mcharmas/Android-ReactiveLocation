@@ -15,6 +15,7 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 @SuppressWarnings("MissingPermission")
@@ -22,8 +23,8 @@ public class MockLocationObservableOnSubscribe extends BaseLocationObservableOnS
     private final Observable<Location> locationObservable;
     private Disposable mockLocationSubscription;
 
-    public static Observable<Status> createObservable(ObservableContext context, Observable<Location> locationObservable) {
-        return Observable.create(new MockLocationObservableOnSubscribe(context, locationObservable));
+    public static Observable<Status> createObservable(ObservableContext context, ObservableFactory factory, Observable<Location> locationObservable) {
+        return factory.createObservable(new MockLocationObservableOnSubscribe(context, locationObservable));
     }
 
     private MockLocationObservableOnSubscribe(ObservableContext ctx, Observable<Location> locationObservable) {

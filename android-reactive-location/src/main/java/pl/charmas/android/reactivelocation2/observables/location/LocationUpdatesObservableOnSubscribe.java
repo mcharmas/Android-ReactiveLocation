@@ -13,12 +13,13 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 
 @SuppressWarnings("MissingPermission")
 public class LocationUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Location> {
-    public static Observable<Location> createObservable(ObservableContext ctx, LocationRequest locationRequest) {
-        Observable<Location> observable = Observable.create(new LocationUpdatesObservableOnSubscribe(ctx, locationRequest));
+    public static Observable<Location> createObservable(ObservableContext ctx, ObservableFactory factory, LocationRequest locationRequest) {
+        Observable<Location> observable = factory.createObservable(new LocationUpdatesObservableOnSubscribe(ctx, locationRequest));
         int requestedNumberOfUpdates = locationRequest.getNumUpdates();
         if (requestedNumberOfUpdates > 0 && requestedNumberOfUpdates < Integer.MAX_VALUE) {
             observable = observable.take(requestedNumberOfUpdates);

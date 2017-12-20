@@ -14,6 +14,7 @@ import java.util.Locale;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 public class GeocodeObservable implements ObservableOnSubscribe<List<Address>> {
     private final Context ctx;
@@ -22,8 +23,8 @@ public class GeocodeObservable implements ObservableOnSubscribe<List<Address>> {
     private final LatLngBounds bounds;
     private final Locale locale;
 
-    public static Observable<List<Address>> createObservable(Context ctx, String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
-        return Observable.create(new GeocodeObservable(ctx, locationName, maxResults, bounds, locale));
+    public static Observable<List<Address>> createObservable(Context ctx, ObservableFactory factory, String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
+        return factory.createObservable(new GeocodeObservable(ctx, locationName, maxResults, bounds, locale));
     }
 
     private GeocodeObservable(Context ctx, String locationName, int maxResults, LatLngBounds bounds, Locale locale) {

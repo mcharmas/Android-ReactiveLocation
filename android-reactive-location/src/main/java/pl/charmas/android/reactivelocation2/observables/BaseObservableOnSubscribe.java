@@ -44,10 +44,8 @@ public abstract class BaseObservableOnSubscribe<T> implements ObservableOnSubscr
         emitter.setDisposable(Disposables.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                if (apiClient.isConnected() || apiClient.isConnecting()) {
-                    onDisposed(apiClient);
-                    apiClient.disconnect();
-                }
+                onDisposed(apiClient);
+                apiClient.disconnect();
             }
         }));
     }

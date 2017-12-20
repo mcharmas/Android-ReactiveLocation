@@ -13,6 +13,7 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 
 @SuppressWarnings("MissingPermission")
@@ -23,8 +24,8 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
     private final int detectionIntervalMilliseconds;
     private ActivityUpdatesBroadcastReceiver receiver;
 
-    public static Observable<ActivityRecognitionResult> createObservable(ObservableContext ctx, int detectionIntervalMiliseconds) {
-        return Observable.create(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
+    public static Observable<ActivityRecognitionResult> createObservable(ObservableContext ctx, ObservableFactory factory, int detectionIntervalMiliseconds) {
+        return factory.createObservable(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
     }
 
     private ActivityUpdatesObservableOnSubscribe(ObservableContext context, int detectionIntervalMilliseconds) {

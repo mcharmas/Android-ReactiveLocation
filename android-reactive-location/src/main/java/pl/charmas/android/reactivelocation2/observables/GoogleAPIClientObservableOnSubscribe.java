@@ -9,8 +9,8 @@ import io.reactivex.ObservableEmitter;
 public class GoogleAPIClientObservableOnSubscribe extends BaseObservableOnSubscribe<GoogleApiClient> {
 
     @SafeVarargs
-    public static Observable<GoogleApiClient> create(ObservableContext context, Api<? extends Api.ApiOptions.NotRequiredOptions>... apis) {
-        return Observable.create(new GoogleAPIClientObservableOnSubscribe(context, apis));
+    public static Observable<GoogleApiClient> create(ObservableContext context, ObservableFactory factory, Api<? extends Api.ApiOptions.NotRequiredOptions>... apis) {
+        return factory.createObservable(new GoogleAPIClientObservableOnSubscribe(context, apis));
     }
 
     @SafeVarargs

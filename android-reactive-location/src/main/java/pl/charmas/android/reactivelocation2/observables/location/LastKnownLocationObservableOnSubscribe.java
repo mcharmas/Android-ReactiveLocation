@@ -9,11 +9,12 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 @SuppressWarnings("MissingPermission")
 public class LastKnownLocationObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Location> {
-    public static Observable<Location> createObservable(ObservableContext ctx) {
-        return Observable.create(new LastKnownLocationObservableOnSubscribe(ctx));
+    public static Observable<Location> createObservable(ObservableContext ctx, ObservableFactory factory) {
+        return factory.createObservable(new LastKnownLocationObservableOnSubscribe(ctx));
     }
 
     private LastKnownLocationObservableOnSubscribe(ObservableContext ctx) {

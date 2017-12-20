@@ -13,6 +13,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
@@ -21,13 +22,12 @@ public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSu
     private final GeofencingRequest request;
     private final PendingIntent geofenceTransitionPendingIntent;
 
-    public static Observable<Status> createObservable(ObservableContext ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
-        return Observable.create(new AddGeofenceObservableOnSubscribe(ctx, request, geofenceTransitionPendingIntent));
+    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
+        return factory.createObservable(new AddGeofenceObservableOnSubscribe(ctx, request, geofenceTransitionPendingIntent));
     }
 
     private AddGeofenceObservableOnSubscribe(ObservableContext ctx, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
         super(ctx);
-
         this.request = request;
         this.geofenceTransitionPendingIntent = geofenceTransitionPendingIntent;
     }

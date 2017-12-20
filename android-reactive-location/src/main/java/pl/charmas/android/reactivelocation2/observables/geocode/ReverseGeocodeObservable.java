@@ -13,6 +13,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.schedulers.Schedulers;
 import pl.charmas.android.reactivelocation2.observables.ObservableEmitterWrapper;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 
 public class ReverseGeocodeObservable implements ObservableOnSubscribe<List<Address>> {
@@ -22,8 +23,8 @@ public class ReverseGeocodeObservable implements ObservableOnSubscribe<List<Addr
     private final double longitude;
     private final int maxResults;
 
-    public static Observable<List<Address>> createObservable(Context ctx, Locale locale, double latitude, double longitude, int maxResults) {
-        return Observable.create(new ReverseGeocodeObservable(ctx, locale, latitude, longitude, maxResults));
+    public static Observable<List<Address>> createObservable(Context ctx, ObservableFactory factory, Locale locale, double latitude, double longitude, int maxResults) {
+        return factory.createObservable(new ReverseGeocodeObservable(ctx, locale, latitude, longitude, maxResults));
     }
 
     private ReverseGeocodeObservable(Context ctx, Locale locale, double latitude, double longitude, int maxResults) {

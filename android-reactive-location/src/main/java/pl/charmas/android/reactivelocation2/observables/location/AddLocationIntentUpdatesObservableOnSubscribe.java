@@ -13,6 +13,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
@@ -21,8 +22,8 @@ public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationO
     private final LocationRequest locationRequest;
     private final PendingIntent intent;
 
-    public static Observable<Status> createObservable(ObservableContext ctx, LocationRequest locationRequest, PendingIntent intent) {
-        return Observable.create(new AddLocationIntentUpdatesObservableOnSubscribe(ctx, locationRequest, intent));
+    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, LocationRequest locationRequest, PendingIntent intent) {
+        return factory.createObservable(new AddLocationIntentUpdatesObservableOnSubscribe(ctx, locationRequest, intent));
     }
 
     private AddLocationIntentUpdatesObservableOnSubscribe(ObservableContext ctx, LocationRequest locationRequest, PendingIntent intent) {

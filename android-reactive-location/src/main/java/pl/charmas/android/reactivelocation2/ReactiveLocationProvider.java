@@ -37,6 +37,7 @@ import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
+import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 import pl.charmas.android.reactivelocation2.observables.PendingResultObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.activity.ActivityUpdatesObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.geocode.GeocodeObservable;
@@ -56,25 +57,39 @@ import pl.charmas.android.reactivelocation2.observables.location.RemoveLocationI
  */
 public class ReactiveLocationProvider {
     private final ObservableContext ctx;
+    private final ObservableFactory factory;
 
     /**
-     * Creates location provider instance.
+     * Creates location provider instance with default configuration.
      *
      * @param ctx preferably application context
      */
     public ReactiveLocationProvider(Context ctx) {
-        this(ctx, null);
+        this(ctx, ReactiveLocationProviderConfiguration.builder().build());
+    }
+
+    /**
+     * Create location provider with given {@link ReactiveLocationProviderConfiguration}.
+     *
+     * @param ctx           preferably application context
+     * @param configuration configuration instance
+     */
+    public ReactiveLocationProvider(Context ctx, ReactiveLocationProviderConfiguration configuration) {
+        this.ctx = new ObservableContext(ctx, configuration);
+        this.factory = new ObservableFactory(this.ctx);
     }
 
     /**
      * Creates location provider with custom handler in which all GooglePlayServices callbacks are called.
      *
-     * @param ctx preferably application context
+     * @param ctx     preferably application context
      * @param handler on which all GooglePlayServices callbacks are called
      * @see com.google.android.gms.common.api.GoogleApiClient.Builder#setHandler(android.os.Handler)
+     * @deprecated please use {@link ReactiveLocationProvider#ReactiveLocationProvider(Context, ReactiveLocationProviderConfiguration)}
      */
+    @Deprecated
     public ReactiveLocationProvider(Context ctx, Handler handler) {
-        this.ctx = new ObservableContext(ctx, handler);
+        this(ctx, ReactiveLocationProviderConfiguration.builder().setCustomCallbackHandler(handler).build());
     }
 
     /**
@@ -93,7 +108,7 @@ public class ReactiveLocationProvider {
             anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
     )
     public Observable<Location> getLastKnownLocation() {
-        return LastKnownLocationObservableOnSubscribe.createObservable(ctx);
+        return LastKnownLocationObservableOnSubscribe.createObservable(ctx, factory);
     }
 
     /**
@@ -113,7 +128,7 @@ public class ReactiveLocationProvider {
             anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
     )
     public Observable<Location> getUpdatedLocation(LocationRequest locationRequest) {
-        return LocationUpdatesObservableOnSubscribe.createObservable(ctx, locationRequest);
+        return LocationUpdatesObservableOnSubscribe.createObservable(ctx, factory, locationRequest);
     }
 
     /**
@@ -138,7 +153,7 @@ public class ReactiveLocationProvider {
                     "android.permission.ACCESS_MOCK_LOCATION"}
     )
     public Observable<Status> mockLocation(Observable<Location> sourceLocationObservable) {
-        return MockLocationObservableOnSubscribe.createObservable(ctx, sourceLocationObservable);
+        return MockLocationObservableOnSubscribe.createObservable(ctx, factory, sourceLocationObservable);
     }
 
     /**
@@ -159,7 +174,7 @@ public class ReactiveLocationProvider {
             anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
     )
     public Observable<Status> requestLocationUpdates(LocationRequest locationRequest, PendingIntent intent) {
-        return AddLocationIntentUpdatesObservableOnSubscribe.createObservable(ctx, locationRequest, intent);
+        return AddLocationIntentUpdatesObservableOnSubscribe.createObservable(ctx, factory, locationRequest, intent);
     }
 
     /**
@@ -171,7 +186,7 @@ public class ReactiveLocationProvider {
      * @return observable that removes the PendingIntent
      */
     public Observable<Status> removeLocationUpdates(PendingIntent intent) {
-        return RemoveLocationIntentUpdatesObservableOnSubscribe.createObservable(ctx, intent);
+        return RemoveLocationIntentUpdatesObservableOnSubscribe.createObservable(ctx, factory, intent);
     }
 
     /**
@@ -186,7 +201,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx.getContext(), Locale.getDefault(), lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctx.getContext(), factory, Locale.getDefault(), lat, lng, maxResults);
     }
 
     /**
@@ -202,7 +217,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(Locale locale, double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx.getContext(), locale, lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctx.getContext(), factory, locale, lat, lng, maxResults);
     }
 
     /**
@@ -243,7 +258,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location name
      */
     public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
-        return GeocodeObservable.createObservable(ctx.getContext(), locationName, maxResults, bounds, locale);
+        return GeocodeObservable.createObservable(ctx.getContext(), factory, locationName, maxResults, bounds, locale);
     }
 
     /**
@@ -262,7 +277,7 @@ public class ReactiveLocationProvider {
      */
     @RequiresPermission("android.permission.ACCESS_FINE_LOCATION")
     public Observable<Status> addGeofences(PendingIntent geofenceTransitionPendingIntent, GeofencingRequest request) {
-        return AddGeofenceObservableOnSubscribe.createObservable(ctx, request, geofenceTransitionPendingIntent);
+        return AddGeofenceObservableOnSubscribe.createObservable(ctx, factory, request, geofenceTransitionPendingIntent);
     }
 
     /**
@@ -278,7 +293,7 @@ public class ReactiveLocationProvider {
      * @return observable that removed geofences
      */
     public Observable<Status> removeGeofences(PendingIntent pendingIntent) {
-        return RemoveGeofenceObservableOnSubscribe.createObservable(ctx, pendingIntent);
+        return RemoveGeofenceObservableOnSubscribe.createObservable(ctx, factory, pendingIntent);
     }
 
     /**
@@ -294,7 +309,7 @@ public class ReactiveLocationProvider {
      * @return observable that removed geofences
      */
     public Observable<Status> removeGeofences(List<String> requestIds) {
-        return RemoveGeofenceObservableOnSubscribe.createObservable(ctx, requestIds);
+        return RemoveGeofenceObservableOnSubscribe.createObservable(ctx, factory, requestIds);
     }
 
 
@@ -305,7 +320,7 @@ public class ReactiveLocationProvider {
      * @return observable that provides activity recognition
      */
     public Observable<ActivityRecognitionResult> getDetectedActivity(int detectIntervalMiliseconds) {
-        return ActivityUpdatesObservableOnSubscribe.createObservable(ctx, detectIntervalMiliseconds);
+        return ActivityUpdatesObservableOnSubscribe.createObservable(ctx, factory, detectIntervalMiliseconds);
     }
 
     /**
@@ -424,7 +439,7 @@ public class ReactiveLocationProvider {
      */
     public Observable<GoogleApiClient> getGoogleApiClientObservable(Api... apis) {
         //noinspection unchecked
-        return GoogleAPIClientObservableOnSubscribe.create(ctx, apis);
+        return GoogleAPIClientObservableOnSubscribe.create(ctx, factory, apis);
     }
 
     /**
