@@ -24,9 +24,11 @@ public class PendingResultObservableOnSubscribe<T extends Result> implements Obs
         result.setResultCallback(new ResultCallback<T>() {
             @Override
             public void onResult(@NonNull T t) {
-                emitter.onNext(t);
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(t);
+                    emitter.onComplete();
+                }
                 complete = true;
-                emitter.onComplete();
             }
         });
 

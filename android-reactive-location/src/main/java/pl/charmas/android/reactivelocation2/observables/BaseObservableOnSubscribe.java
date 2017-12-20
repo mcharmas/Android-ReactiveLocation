@@ -96,18 +96,25 @@ public abstract class BaseObservableOnSubscribe<T> implements ObservableOnSubscr
             try {
                 onGoogleApiClientReady(apiClient, emitter);
             } catch (Throwable ex) {
-                emitter.onError(ex);
+                if (!emitter.isDisposed()) {
+                    emitter.onError(ex);
+                }
             }
         }
 
         @Override
         public void onConnectionSuspended(int cause) {
-            emitter.onError(new GoogleAPIConnectionSuspendedException(cause));
+            if (!emitter.isDisposed()) {
+                emitter.onError(new GoogleAPIConnectionSuspendedException(cause));
+            }
         }
 
         @Override
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-            emitter.onError(new GoogleAPIConnectionException("Error connecting to GoogleApiClient.", connectionResult));
+            if (!emitter.isDisposed()) {
+                emitter.onError(new GoogleAPIConnectionException("Error connecting to GoogleApiClient.",
+                    connectionResult));
+            }
         }
 
         void setClient(GoogleApiClient client) {

@@ -23,6 +23,7 @@ public class LastKnownLocationObservableOnSubscribe extends BaseLocationObservab
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<? super Location> emitter) {
         Location location = LocationServices.FusedLocationApi.getLastLocation(apiClient);
+        if (emitter.isDisposed()) return;
         if (location != null) {
             emitter.onNext(location);
         }
