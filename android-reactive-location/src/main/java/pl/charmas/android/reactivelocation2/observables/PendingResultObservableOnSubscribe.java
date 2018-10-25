@@ -1,6 +1,6 @@
 package pl.charmas.android.reactivelocation2.observables;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Result;
