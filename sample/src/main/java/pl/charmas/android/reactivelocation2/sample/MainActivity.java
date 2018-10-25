@@ -1,7 +1,6 @@
 package pl.charmas.android.reactivelocation2.sample;
 
 import android.content.Intent;
-import android.content.IntentSender;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
@@ -12,17 +11,17 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStates;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
@@ -48,7 +47,7 @@ public class MainActivity extends BaseActivity {
     private TextView addressLocationView;
     private TextView currentActivityView;
 
-    private Observable<Location> lastKnownLocationObservable;
+    private Single<Location> lastKnownLocationObservable;
     private Observable<Location> locationUpdatesObservable;
     private Observable<ActivityRecognitionResult> activityObservable;
 
@@ -89,32 +88,31 @@ public class MainActivity extends BaseActivity {
                                 .setAlwaysShow(true)  //Refrence: http://stackoverflow.com/questions/29824408/google-play-services-locationservices-api-new-option-never
                                 .build()
                 )
-                .doOnNext(new Consumer<LocationSettingsResult>() {
+                .doOnError(new Consumer<Throwable>() {
                     @Override
-                    public void accept(LocationSettingsResult locationSettingsResult) {
-                        Status status = locationSettingsResult.getStatus();
-                        if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                            try {
-                                status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
-                            } catch (IntentSender.SendIntentException th) {
-                                Log.e("MainActivity", "Error opening settings activity.", th);
-                            }
+                    public void accept(Throwable throwable) throws Exception {
+                        if (throwable instanceof ResolvableApiException) {
+                            // Cast to a resolvable exception.
+                            ResolvableApiException resolvable = (ResolvableApiException) throwable;
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            resolvable.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
                         }
                     }
                 })
-                .flatMap(new Function<LocationSettingsResult, Observable<Location>>() {
+                .flatMapObservable(new Function<LocationSettingsResponse, Observable<Location>>() {
                     @Override
-                    public Observable<Location> apply(LocationSettingsResult locationSettingsResult) {
+                    public Observable<Location> apply(LocationSettingsResponse locationSettingsResponse) {
                         return locationProvider.getUpdatedLocation(locationRequest);
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread());
 
         addressObservable = locationProvider.getUpdatedLocation(locationRequest)
-                .flatMap(new Function<Location, Observable<List<Address>>>() {
+                .flatMapSingle(new Function<Location, Single<List<Address>>>() {
                     @Override
-                    public Observable<List<Address>> apply(Location location) {
-                        return locationProvider.getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
+                    public Single<List<Address>> apply(Location location) {
+                        return locationProvider.reverseGeocode(location.getLatitude(), location.getLongitude(), 1);
                     }
                 })
                 .map(new Function<List<Address>, Address>() {
@@ -128,7 +126,7 @@ public class MainActivity extends BaseActivity {
                 .observeOn(AndroidSchedulers.mainThread());
 
         activityObservable = locationProvider
-                .getDetectedActivity(50)
+                .detectedActivity(50)
                 .observeOn(AndroidSchedulers.mainThread());
     }
 

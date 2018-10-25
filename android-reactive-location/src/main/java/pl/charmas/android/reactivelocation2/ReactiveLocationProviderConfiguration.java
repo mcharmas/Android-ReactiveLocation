@@ -1,6 +1,7 @@
 package pl.charmas.android.reactivelocation2;
 
 import android.os.Handler;
+
 import androidx.annotation.Nullable;
 
 /**
