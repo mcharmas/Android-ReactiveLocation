@@ -3,12 +3,12 @@ package pl.charmas.android.reactivelocation2.sample;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.PlaceBufferResponse;
 
+import androidx.annotation.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
@@ -60,16 +60,16 @@ public class PlacesResultActivity extends BaseActivity {
     protected void onLocationPermissionGranted() {
         compositeSubscription = new CompositeDisposable();
         compositeSubscription.add(reactiveLocationProvider.getPlaceById(placeId)
-                .subscribe(new Consumer<PlaceBuffer>() {
+                .subscribe(new Consumer<PlaceBufferResponse>() {
                     @Override
-                    public void accept(PlaceBuffer buffer) {
-                        Place place = buffer.get(0);
+                    public void accept(PlaceBufferResponse response) {
+                        Place place = response.get(0);
                         if (place != null) {
                             placeNameView.setText(place.getName());
                             placeLocationView.setText(place.getLatLng().latitude + ", " + place.getLatLng().longitude);
                             placeAddressView.setText(place.getAddress());
                         }
-                        buffer.release();
+                        response.release();
                     }
                 }));
     }

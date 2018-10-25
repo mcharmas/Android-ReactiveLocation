@@ -1,28 +1,25 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
 import android.app.PendingIntent;
-import android.support.annotation.NonNull;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.BaseFailureListener;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
-import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
 @SuppressWarnings("MissingPermission")
-public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
+public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Void> {
     private final LocationRequest locationRequest;
     private final PendingIntent intent;
 
-    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, LocationRequest locationRequest, PendingIntent intent) {
+    public static Observable<Void> createObservable(ObservableContext ctx, ObservableFactory factory, LocationRequest locationRequest,
+                                                      PendingIntent intent) {
         return factory.createObservable(new AddLocationIntentUpdatesObservableOnSubscribe(ctx, locationRequest, intent));
     }
 
@@ -33,20 +30,16 @@ public class AddLocationIntentUpdatesObservableOnSubscribe extends BaseLocationO
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<? super Status> emitter) {
-        LocationServices.FusedLocationApi.requestLocationUpdates(apiClient, locationRequest, intent)
-                .setResultCallback(new ResultCallback<Status>() {
+    protected void onLocationProviderClientReady(FusedLocationProviderClient locationProviderClient,
+                                                 final ObservableEmitter<? super Void> emitter) {
+        locationProviderClient.requestLocationUpdates(locationRequest, intent)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onResult(@NonNull Status status) {
+                    public void onSuccess(Void aVoid) {
                         if (emitter.isDisposed()) return;
-                        if (!status.isSuccess()) {
-                            emitter.onError(new StatusException(status));
-                        } else {
-                            emitter.onNext(status);
-                            emitter.onComplete();
-                        }
+                        emitter.onComplete();
                     }
-                });
-
+                })
+                .addOnFailureListener(new BaseFailureListener<>(emitter));
     }
 }

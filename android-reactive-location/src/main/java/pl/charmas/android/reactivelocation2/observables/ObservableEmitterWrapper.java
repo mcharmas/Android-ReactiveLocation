@@ -17,7 +17,7 @@ public class ObservableEmitterWrapper<T> implements Observer<T> {
 
     @Override
     public void onNext(T t) {
-        if (!emitter.isDisposed()){
+        if (!emitter.isDisposed()) {
             emitter.onNext(t);
         }
     }

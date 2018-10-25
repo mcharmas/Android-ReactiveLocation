@@ -6,7 +6,6 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,14 +15,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 
 import java.util.Date;
 
+import androidx.core.app.ActivityCompat;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.PublishSubject;
@@ -45,6 +44,7 @@ public class MockLocationsActivity extends BaseActivity {
 
     private ReactiveLocationProvider locationProvider;
     private Observable<Location> mockLocationObservable;
+    private Disposable mockDisposable;
     private Disposable mockLocationDisposable;
     private Disposable updatedLocationDisposable;
 
@@ -94,7 +94,8 @@ public class MockLocationsActivity extends BaseActivity {
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(2000);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
@@ -126,19 +127,28 @@ public class MockLocationsActivity extends BaseActivity {
                 return;
             }
 
-            mockLocationDisposable =
-                    Observable.zip(locationProvider.mockLocation(mockLocationObservable),
-                            mockLocationObservable, new BiFunction<Status, Location, String>() {
-                                int count = 0;
 
-                                @Override
-                                public String apply(Status result, Location location) {
-                                    return new LocationToStringFunc().apply(location) + " " + count++;
-                                }
-                            })
-                            .subscribe(new DisplayTextOnViewAction(mockLocationView), new ErrorHandler());
+            mockDisposable = locationProvider.mockLocation(mockLocationObservable).subscribe(new Action() {
+                @Override
+                public void run() {
+                }
+            }, new Consumer<Throwable>() {
+                @Override
+                public void accept(Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            });
+            mockLocationDisposable = mockLocationObservable.map(new Function<Location, String>() {
+                        int count = 0;
+
+                        @Override
+                        public String apply(Location location) {
+                            return new LocationToStringFunc().apply(location) + " " + count++;
+                        }
+                    }).subscribe(new DisplayTextOnViewAction(mockLocationView), new ErrorHandler());
         } else {
             mockLocationDisposable.dispose();
+            mockDisposable.dispose();
         }
     }
 

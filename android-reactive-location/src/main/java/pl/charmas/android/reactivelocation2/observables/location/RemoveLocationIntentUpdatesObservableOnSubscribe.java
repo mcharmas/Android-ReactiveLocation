@@ -1,25 +1,21 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
 import android.app.PendingIntent;
-import android.support.annotation.NonNull;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.BaseFailureListener;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
-import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
-public class RemoveLocationIntentUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
+public class RemoveLocationIntentUpdatesObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Void> {
     private final PendingIntent intent;
 
-    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, PendingIntent intent) {
+    public static Observable<Void> createObservable(ObservableContext ctx, ObservableFactory factory, PendingIntent intent) {
         return factory.createObservable(new RemoveLocationIntentUpdatesObservableOnSubscribe(ctx, intent));
     }
 
@@ -29,19 +25,16 @@ public class RemoveLocationIntentUpdatesObservableOnSubscribe extends BaseLocati
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<? super Status> emitter) {
-        LocationServices.FusedLocationApi.removeLocationUpdates(apiClient, intent)
-                .setResultCallback(new ResultCallback<Status>() {
+    protected void onLocationProviderClientReady(FusedLocationProviderClient locationProviderClient,
+                                                 final ObservableEmitter<? super Void> emitter) {
+        locationProviderClient.removeLocationUpdates(intent)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onResult(@NonNull Status status) {
+                    public void onSuccess(Void aVoid) {
                         if (emitter.isDisposed()) return;
-                        if (status.isSuccess()) {
-                            emitter.onNext(status);
-                            emitter.onComplete();
-                        } else {
-                            emitter.onError(new StatusException(status));
-                        }
+                        emitter.onComplete();
                     }
-                });
+                })
+                .addOnFailureListener(new BaseFailureListener<>(emitter));
     }
 }

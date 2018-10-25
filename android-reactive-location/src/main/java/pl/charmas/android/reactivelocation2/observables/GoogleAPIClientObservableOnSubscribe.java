@@ -1,15 +1,17 @@
 package pl.charmas.android.reactivelocation2.observables;
 
+import android.content.Context;
+
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
-public class GoogleAPIClientObservableOnSubscribe extends BaseObservableOnSubscribe<GoogleApiClient> {
+public class GoogleAPIClientObservableOnSubscribe extends BaseObservableOnSubscribe<Void> {
 
     @SafeVarargs
-    public static Observable<GoogleApiClient> create(ObservableContext context, ObservableFactory factory, Api<? extends Api.ApiOptions.NotRequiredOptions>... apis) {
+    public static Observable<Void> create(ObservableContext context, ObservableFactory factory, Api<? extends Api.ApiOptions.NotRequiredOptions>... apis) {
         return factory.createObservable(new GoogleAPIClientObservableOnSubscribe(context, apis));
     }
 
@@ -19,8 +21,8 @@ public class GoogleAPIClientObservableOnSubscribe extends BaseObservableOnSubscr
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<? super GoogleApiClient> emitter) {
+    protected void onGoogleApiClientReady(Context context, GoogleApiClient googleApiClient, ObservableEmitter<? super Void> emitter) {
         if (emitter.isDisposed()) return;
-        emitter.onNext(apiClient);
+        emitter.onComplete();
     }
 }
