@@ -1,5 +1,6 @@
 package pl.charmas.android.reactivelocation2.sample;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Address;
@@ -8,10 +9,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.LocationRequest;
@@ -19,9 +18,6 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-
-import java.util.List;
-
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -35,6 +31,8 @@ import pl.charmas.android.reactivelocation2.sample.utils.DetectedActivityToStrin
 import pl.charmas.android.reactivelocation2.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation2.sample.utils.LocationToStringFunc;
 import pl.charmas.android.reactivelocation2.sample.utils.ToMostProbableActivity;
+
+import java.util.List;
 
 import static pl.charmas.android.reactivelocation2.sample.utils.UnsubscribeIfPresent.dispose;
 
@@ -58,15 +56,16 @@ public class MainActivity extends BaseActivity {
     private Disposable activityDisposable;
     private Observable<String> addressObservable;
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lastKnownLocationView = (TextView) findViewById(R.id.last_known_location_view);
-        updatableLocationView = (TextView) findViewById(R.id.updated_location_view);
-        addressLocationView = (TextView) findViewById(R.id.address_for_location_view);
-        currentActivityView = (TextView) findViewById(R.id.activity_recent_view);
+        lastKnownLocationView = findViewById(R.id.last_known_location_view);
+        updatableLocationView = findViewById(R.id.updated_location_view);
+        addressLocationView = findViewById(R.id.address_for_location_view);
+        currentActivityView = findViewById(R.id.activity_recent_view);
 
         locationProvider = new ReactiveLocationProvider(getApplicationContext(), ReactiveLocationProviderConfiguration
                 .builder()
@@ -171,30 +170,21 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("Geofencing").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                startActivity(new Intent(MainActivity.this, GeofenceActivity.class));
-                return true;
-            }
+        menu.add("Geofencing").setOnMenuItemClickListener(item -> {
+            startActivity(new Intent(MainActivity.this, GeofenceActivity.class));
+            return true;
         });
-        menu.add("Places").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (TextUtils.isEmpty(getString(R.string.API_KEY))) {
-                    Toast.makeText(MainActivity.this, "First you need to configure your API Key - see README.md", Toast.LENGTH_SHORT).show();
-                } else {
-                    startActivity(new Intent(MainActivity.this, PlacesActivity.class));
-                }
-                return true;
+        menu.add("Places").setOnMenuItemClickListener(item -> {
+            if (TextUtils.isEmpty(getString(R.string.API_KEY))) {
+                Toast.makeText(MainActivity.this, "First you need to configure your API Key - see README.md", Toast.LENGTH_SHORT).show();
+            } else {
+                startActivity(new Intent(MainActivity.this, PlacesActivity.class));
             }
+            return true;
         });
-        menu.add("Mock Locations").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                startActivity(new Intent(MainActivity.this, MockLocationsActivity.class));
-                return true;
-            }
+        menu.add("Mock Locations").setOnMenuItemClickListener(item -> {
+            startActivity(new Intent(MainActivity.this, MockLocationsActivity.class));
+            return true;
         });
         return true;
     }
@@ -209,6 +199,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         final LocationSettingsStates states = LocationSettingsStates.fromIntent(data);//intent);
         switch (requestCode) {
             case REQUEST_CHECK_SETTINGS:

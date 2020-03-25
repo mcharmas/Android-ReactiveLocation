@@ -5,9 +5,8 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresPermission;
-
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -29,16 +28,15 @@ import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLngBounds;
-
-import java.util.List;
-import java.util.Locale;
-
+import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.compat.AutocompletePredictionBufferResponse;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 import pl.charmas.android.reactivelocation2.observables.PendingResultObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.TaskResultObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.activity.ActivityUpdatesObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.geocode.GeocodeObservable;
 import pl.charmas.android.reactivelocation2.observables.geocode.ReverseGeocodeObservable;
@@ -49,6 +47,9 @@ import pl.charmas.android.reactivelocation2.observables.location.LastKnownLocati
 import pl.charmas.android.reactivelocation2.observables.location.LocationUpdatesObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.location.MockLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.location.RemoveLocationIntentUpdatesObservableOnSubscribe;
+
+import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -363,15 +364,24 @@ public class ReactiveLocationProvider {
      *
      * @param placeId id for place
      * @return observable that emits places buffer and completes
+     *
+     * @deprecated use {@link ReactiveLocationProvider#getPlaceCompatById(java.lang.String)}
      */
+    @Deprecated
     public Observable<PlaceBuffer> getPlaceById(@Nullable final String placeId) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(new Function<GoogleApiClient, Observable<PlaceBuffer>>() {
-                    @Override
-                    public Observable<PlaceBuffer> apply(GoogleApiClient api) {
-                        return fromPendingResult(Places.GeoDataApi.getPlaceById(api, placeId));
-                    }
-                });
+                .flatMap( api -> fromPendingResult(Places.GeoDataApi.getPlaceById(api, placeId)));
+    }
+
+    /**
+     * Returns observable that fetches a place from the Places API using the place ID.
+     *
+     * @param placeId id for place
+     * @return observable that emits places buffer and completes
+     */
+    public Observable<com.google.android.libraries.places.compat.PlaceBufferResponse> getPlaceCompatById(@Nullable final String placeId) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap( api -> fromTaskResult(com.google.android.libraries.places.compat.Places.getGeoDataClient(this.ctx.getContext()).getPlaceById(placeId)));
     }
 
     /**
@@ -383,15 +393,28 @@ public class ReactiveLocationProvider {
      * @param bounds bounds where to fetch suggestions from
      * @param filter filter
      * @return observable with suggestions buffer and completes
+     *
+     * @deprecated use {@link ReactiveLocationProvider#getPlaceCompatAutocompletePredictions(java.lang.String, com.google.android.gms.maps.model.LatLngBounds, com.google.android.libraries.places.compat.AutocompleteFilter)}
      */
+    @Deprecated
     public Observable<AutocompletePredictionBuffer> getPlaceAutocompletePredictions(final String query, final LatLngBounds bounds, final AutocompleteFilter filter) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(new Function<GoogleApiClient, Observable<AutocompletePredictionBuffer>>() {
-                    @Override
-                    public Observable<AutocompletePredictionBuffer> apply(GoogleApiClient api) {
-                        return fromPendingResult(Places.GeoDataApi.getAutocompletePredictions(api, query, bounds, filter));
-                    }
-                });
+                .flatMap(api -> fromPendingResult(Places.GeoDataApi.getAutocompletePredictions(api, query, bounds, filter)));
+    }
+
+    /**
+     * Returns observable that fetches autocomplete predictions from Places API. To flatmap and autorelease
+     * {@link com.google.android.libraries.places.compat.AutocompletePredictionBufferResponse} you can use
+     * {@link DataBufferObservable}.
+     *
+     * @param query  search query
+     * @param bounds bounds where to fetch suggestions from
+     * @param filter filter
+     * @return observable with suggestions buffer and completes
+     */
+    public Observable<AutocompletePredictionBufferResponse> getPlaceCompatAutocompletePredictions(final String query, final LatLngBounds bounds, final com.google.android.libraries.places.compat.AutocompleteFilter filter) {
+        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(api -> fromTaskResult(com.google.android.libraries.places.compat.Places.getGeoDataClient(this.ctx.getContext()).getAutocompletePredictions(query, bounds, filter)));
     }
 
     /**
@@ -451,5 +474,9 @@ public class ReactiveLocationProvider {
      */
     public static <T extends Result> Observable<T> fromPendingResult(PendingResult<T> result) {
         return Observable.create(new PendingResultObservableOnSubscribe<>(result));
+    }
+
+    public static <T> Observable<T> fromTaskResult(Task<T> result) {
+        return Observable.create(new TaskResultObservableOnSubscribe<>(result));
     }
 }
