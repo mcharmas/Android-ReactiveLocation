@@ -73,7 +73,7 @@ class PlacesActivity : BaseActivity() {
                     QueryWithCurrentLocation(query, currentLocation)
                 }
             )
-                .flatMap { q ->
+                .flatMapMaybe { q ->
                     val latitude = q.location.latitude
                     val longitude = q.location.longitude
                     val bounds = LatLngBounds(
