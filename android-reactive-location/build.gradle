@@ -24,11 +24,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "androidx.core:core-ktx:1.2.0"
 
-    api ('com.google.android.gms:play-services-location:17.0.0'){
+    implementation ('com.google.android.gms:play-services-location:17.0.0'){
         exclude  group: 'com.google.android.gms', module: 'play-services-places'
     }
-    api 'com.google.android.libraries.places:places-compat:2.2.0'
-    api 'io.reactivex.rxjava2:rxjava:2.2.19'
+    implementation 'com.google.android.libraries.places:places-compat:2.2.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 }
 
 // Comment this to deploy to local maven repository

@@ -30,13 +30,17 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.compat.AutocompletePredictionBufferResponse;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
+import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientMaybeOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.MaybeContext;
+import pl.charmas.android.reactivelocation2.observables.MaybeFactory;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 import pl.charmas.android.reactivelocation2.observables.PendingResultObservableOnSubscribe;
-import pl.charmas.android.reactivelocation2.observables.TaskResultObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.observables.TaskResultMaybeOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.activity.ActivityUpdatesObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.geocode.GeocodeObservable;
 import pl.charmas.android.reactivelocation2.observables.geocode.ReverseGeocodeObservable;
@@ -57,40 +61,44 @@ import java.util.Locale;
  * delivered by Google Play Services.
  */
 public class ReactiveLocationProvider {
-    private final ObservableContext ctx;
-    private final ObservableFactory factory;
+    private final ObservableContext ctxObservable;
+    private final MaybeContext ctxMaybe;
+    private final ObservableFactory factoryObservable;
+    private final MaybeFactory factoryMaybe;
 
     /**
      * Creates location provider instance with default configuration.
      *
-     * @param ctx preferably application context
+     * @param context preferably application context
      */
-    public ReactiveLocationProvider(Context ctx) {
-        this(ctx, ReactiveLocationProviderConfiguration.builder().build());
+    public ReactiveLocationProvider(Context context) {
+        this(context, ReactiveLocationProviderConfiguration.builder().build());
     }
 
     /**
      * Create location provider with given {@link ReactiveLocationProviderConfiguration}.
      *
-     * @param ctx           preferably application context
+     * @param context           preferably application context
      * @param configuration configuration instance
      */
-    public ReactiveLocationProvider(Context ctx, ReactiveLocationProviderConfiguration configuration) {
-        this.ctx = new ObservableContext(ctx, configuration);
-        this.factory = new ObservableFactory(this.ctx);
+    public ReactiveLocationProvider(Context context, ReactiveLocationProviderConfiguration configuration) {
+        this.ctxObservable = new ObservableContext(context, configuration);
+        this.ctxMaybe = new MaybeContext(context, configuration);
+        this.factoryObservable = new ObservableFactory(this.ctxObservable);
+        this.factoryMaybe = new MaybeFactory(this.ctxMaybe);
     }
 
     /**
      * Creates location provider with custom handler in which all GooglePlayServices callbacks are called.
      *
-     * @param ctx     preferably application context
+     * @param ctxObservable     preferably application context
      * @param handler on which all GooglePlayServices callbacks are called
      * @see com.google.android.gms.common.api.GoogleApiClient.Builder#setHandler(android.os.Handler)
      * @deprecated please use {@link ReactiveLocationProvider#ReactiveLocationProvider(Context, ReactiveLocationProviderConfiguration)}
      */
     @Deprecated
-    public ReactiveLocationProvider(Context ctx, Handler handler) {
-        this(ctx, ReactiveLocationProviderConfiguration.builder().setCustomCallbackHandler(handler).build());
+    public ReactiveLocationProvider(Context ctxObservable, Handler handler) {
+        this(ctxObservable, ReactiveLocationProviderConfiguration.builder().setCustomCallbackHandler(handler).build());
     }
 
     /**
@@ -109,7 +117,7 @@ public class ReactiveLocationProvider {
             anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
     )
     public Observable<Location> getLastKnownLocation() {
-        return LastKnownLocationObservableOnSubscribe.createObservable(ctx, factory);
+        return LastKnownLocationObservableOnSubscribe.createObservable(ctxObservable, factoryObservable);
     }
 
     /**
@@ -129,7 +137,7 @@ public class ReactiveLocationProvider {
             anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
     )
     public Observable<Location> getUpdatedLocation(LocationRequest locationRequest) {
-        return LocationUpdatesObservableOnSubscribe.createObservable(ctx, factory, locationRequest);
+        return LocationUpdatesObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, locationRequest);
     }
 
     /**
@@ -154,7 +162,7 @@ public class ReactiveLocationProvider {
                     "android.permission.ACCESS_MOCK_LOCATION"}
     )
     public Observable<Status> mockLocation(Observable<Location> sourceLocationObservable) {
-        return MockLocationObservableOnSubscribe.createObservable(ctx, factory, sourceLocationObservable);
+        return MockLocationObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, sourceLocationObservable);
     }
 
     /**
@@ -175,7 +183,7 @@ public class ReactiveLocationProvider {
             anyOf = {"android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"}
     )
     public Observable<Status> requestLocationUpdates(LocationRequest locationRequest, PendingIntent intent) {
-        return AddLocationIntentUpdatesObservableOnSubscribe.createObservable(ctx, factory, locationRequest, intent);
+        return AddLocationIntentUpdatesObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, locationRequest, intent);
     }
 
     /**
@@ -187,7 +195,7 @@ public class ReactiveLocationProvider {
      * @return observable that removes the PendingIntent
      */
     public Observable<Status> removeLocationUpdates(PendingIntent intent) {
-        return RemoveLocationIntentUpdatesObservableOnSubscribe.createObservable(ctx, factory, intent);
+        return RemoveLocationIntentUpdatesObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, intent);
     }
 
     /**
@@ -202,7 +210,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx.getContext(), factory, Locale.getDefault(), lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctxObservable.getContext(), factoryObservable, Locale.getDefault(), lat, lng, maxResults);
     }
 
     /**
@@ -218,7 +226,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location
      */
     public Observable<List<Address>> getReverseGeocodeObservable(Locale locale, double lat, double lng, int maxResults) {
-        return ReverseGeocodeObservable.createObservable(ctx.getContext(), factory, locale, lat, lng, maxResults);
+        return ReverseGeocodeObservable.createObservable(ctxObservable.getContext(), factoryObservable, locale, lat, lng, maxResults);
     }
 
     /**
@@ -259,7 +267,7 @@ public class ReactiveLocationProvider {
      * @return observable that serves list of address based on location name
      */
     public Observable<List<Address>> getGeocodeObservable(String locationName, int maxResults, LatLngBounds bounds, Locale locale) {
-        return GeocodeObservable.createObservable(ctx.getContext(), factory, locationName, maxResults, bounds, locale);
+        return GeocodeObservable.createObservable(ctxObservable.getContext(), factoryObservable, locationName, maxResults, bounds, locale);
     }
 
     /**
@@ -278,7 +286,7 @@ public class ReactiveLocationProvider {
      */
     @RequiresPermission("android.permission.ACCESS_FINE_LOCATION")
     public Observable<Status> addGeofences(PendingIntent geofenceTransitionPendingIntent, GeofencingRequest request) {
-        return AddGeofenceObservableOnSubscribe.createObservable(ctx, factory, request, geofenceTransitionPendingIntent);
+        return AddGeofenceObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, request, geofenceTransitionPendingIntent);
     }
 
     /**
@@ -294,7 +302,7 @@ public class ReactiveLocationProvider {
      * @return observable that removed geofences
      */
     public Observable<Status> removeGeofences(PendingIntent pendingIntent) {
-        return RemoveGeofenceObservableOnSubscribe.createObservable(ctx, factory, pendingIntent);
+        return RemoveGeofenceObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, pendingIntent);
     }
 
     /**
@@ -310,7 +318,7 @@ public class ReactiveLocationProvider {
      * @return observable that removed geofences
      */
     public Observable<Status> removeGeofences(List<String> requestIds) {
-        return RemoveGeofenceObservableOnSubscribe.createObservable(ctx, factory, requestIds);
+        return RemoveGeofenceObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, requestIds);
     }
 
 
@@ -321,7 +329,7 @@ public class ReactiveLocationProvider {
      * @return observable that provides activity recognition
      */
     public Observable<ActivityRecognitionResult> getDetectedActivity(int detectIntervalMiliseconds) {
-        return ActivityUpdatesObservableOnSubscribe.createObservable(ctx, factory, detectIntervalMiliseconds);
+        return ActivityUpdatesObservableOnSubscribe.createObservable(ctxObservable, factoryObservable, detectIntervalMiliseconds);
     }
 
     /**
@@ -379,9 +387,9 @@ public class ReactiveLocationProvider {
      * @param placeId id for place
      * @return observable that emits places buffer and completes
      */
-    public Observable<com.google.android.libraries.places.compat.PlaceBufferResponse> getPlaceCompatById(@Nullable final String placeId) {
-        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap( api -> fromTaskResult(com.google.android.libraries.places.compat.Places.getGeoDataClient(this.ctx.getContext()).getPlaceById(placeId)));
+    public Maybe<com.google.android.libraries.places.compat.PlaceBufferResponse> getPlaceCompatById(@Nullable final String placeId) {
+        return getGoogleApiClientMaybe(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap( api -> maybeTaskResult(com.google.android.libraries.places.compat.Places.getGeoDataClient(this.ctxObservable.getContext()).getPlaceById(placeId)));
     }
 
     /**
@@ -412,9 +420,9 @@ public class ReactiveLocationProvider {
      * @param filter filter
      * @return observable with suggestions buffer and completes
      */
-    public Observable<AutocompletePredictionBufferResponse> getPlaceCompatAutocompletePredictions(final String query, final LatLngBounds bounds, final com.google.android.libraries.places.compat.AutocompleteFilter filter) {
-        return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
-                .flatMap(api -> fromTaskResult(com.google.android.libraries.places.compat.Places.getGeoDataClient(this.ctx.getContext()).getAutocompletePredictions(query, bounds, filter)));
+    public Maybe<AutocompletePredictionBufferResponse> getPlaceCompatAutocompletePredictions(final String query, final LatLngBounds bounds, final com.google.android.libraries.places.compat.AutocompleteFilter filter) {
+        return getGoogleApiClientMaybe(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
+                .flatMap(api -> maybeTaskResult(com.google.android.libraries.places.compat.Places.getGeoDataClient(this.ctxObservable.getContext()).getAutocompletePredictions(query, bounds, filter)));
     }
 
     /**
@@ -462,7 +470,12 @@ public class ReactiveLocationProvider {
      */
     public Observable<GoogleApiClient> getGoogleApiClientObservable(Api... apis) {
         //noinspection unchecked
-        return GoogleAPIClientObservableOnSubscribe.create(ctx, factory, apis);
+        return GoogleAPIClientObservableOnSubscribe.create(ctxObservable, factoryObservable, apis);
+    }
+
+    public Maybe<GoogleApiClient> getGoogleApiClientMaybe(Api... apis) {
+        //noinspection unchecked
+        return GoogleAPIClientMaybeOnSubscribe.create(ctxMaybe, factoryMaybe, apis);
     }
 
     /**
@@ -476,7 +489,7 @@ public class ReactiveLocationProvider {
         return Observable.create(new PendingResultObservableOnSubscribe<>(result));
     }
 
-    public static <T> Observable<T> fromTaskResult(Task<T> result) {
-        return Observable.create(new TaskResultObservableOnSubscribe<>(result));
+    public static <T> Maybe<T> maybeTaskResult(Task<T> result) {
+        return Maybe.create(new TaskResultMaybeOnSubscribe<>(result));
     }
 }

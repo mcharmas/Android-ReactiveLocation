@@ -1,5 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="pl.charmas.android.reactivelocation2">
-
-    <application></application>
-</manifest>
+<manifest package="pl.charmas.android.reactivelocation2" />

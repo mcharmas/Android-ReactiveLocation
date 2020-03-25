@@ -18,12 +18,15 @@ object DataBufferObservable {
     </T> */
     fun <T> from(buffer: DataBuffer<T>): Observable<T> {
         return Observable.create { emitter ->
-            for (item in buffer) {
-                emitter.onNext(item)
-            }
-            buffer.release()
-            emitter.onComplete()
             emitter.setDisposable(Disposables.fromAction { buffer.release() })
+            for (item in buffer) {
+                if (!emitter.isDisposed) {
+                    emitter.onNext(item)
+                }
+            }
+            if (!emitter.isDisposed) {
+                emitter.onComplete()
+            }
         }
     }
 }
