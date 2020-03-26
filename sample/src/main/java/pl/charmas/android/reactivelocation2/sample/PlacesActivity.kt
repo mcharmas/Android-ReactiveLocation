@@ -92,6 +92,7 @@ class PlacesActivity : BaseActivity() {
                     val infos = mutableListOf<AutocompleteInfo>()
                     for (prediction in buffer) {
                         infos.add(
+
                             AutocompleteInfo(
                                 prediction.getFullText(null).toString(),
                                 prediction.placeId

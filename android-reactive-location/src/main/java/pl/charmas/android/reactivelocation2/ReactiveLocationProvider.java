@@ -5,6 +5,7 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 import android.os.Handler;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
 import com.google.android.gms.common.api.Api;
@@ -376,7 +377,7 @@ public class ReactiveLocationProvider {
      * @deprecated use {@link ReactiveLocationProvider#getPlaceCompatById(java.lang.String)}
      */
     @Deprecated
-    public Observable<PlaceBuffer> getPlaceById(@Nullable final String placeId) {
+    public Observable<PlaceBuffer> getPlaceById(@NonNull final String placeId) {
         return getGoogleApiClientObservable(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
                 .flatMap( api -> fromPendingResult(Places.GeoDataApi.getPlaceById(api, placeId)));
     }
@@ -387,7 +388,7 @@ public class ReactiveLocationProvider {
      * @param placeId id for place
      * @return observable that emits places buffer and completes
      */
-    public Maybe<com.google.android.libraries.places.compat.PlaceBufferResponse> getPlaceCompatById(@Nullable final String placeId) {
+    public Maybe<com.google.android.libraries.places.compat.PlaceBufferResponse> getPlaceCompatById(@NonNull final String placeId) {
         return getGoogleApiClientMaybe(Places.PLACE_DETECTION_API, Places.GEO_DATA_API)
                 .flatMap( api -> maybeTaskResult(com.google.android.libraries.places.compat.Places.getGeoDataClient(this.ctxObservable.getContext()).getPlaceById(placeId)));
     }
