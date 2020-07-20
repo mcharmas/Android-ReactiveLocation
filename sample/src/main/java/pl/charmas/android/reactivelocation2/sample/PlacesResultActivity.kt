@@ -15,7 +15,7 @@ class PlacesResultActivity : BaseActivity() {
     private lateinit var placeNameView: TextView
     private lateinit var placeLocationView: TextView
     private lateinit var placeAddressView: TextView
-    private var placeId: String? = null
+    private lateinit var placeId: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_places_result)
@@ -30,24 +30,19 @@ class PlacesResultActivity : BaseActivity() {
         get() {
             val loadedIntent = intent
             placeId = loadedIntent.getStringExtra(EXTRA_PLACE_ID)
-            if (placeId == null) {
-                throw IllegalArgumentException("You must start SearchResultsActivity with a non-null place Id using getStartIntent(Context, String)")
-            }
+                ?: throw IllegalArgumentException("You must start SearchResultsActivity with a non-null place Id using getStartIntent(Context, String)")
         }
 
     override fun onLocationPermissionGranted() {
         compositeSubscription = CompositeDisposable()
         compositeSubscription.add(
-            reactiveLocationProvider.getPlaceCompatById(placeId)
-                .subscribe { buffer ->
-                    val place = buffer.firstOrNull()
-                    if (place != null) {
-                        placeNameView.text = place.name
-                        val text = place.latLng.latitude.toString() + ", " + place.latLng.longitude
-                        placeLocationView.text = text
-                        placeAddressView.text = place.address
-                    }
-                    buffer.release()
+            reactiveLocationProvider.getPlaceById(placeId)
+                .subscribe { res ->
+                    val place =  res.place
+                    placeNameView.text = place.name
+                    val text = place.latLng?.latitude.toString() + ", " + place.latLng?.longitude
+                    placeLocationView.text = text
+                    placeAddressView.text = place.address
                 }
         )
     }

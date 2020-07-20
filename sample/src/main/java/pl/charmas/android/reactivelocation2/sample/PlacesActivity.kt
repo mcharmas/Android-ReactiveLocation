@@ -11,6 +11,10 @@ import android.widget.ListView
 import android.widget.TextView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.BiFunction
@@ -30,6 +34,7 @@ class PlacesActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_places)
+        Places.initialize(this.applicationContext, getString(R.string.API_KEY))
         currentPlaceView = findViewById(R.id.current_place_view)
         queryView = findViewById(R.id.place_query_view)
         placeSuggestionsList = findViewById(R.id.place_suggestions_list)
@@ -48,13 +53,16 @@ class PlacesActivity : BaseActivity() {
     @SuppressLint("MissingPermission")
     override fun onLocationPermissionGranted() {
         compositeDisposable.add(
-            reactiveLocationProvider.getCurrentPlace(null)
-                .subscribe({ buffer ->
+            reactiveLocationProvider.getCurrentPlace(
+                FindCurrentPlaceRequest.builder(listOf(com.google.android.libraries.places.api.model.Place.Field.ID))
+                    .build()
+            )
+                .subscribe({ response ->
+                    val buffer = response.placeLikelihoods
                     val likelihood = buffer.firstOrNull()
                     if (likelihood != null) {
                         currentPlaceView.text = likelihood.place.name
                     }
-                    buffer.release()
                 }) { throwable ->
                     Log.e("PlacesActivity", "Error in observable", throwable)
                 }
@@ -80,10 +88,11 @@ class PlacesActivity : BaseActivity() {
                         LatLng(latitude - 50.05, longitude - 50.05),
                         LatLng(latitude + 50.05, longitude + 50.05)
                     )
-                    reactiveLocationProvider.getPlaceCompatAutocompletePredictions(
-                        q.query,
-                        bounds,
-                        null
+                    reactiveLocationProvider.getPlaceAutocompletePredictions(
+                        FindAutocompletePredictionsRequest.builder()
+                            .setQuery(q.query)
+                            .setLocationRestriction(RectangularBounds.newInstance(bounds))
+                            .build()
                     )
                 }
                 .doOnError { Log.e(TAG, "onLocationPermissionGranted (line 80): ", it) }
@@ -99,7 +108,6 @@ class PlacesActivity : BaseActivity() {
                             )
                         )
                     }
-                    buffer.release()
                     placeSuggestionsList.adapter = ArrayAdapter(
                         this@PlacesActivity,
                         android.R.layout.simple_list_item_1,

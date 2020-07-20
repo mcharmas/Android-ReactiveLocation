@@ -33,6 +33,7 @@ import pl.charmas.android.reactivelocation2.sample.utils.LocationToStringFunc;
 import pl.charmas.android.reactivelocation2.sample.utils.ToMostProbableActivity;
 
 import java.util.List;
+import java.util.Locale;
 
 import static pl.charmas.android.reactivelocation2.sample.utils.UnsubscribeIfPresent.dispose;
 
@@ -88,40 +89,22 @@ public class MainActivity extends BaseActivity {
                                 .setAlwaysShow(true)  //Refrence: http://stackoverflow.com/questions/29824408/google-play-services-locationservices-api-new-option-never
                                 .build()
                 )
-                .doOnNext(new Consumer<LocationSettingsResult>() {
-                    @Override
-                    public void accept(LocationSettingsResult locationSettingsResult) {
-                        Status status = locationSettingsResult.getStatus();
-                        if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                            try {
-                                status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
-                            } catch (IntentSender.SendIntentException th) {
-                                Log.e("MainActivity", "Error opening settings activity.", th);
-                            }
+                .doOnNext(locationSettingsResult -> {
+                    Status status = locationSettingsResult.getStatus();
+                    if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                        try {
+                            status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException th) {
+                            Log.e("MainActivity", "Error opening settings activity.", th);
                         }
                     }
                 })
-                .flatMap(new Function<LocationSettingsResult, Observable<Location>>() {
-                    @Override
-                    public Observable<Location> apply(LocationSettingsResult locationSettingsResult) {
-                        return locationProvider.getUpdatedLocation(locationRequest);
-                    }
-                })
+                .flatMap((Function<LocationSettingsResult, Observable<Location>>) locationSettingsResult -> locationProvider.getUpdatedLocation(locationRequest))
                 .observeOn(AndroidSchedulers.mainThread());
 
         addressObservable = locationProvider.getUpdatedLocation(locationRequest)
-                .flatMap(new Function<Location, Observable<List<Address>>>() {
-                    @Override
-                    public Observable<List<Address>> apply(Location location) {
-                        return locationProvider.getReverseGeocodeObservable(location.getLatitude(), location.getLongitude(), 1);
-                    }
-                })
-                .map(new Function<List<Address>, Address>() {
-                    @Override
-                    public Address apply(List<Address> addresses) {
-                        return addresses != null && !addresses.isEmpty() ? addresses.get(0) : null;
-                    }
-                })
+                .flatMap((Function<Location, Observable<List<Address>>>) location -> locationProvider.getReverseGeocodeObservable(Locale.getDefault(), location.getLatitude(), location.getLongitude(), 1))
+                .map(addresses -> addresses != null && !addresses.isEmpty() ? addresses.get(0) : null)
                 .map(new AddressToStringFunc())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());

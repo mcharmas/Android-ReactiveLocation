@@ -1,19 +1,17 @@
 package pl.charmas.android.reactivelocation2.observables.location;
 
 import android.location.Location;
-
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-
-import java.lang.ref.WeakReference;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
+
+import java.lang.ref.WeakReference;
 
 
 @SuppressWarnings("MissingPermission")
@@ -52,7 +50,7 @@ public class LocationUpdatesObservableOnSubscribe extends BaseLocationObservable
         private final WeakReference<ObservableEmitter<? super Location>> weakRef;
 
         LocationUpdatesLocationListener(ObservableEmitter<? super Location> emitter) {
-            this.weakRef = new WeakReference<ObservableEmitter<? super Location>>(emitter);
+            this.weakRef = new WeakReference<>(emitter);
         }
 
         @Override

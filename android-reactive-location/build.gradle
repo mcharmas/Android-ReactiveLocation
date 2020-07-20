@@ -27,7 +27,7 @@ dependencies {
     implementation ('com.google.android.gms:play-services-location:17.0.0'){
         exclude  group: 'com.google.android.gms', module: 'play-services-places'
     }
-    implementation 'com.google.android.libraries.places:places-compat:2.3.0'
+    implementation 'com.google.android.libraries.places:places:2.3.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 }
 
