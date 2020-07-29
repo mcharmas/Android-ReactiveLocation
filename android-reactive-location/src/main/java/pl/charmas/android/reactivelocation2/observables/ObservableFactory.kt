@@ -8,7 +8,7 @@ import io.reactivex.functions.BiPredicate
 import pl.charmas.android.reactivelocation2.observables.exceptions.GoogleAPIConnectionSuspendedException
 
 class ObservableFactory constructor(private val context: ObservableContext) {
-    fun <T> createObservable(source: ObservableOnSubscribe<T>): Observable<T> {
+    fun <T> create(source: ObservableOnSubscribe<T>): Observable<T> {
         return Observable.create(source).compose(
             RetryOnConnectionSuspension(
                 context.isRetryOnConnectionSuspended

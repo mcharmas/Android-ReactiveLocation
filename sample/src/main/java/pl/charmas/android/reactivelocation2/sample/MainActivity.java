@@ -11,13 +11,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -47,7 +49,7 @@ public class MainActivity extends BaseActivity {
     private TextView addressLocationView;
     private TextView currentActivityView;
 
-    private Observable<Location> lastKnownLocationObservable;
+    private Maybe<Location> lastKnownLocationObservable;
     private Observable<Location> locationUpdatesObservable;
     private Observable<ActivityRecognitionResult> activityObservable;
 
@@ -89,17 +91,30 @@ public class MainActivity extends BaseActivity {
                                 .setAlwaysShow(true)  //Refrence: http://stackoverflow.com/questions/29824408/google-play-services-locationservices-api-new-option-never
                                 .build()
                 )
-                .doOnNext(locationSettingsResult -> {
-                    Status status = locationSettingsResult.getStatus();
-                    if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                        try {
-                            status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
-                        } catch (IntentSender.SendIntentException th) {
-                            Log.e("MainActivity", "Error opening settings activity.", th);
-                        }
+                .doOnSuccess(locationSettingsResponse -> {
+                    Log.d("MainActivity", "getLocationSettingsStates isGpsUsable = " + locationSettingsResponse.getLocationSettingsStates().isGpsUsable());
+                })
+                .doOnError(throwable -> {
+                    int statusCode = ((ApiException) throwable).getStatusCode();
+                    switch (statusCode) {
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            try {
+                                // Show the dialog by calling startResolutionForResult(), and check the
+                                // result in onActivityResult().
+                                ResolvableApiException rae = (ResolvableApiException) throwable;
+                                rae.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+                            } catch (IntentSender.SendIntentException sie) {
+                                Log.i(TAG, "PendingIntent unable to execute request.");
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            String errorMessage = "Location settings are inadequate, and cannot be " +
+                                    "fixed here. Fix in Settings.";
+                            Log.e(TAG, errorMessage);
+                            Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                     }
                 })
-                .flatMap((Function<LocationSettingsResult, Observable<Location>>) locationSettingsResult -> locationProvider.getUpdatedLocation(locationRequest))
+                .flatMapObservable((Function<LocationSettingsResponse, Observable<Location>>) locationSettingsResult -> locationProvider.getUpdatedLocation(locationRequest))
                 .observeOn(AndroidSchedulers.mainThread());
 
         addressObservable = locationProvider.getUpdatedLocation(locationRequest)

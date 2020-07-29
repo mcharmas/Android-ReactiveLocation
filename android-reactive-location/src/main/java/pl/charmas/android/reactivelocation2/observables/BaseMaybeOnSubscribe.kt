@@ -57,7 +57,7 @@ abstract class BaseMaybeOnSubscribe<T> @SafeVarargs protected constructor(
         return apiClient
     }
 
-    private fun onDisposed(locationClient: GoogleApiClient?) {}
+    private fun onDisposed(locationClient: GoogleApiClient) {}
 
     protected abstract fun onGoogleApiClientReady(
         apiClient: GoogleApiClient,

@@ -7,9 +7,14 @@ import io.reactivex.Maybe
 import io.reactivex.Observable
 import pl.charmas.android.reactivelocation2.observables.PendingResultObservableOnSubscribe
 import pl.charmas.android.reactivelocation2.observables.TaskResultMaybeOnSubscribe
+import pl.charmas.android.reactivelocation2.observables.TaskSuccessFailureMaybeOnSubscribe
 
 fun <T> Task<T>.toMaybe(): Maybe<T> {
     return Maybe.create(TaskResultMaybeOnSubscribe(this))
+}
+
+fun <T> Task<T>.fromSuccessFailureToMaybe(): Maybe<T> {
+    return Maybe.create(TaskSuccessFailureMaybeOnSubscribe(this))
 }
 
 fun <T : Result> PendingResult<T>.toObservable(): Observable<T> {

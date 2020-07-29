@@ -25,7 +25,7 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
     private ActivityUpdatesBroadcastReceiver receiver;
 
     public static Observable<ActivityRecognitionResult> createObservable(ObservableContext ctx, ObservableFactory factory, int detectionIntervalMiliseconds) {
-        return factory.createObservable(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
+        return factory.create(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
     }
 
     private ActivityUpdatesObservableOnSubscribe(ObservableContext context, int detectionIntervalMilliseconds) {

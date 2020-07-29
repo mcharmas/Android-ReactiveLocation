@@ -8,7 +8,7 @@ import io.reactivex.functions.BiPredicate
 import pl.charmas.android.reactivelocation2.observables.exceptions.GoogleAPIConnectionSuspendedException
 
 class MaybeFactory(private val context: MaybeContext) {
-    fun <T> createMaybe(source: MaybeOnSubscribe<T>?): Maybe<T> {
+    fun <T> create(source: MaybeOnSubscribe<T>?): Maybe<T> {
         return Maybe.create(source).compose(
             RetryOnConnectionSuspension(
                 context.isRetryOnConnectionSuspended

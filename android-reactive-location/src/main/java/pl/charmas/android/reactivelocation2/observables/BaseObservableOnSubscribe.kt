@@ -42,9 +42,7 @@ abstract class BaseObservableOnSubscribe<T> @SafeVarargs protected constructor(
 
     private fun createApiClient(emitter: ObservableEmitter<in T>): GoogleApiClient {
         val apiClientConnectionCallbacks =
-            ApiClientConnectionCallbacks(
-                emitter
-            )
+            ApiClientConnectionCallbacks(emitter)
         var apiClientBuilder = GoogleApiClient.Builder(ctx)
         for (service in services) {
             apiClientBuilder = apiClientBuilder.addApi(service)
@@ -60,15 +58,15 @@ abstract class BaseObservableOnSubscribe<T> @SafeVarargs protected constructor(
         return apiClient
     }
 
-    protected open fun onDisposed(locationClient: GoogleApiClient?) {}
+    protected open fun onDisposed(locationClient: GoogleApiClient) {}
     protected abstract fun onGoogleApiClientReady(
-        apiClient: GoogleApiClient?,
-        emitter: ObservableEmitter<in T>?
+        apiClient: GoogleApiClient,
+        emitter: ObservableEmitter<in T>
     )
 
     private inner class ApiClientConnectionCallbacks  constructor(private val emitter: ObservableEmitter<in T>) :
         ConnectionCallbacks, OnConnectionFailedListener {
-        private var apiClient: GoogleApiClient? = null
+        private lateinit var apiClient: GoogleApiClient
         override fun onConnected(bundle: Bundle?) {
             try {
                 onGoogleApiClientReady(apiClient, emitter)
@@ -96,7 +94,7 @@ abstract class BaseObservableOnSubscribe<T> @SafeVarargs protected constructor(
             }
         }
 
-        fun setClient(client: GoogleApiClient?) {
+        fun setClient(client: GoogleApiClient) {
             apiClient = client
         }
     }

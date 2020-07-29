@@ -9,13 +9,12 @@ import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import com.google.android.gms.common.api.Api
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsResult
+import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
@@ -30,20 +29,19 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import io.reactivex.Maybe
 import io.reactivex.Observable
+import pl.charmas.android.reactivelocation2.ext.fromSuccessFailureToMaybe
 import pl.charmas.android.reactivelocation2.ext.toMaybe
-import pl.charmas.android.reactivelocation2.ext.toObservable
 import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientMaybeOnSubscribe
 import pl.charmas.android.reactivelocation2.observables.MaybeContext
 import pl.charmas.android.reactivelocation2.observables.MaybeFactory
 import pl.charmas.android.reactivelocation2.observables.ObservableContext
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory
 import pl.charmas.android.reactivelocation2.observables.activity.ActivityUpdatesObservableOnSubscribe
-import pl.charmas.android.reactivelocation2.observables.geocode.GeocodeObservable
+import pl.charmas.android.reactivelocation2.observables.geocode.GeocodeMaybe
 import pl.charmas.android.reactivelocation2.observables.geocode.ReverseGeocodeObservable
-import pl.charmas.android.reactivelocation2.observables.geofence.AddGeofenceObservableOnSubscribe
-import pl.charmas.android.reactivelocation2.observables.geofence.RemoveGeofenceObservableOnSubscribe
-import pl.charmas.android.reactivelocation2.observables.location.AddLocationIntentUpdatesObservableOnSubscribe
-import pl.charmas.android.reactivelocation2.observables.location.LastKnownLocationObservableOnSubscribe
+import pl.charmas.android.reactivelocation2.observables.geofence.AddGeofenceMaybeOnSubscribe
+import pl.charmas.android.reactivelocation2.observables.geofence.RemoveGeofenceMaybeOnSubscribe
+import pl.charmas.android.reactivelocation2.observables.location.AddLocationIntentUpdatesMaybeOnSubscribe
 import pl.charmas.android.reactivelocation2.observables.location.LocationUpdatesObservableOnSubscribe
 import pl.charmas.android.reactivelocation2.observables.location.MockLocationObservableOnSubscribe
 import pl.charmas.android.reactivelocation2.observables.location.RemoveLocationIntentUpdatesObservableOnSubscribe
@@ -62,7 +60,7 @@ class ReactiveLocationProvider
  */
 @JvmOverloads
 constructor(
-    context: Context,
+    val context: Context,
     configuration: ReactiveLocationProviderConfiguration = ReactiveLocationProviderConfiguration.builder()
         .build()
 ) {
@@ -70,6 +68,11 @@ constructor(
     private val ctxMaybe: MaybeContext = MaybeContext(context, configuration)
     private val factoryObservable: ObservableFactory = ObservableFactory(ctxObservable)
     private val factoryMaybe: MaybeFactory = MaybeFactory(ctxMaybe)
+
+    private val settingsClient = LocationServices.getSettingsClient(context)
+    private val geofencingClient = LocationServices.getGeofencingClient(context)
+    private val fusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(context)
 
     /**
      * Creates observable that obtains last known location and than completes.
@@ -84,11 +87,12 @@ constructor(
      * @return observable that serves last know location
      */
     @get:RequiresPermission(anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"])
-    val lastKnownLocation: Observable<Location>
-        get() = LastKnownLocationObservableOnSubscribe.createObservable(
-            ctxObservable,
-            factoryObservable
-        )
+    val lastKnownLocation: Maybe<Location>
+        get() {
+            return fusedLocationProviderClient
+                .lastLocation
+                .toMaybe()
+        }
 
     /**
      * Creates observable that allows to observe infinite stream of location updates.
@@ -104,8 +108,9 @@ constructor(
      * @return observable that serves infinite stream of location updates
      */
     @RequiresPermission(anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"])
-    fun getUpdatedLocation(locationRequest: LocationRequest?): Observable<Location> {
+    fun getUpdatedLocation(locationRequest: LocationRequest): Observable<Location> {
         return LocationUpdatesObservableOnSubscribe.createObservable(
+            fusedLocationProviderClient,
             ctxObservable,
             factoryObservable,
             locationRequest
@@ -130,8 +135,9 @@ constructor(
      * @return observable that emits {@link com.google.android.gms.common.api.Status}
      */
     @RequiresPermission(allOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_MOCK_LOCATION"])
-    fun mockLocation(sourceLocationObservable: Observable<Location?>?): Observable<Status> {
-        return MockLocationObservableOnSubscribe.createObservable(
+    fun mockLocation(sourceLocationObservable: Observable<Location>): Observable<Boolean> {
+        return MockLocationObservableOnSubscribe.create(
+            fusedLocationProviderClient,
             ctxObservable,
             factoryObservable,
             sourceLocationObservable
@@ -154,12 +160,13 @@ constructor(
      */
     @RequiresPermission(anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"])
     fun requestLocationUpdates(
-        locationRequest: LocationRequest?,
-        intent: PendingIntent?
-    ): Observable<Status> {
-        return AddLocationIntentUpdatesObservableOnSubscribe.createObservable(
-            ctxObservable,
-            factoryObservable,
+        locationRequest: LocationRequest,
+        intent: PendingIntent
+    ): Maybe<Boolean> {
+        return AddLocationIntentUpdatesMaybeOnSubscribe.create(
+            fusedLocationProviderClient,
+            ctxMaybe,
+            factoryMaybe,
             locationRequest,
             intent
         )
@@ -173,10 +180,11 @@ constructor(
      * @param intent PendingIntent to remove location updates for
      * @return observable that removes the PendingIntent
      */
-    fun removeLocationUpdates(intent: PendingIntent?): Observable<Status> {
-        return RemoveLocationIntentUpdatesObservableOnSubscribe.createObservable(
-            ctxObservable,
-            factoryObservable,
+    fun removeLocationUpdates(intent: PendingIntent): Maybe<Boolean> {
+        return RemoveLocationIntentUpdatesObservableOnSubscribe.create(
+            fusedLocationProviderClient,
+            ctxMaybe,
+            factoryMaybe,
             intent
         )
     }
@@ -224,18 +232,18 @@ constructor(
      * @return observable that serves list of address based on location name
      */
     fun getGeocodeObservable(
-        locationName: String?,
+        locationName: String,
         maxResults: Int,
         bounds: LatLngBounds? = null,
-        locale: Locale? = Locale.getDefault()
-    ): Observable<List<Address>> {
-        return GeocodeObservable.createObservable(
+        locale: Locale? = null
+    ): Maybe<List<Address>> {
+        return GeocodeMaybe.create(
             ctxObservable.context,
-            factoryObservable,
+            factoryMaybe,
             locationName,
             maxResults,
             bounds,
-            locale
+            locale ?: Locale.getDefault()
         )
     }
 
@@ -255,12 +263,13 @@ constructor(
      */
     @RequiresPermission("android.permission.ACCESS_FINE_LOCATION")
     fun addGeofences(
-        geofenceTransitionPendingIntent: PendingIntent?,
-        request: GeofencingRequest?
-    ): Observable<Status> {
-        return AddGeofenceObservableOnSubscribe.createObservable(
-            ctxObservable,
-            factoryObservable,
+        geofenceTransitionPendingIntent: PendingIntent,
+        request: GeofencingRequest
+    ): Maybe<Boolean> {
+        return AddGeofenceMaybeOnSubscribe.createMaybe(
+            geofencingClient,
+            ctxMaybe,
+            factoryMaybe,
             request,
             geofenceTransitionPendingIntent
         )
@@ -278,11 +287,11 @@ constructor(
      * @param pendingIntent key of registered geofences
      * @return observable that removed geofences
      */
-    fun removeGeofences(pendingIntent: PendingIntent?): Observable<Status> {
-        return RemoveGeofenceObservableOnSubscribe.createObservable(
-            ctxObservable,
-            factoryObservable,
-            pendingIntent
+    fun removeGeofences(pendingIntent: PendingIntent): Maybe<Boolean> {
+        return RemoveGeofenceMaybeOnSubscribe.createMaybe(
+            ctxMaybe,
+            factoryMaybe,
+            pendingIntent, geofencingClient
         )
     }
 
@@ -298,11 +307,12 @@ constructor(
      * @param requestIds geofences to remove
      * @return observable that removed geofences
      */
-    fun removeGeofences(requestIds: List<String?>?): Observable<Status> {
-        return RemoveGeofenceObservableOnSubscribe.createObservable(
-            ctxObservable,
-            factoryObservable,
-            requestIds
+    fun removeGeofences(requestIds: List<String>): Maybe<Boolean> {
+        return RemoveGeofenceMaybeOnSubscribe.createMaybe(
+            ctxMaybe,
+            factoryMaybe,
+            requestIds,
+            geofencingClient
         )
     }
 
@@ -327,15 +337,12 @@ constructor(
      * @return observable that emits check result of location settings
      * @see com.google.android.gms.location.SettingsApi
      */
-    fun checkLocationSettings(locationRequest: LocationSettingsRequest?): Observable<LocationSettingsResult> {
-        return getGoogleApiClientMaybe(LocationServices.API)
-            .flatMapObservable { googleApiClient ->
-                LocationServices.SettingsApi.checkLocationSettings(
-                    googleApiClient,
-                    locationRequest
-                )
-                    .toObservable()
-            }
+    fun checkLocationSettings(
+        locationRequest: LocationSettingsRequest
+    ): Maybe<LocationSettingsResponse> {
+        return settingsClient
+            .checkLocationSettings(locationRequest)
+            .fromSuccessFailureToMaybe()
     }
 
     /**

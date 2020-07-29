@@ -26,7 +26,7 @@ class GoogleAPIClientMaybeOnSubscribe @SafeVarargs private constructor(
             factory: MaybeFactory,
             vararg apis: Api<out NotRequiredOptions>
         ): Maybe<GoogleApiClient> {
-            return factory.createMaybe(
+            return factory.create(
                 GoogleAPIClientMaybeOnSubscribe(context, *apis)
             )
         }

@@ -4,18 +4,12 @@ import com.google.android.gms.tasks.Task
 import io.reactivex.MaybeEmitter
 import io.reactivex.MaybeOnSubscribe
 
-class TaskResultMaybeOnSubscribe<T>(private val task: Task<T>) :
+class TaskSuccessFailureMaybeOnSubscribe<T>(private val task: Task<T>) :
     MaybeOnSubscribe<T> {
     override fun subscribe(emitter: MaybeEmitter<T>) {
-        task.addOnSuccessListener { result: T? ->
+        task.addOnSuccessListener { t: T ->
             if (!emitter.isDisposed) {
-                result?.let { emitter.onSuccess(it) } ?: emitter.onComplete()
-            }
-        }
-        task.addOnCompleteListener { command ->
-            if (!emitter.isDisposed) {
-                val result = command.result
-                result?.let { emitter.onSuccess(it) } ?: emitter.onComplete()
+                emitter.onSuccess(t)
             }
         }
         task.addOnFailureListener { exception ->
