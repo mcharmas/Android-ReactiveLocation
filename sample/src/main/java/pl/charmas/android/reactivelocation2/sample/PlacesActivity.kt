@@ -47,7 +47,7 @@ class PlacesActivity : BaseActivity() {
                     startActivity(PlacesResultActivity.getStartIntent(this@PlacesActivity, placeId))
                 }
             }
-        reactiveLocationProvider = ReactiveLocationProvider(this)
+        reactiveLocationProvider = ReactiveLocationProvider(this,getString(R.string.API_KEY))
     }
 
     @SuppressLint("MissingPermission")
@@ -76,7 +76,7 @@ class PlacesActivity : BaseActivity() {
         compositeDisposable.add(
             Observable.combineLatest(
                 queryObservable,
-                reactiveLocationProvider.lastKnownLocation,
+                reactiveLocationProvider.lastKnownLocation.toObservable(),
                 BiFunction<String, Location, QueryWithCurrentLocation> { query, currentLocation ->
                     QueryWithCurrentLocation(query, currentLocation)
                 }

@@ -1,6 +1,7 @@
 package pl.charmas.android.reactivelocation2.sample;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -15,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import androidx.core.app.ActivityCompat;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
@@ -53,7 +53,7 @@ public class MockLocationsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mocklocations);
 
-        locationProvider = new ReactiveLocationProvider(this);
+        locationProvider = new ReactiveLocationProvider(this,getString(R.string.API_KEY));
         mockLocationSubject = PublishSubject.create();
 
         mockLocationObservable = mockLocationSubject.hide();
@@ -118,6 +118,7 @@ public class MockLocationsActivity extends BaseActivity {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private void setMockMode(boolean toggle) {
         if (toggle) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -125,12 +126,13 @@ public class MockLocationsActivity extends BaseActivity {
             }
 
             mockLocationDisposable =
-                    Observable.zip(locationProvider.mockLocation(mockLocationObservable),
-                            mockLocationObservable, new BiFunction<Status, Location, String>() {
+                    Observable.zip(
+                            locationProvider.mockLocation(mockLocationObservable),
+                            mockLocationObservable, new BiFunction<Boolean, Location, String>() {
                                 int count = 0;
 
                                 @Override
-                                public String apply(Status result, Location location) {
+                                public String apply(Boolean result, Location location) {
                                     return new LocationToStringFunc().apply(location) + " " + count++;
                                 }
                             })

@@ -61,6 +61,7 @@ class ReactiveLocationProvider
 @JvmOverloads
 constructor(
     val context: Context,
+    private val apiKey: String,
     configuration: ReactiveLocationProviderConfiguration = ReactiveLocationProviderConfiguration.builder()
         .build()
 ) {
@@ -71,8 +72,7 @@ constructor(
 
     private val settingsClient = LocationServices.getSettingsClient(context)
     private val geofencingClient = LocationServices.getGeofencingClient(context)
-    private val fusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(context)
+    private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     /**
      * Creates observable that obtains last known location and than completes.
@@ -201,15 +201,16 @@ constructor(
      * @param maxResults maximal number of results you are interested in
      * @return observable that serves list of address based on location
      */
-    fun getReverseGeocodeObservable(
+    fun getReverseGeocodeMaybe(
         locale: Locale = Locale.getDefault(),
         lat: Double,
         lng: Double,
         maxResults: Int
-    ): Observable<List<Address>> {
-        return ReverseGeocodeObservable.createObservable(
+    ): Maybe<List<Address>> {
+        return ReverseGeocodeObservable.create(
             ctxObservable.context,
-            factoryObservable,
+            apiKey,
+            factoryMaybe,
             locale,
             lat,
             lng,

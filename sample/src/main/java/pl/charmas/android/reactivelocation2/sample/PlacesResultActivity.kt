@@ -22,7 +22,7 @@ class PlacesResultActivity : BaseActivity() {
         placeNameView = findViewById<View>(R.id.place_name_view) as TextView
         placeLocationView = findViewById<View>(R.id.place_location_view) as TextView
         placeAddressView = findViewById<View>(R.id.place_address_view) as TextView
-        reactiveLocationProvider = ReactiveLocationProvider(this)
+        reactiveLocationProvider = ReactiveLocationProvider(this, getString(R.string.API_KEY))
         placeIdFromIntent
     }
 
@@ -38,7 +38,7 @@ class PlacesResultActivity : BaseActivity() {
         compositeSubscription.add(
             reactiveLocationProvider.getPlaceById(placeId)
                 .subscribe { res ->
-                    val place =  res.place
+                    val place = res.place
                     placeNameView.text = place.name
                     val text = place.latLng?.latitude.toString() + ", " + place.latLng?.longitude
                     placeLocationView.text = text

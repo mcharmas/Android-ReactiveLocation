@@ -30,7 +30,7 @@ public class GeofenceActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        reactiveLocationProvider = new ReactiveLocationProvider(this);
+        reactiveLocationProvider = new ReactiveLocationProvider(this, getString(R.string.API_KEY));
         setContentView(R.layout.activity_geofence);
         initViews();
     }

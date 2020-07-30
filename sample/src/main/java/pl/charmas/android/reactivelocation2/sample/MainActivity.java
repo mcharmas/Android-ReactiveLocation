@@ -3,7 +3,6 @@ package pl.charmas.android.reactivelocation2.sample;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -34,7 +33,6 @@ import pl.charmas.android.reactivelocation2.sample.utils.DisplayTextOnViewAction
 import pl.charmas.android.reactivelocation2.sample.utils.LocationToStringFunc;
 import pl.charmas.android.reactivelocation2.sample.utils.ToMostProbableActivity;
 
-import java.util.List;
 import java.util.Locale;
 
 import static pl.charmas.android.reactivelocation2.sample.utils.UnsubscribeIfPresent.dispose;
@@ -70,7 +68,7 @@ public class MainActivity extends BaseActivity {
         addressLocationView = findViewById(R.id.address_for_location_view);
         currentActivityView = findViewById(R.id.activity_recent_view);
 
-        locationProvider = new ReactiveLocationProvider(getApplicationContext(), ReactiveLocationProviderConfiguration
+        locationProvider = new ReactiveLocationProvider(getApplicationContext(),getString(R.string.API_KEY), ReactiveLocationProviderConfiguration
                 .builder()
                 .setRetryOnConnectionSuspended(true)
                 .build()
@@ -118,7 +116,7 @@ public class MainActivity extends BaseActivity {
                 .observeOn(AndroidSchedulers.mainThread());
 
         addressObservable = locationProvider.getUpdatedLocation(locationRequest)
-                .flatMap((Function<Location, Observable<List<Address>>>) location -> locationProvider.getReverseGeocodeObservable(Locale.getDefault(), location.getLatitude(), location.getLongitude(), 1))
+                .flatMapMaybe(location -> locationProvider.getReverseGeocodeMaybe(Locale.getDefault(), location.getLatitude(), location.getLongitude(), 1))
                 .map(addresses -> addresses != null && !addresses.isEmpty() ? addresses.get(0) : null)
                 .map(new AddressToStringFunc())
                 .subscribeOn(Schedulers.io())
