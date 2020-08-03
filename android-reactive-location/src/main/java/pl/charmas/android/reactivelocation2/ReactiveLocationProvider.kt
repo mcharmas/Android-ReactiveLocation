@@ -1,10 +1,16 @@
 package pl.charmas.android.reactivelocation2
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
 import android.location.Address
+import android.location.Criteria
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Bundle
+import android.util.Log
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import com.google.android.gms.common.api.Api
@@ -29,7 +35,13 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import io.reactivex.Maybe
 import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposables
+import pl.charmas.android.reactivelocation2.ext.calldownOrEmpty
 import pl.charmas.android.reactivelocation2.ext.fromSuccessFailureToMaybe
+import pl.charmas.android.reactivelocation2.ext.onSuccessOrComplete
+import pl.charmas.android.reactivelocation2.ext.reduceRightDefault
 import pl.charmas.android.reactivelocation2.ext.toMaybe
 import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientMaybeOnSubscribe
 import pl.charmas.android.reactivelocation2.observables.MaybeContext
@@ -46,6 +58,7 @@ import pl.charmas.android.reactivelocation2.observables.location.LocationUpdates
 import pl.charmas.android.reactivelocation2.observables.location.MockLocationObservableOnSubscribe
 import pl.charmas.android.reactivelocation2.observables.location.RemoveLocationIntentUpdatesObservableOnSubscribe
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 /**
  * Factory of observables that can manipulate location
@@ -65,6 +78,9 @@ constructor(
     configuration: ReactiveLocationProviderConfiguration = ReactiveLocationProviderConfiguration.builder()
         .build()
 ) {
+
+    private val locationManager: LocationManager =
+        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private val ctxObservable: ObservableContext = ObservableContext(context, configuration)
     private val ctxMaybe: MaybeContext = MaybeContext(context, configuration)
     private val factoryObservable: ObservableFactory = ObservableFactory(ctxObservable)
@@ -72,7 +88,8 @@ constructor(
 
     private val settingsClient = LocationServices.getSettingsClient(context)
     private val geofencingClient = LocationServices.getGeofencingClient(context)
-    private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+    private val fusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(context)
 
     /**
      * Creates observable that obtains last known location and than completes.
@@ -89,10 +106,161 @@ constructor(
     @get:RequiresPermission(anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"])
     val lastKnownLocation: Maybe<Location>
         get() {
-            return fusedLocationProviderClient
-                .lastLocation
+            return fusedLocationProviderClient.lastLocation
                 .toMaybe()
         }
+
+    /**
+     * Creates observable that obtains last known location from BestProvider and than completes.
+     * */
+    @get:RequiresPermission(anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"])
+    val locationBestProvider: Maybe<Location>
+        get() {
+            return Maybe.create<String> { emitter ->
+                val bestProvider = locationManager.getBestProvider(
+                    Criteria(), false
+                )
+
+                if (!emitter.isDisposed)
+                    emitter.onSuccessOrComplete(bestProvider)
+
+            }
+                .flatMap { provider ->
+                    getLastKnownLocationFromProvider(provider)
+                }
+        }
+
+    @SuppressLint("MissingPermission")
+    fun getLastKnownLocationFromProvider(provider: String): Maybe<Location> {
+        return Maybe.create<Location> { emitter ->
+            val locationListener = object : LocationListener {
+                override fun onLocationChanged(location: Location?) {
+                    Log.d(TAG, "onLocationChanged: $location")
+                    emitter.onSuccessOrComplete(location)
+                }
+
+                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+                    Log.d(TAG, "onStatusChanged: $provider status = $status")
+                }
+
+                override fun onProviderEnabled(provider: String?) {
+                    Log.d(TAG, "onProviderEnabled: $provider")
+                }
+
+                override fun onProviderDisabled(provider: String?) {
+                    Log.d(TAG, "onProviderDisabled: $provider")
+                    if (!emitter.isDisposed)
+                        emitter.onError(RuntimeException("onProviderDisabled: $provider"))
+                }
+            }
+
+            emitter.setDisposable(Disposables.fromAction {
+                locationManager.removeUpdates(locationListener)
+            })
+
+            locationManager.requestLocationUpdates(
+                provider,
+                1000,
+                1000f,
+                locationListener,
+                null
+            )
+
+            val location = locationManager.getLastKnownLocation(provider)
+
+            if (location != null) {
+                emitter.onSuccess(location)
+            }
+        }
+            .subscribeOn(AndroidSchedulers.mainThread())
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getLocationUpdatesFromProvider(provider: String): Observable<Location> {
+        return Observable.create<Location> { emitter ->
+            val locationListener = object : LocationListener {
+                override fun onLocationChanged(location: Location?) {
+                    Log.d(TAG, "onLocationChanged: $location")
+                    if (location != null) {
+                        if (!emitter.isDisposed) {
+                            emitter.onNext(location)
+                        }
+                    }
+                }
+
+                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+                    Log.d(TAG, "onStatusChanged: $provider status = $status")
+                }
+
+                override fun onProviderEnabled(provider: String?) {
+                    Log.d(TAG, "onProviderEnabled: $provider")
+                }
+
+                override fun onProviderDisabled(provider: String?) {
+                    Log.d(TAG, "onProviderDisabled: $provider")
+                }
+            }
+
+            emitter.setDisposable(Disposables.fromAction {
+                locationManager.removeUpdates(locationListener)
+            })
+
+            locationManager.requestLocationUpdates(
+                provider,
+                1000,
+                1000f,
+                locationListener,
+                null
+            )
+
+            val location = locationManager.getLastKnownLocation(provider)
+
+            if (location != null) {
+                if (!emitter.isDisposed) {
+                    emitter.onNext(location)
+                }
+            }
+        }
+            .subscribeOn(AndroidSchedulers.mainThread())
+    }
+
+    /**
+     * Creates observable that obtains best last known location from Providers and than completes.
+     * */
+    @RequiresPermission(anyOf = ["android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"])
+    fun getLastKnownLocationFromAllProviders(
+        time: Int,
+        timeUnit: TimeUnit,
+        scheduler: Scheduler
+    ): Maybe<Location> {
+        return Maybe.create<List<String>> { emitter ->
+            emitter.onSuccessOrComplete(locationManager.allProviders)
+        }.flatMap { allProviders ->
+            Observable.fromIterable(allProviders)
+                .flatMapMaybe {
+                    getLastKnownLocationFromProvider(it)
+                        .onErrorResumeNext { throwable: Throwable -> Maybe.empty<Location>() }
+                        .calldownOrEmpty(time, timeUnit, scheduler)
+                }
+                .toList()
+                .flatMapMaybe { locations ->
+                    val bestLocation =
+                        locations.reduceRightDefault(locations.firstOrNull()) { first, second ->
+                            when {
+                                first == null -> second
+                                second == null -> first
+                                second.accuracy > first.accuracy -> first
+                                else -> second
+                            }
+                        }
+                    if (bestLocation == null) {
+                        Maybe.empty<Location>()
+                    } else {
+                        Maybe.just(bestLocation)
+                    }
+                }
+        }
+    }
 
     /**
      * Creates observable that allows to observe infinite stream of location updates.
@@ -356,9 +524,7 @@ constructor(
      */
     @RequiresPermission(allOf = ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_WIFI_STATE"])
     fun getCurrentPlace(placeFilter: FindCurrentPlaceRequest): Maybe<FindCurrentPlaceResponse> {
-        return Places.createClient(
-            ctxObservable.context
-        ).findCurrentPlace(placeFilter)
+        return Places.createClient(ctxObservable.context).findCurrentPlace(placeFilter)
             .toMaybe()
     }
 
@@ -468,7 +634,11 @@ constructor(
      * @param apis collection of apis to connect to
      * @return observable that emits apis client after successful connection
      */
-    fun <T : Api.ApiOptions.NotRequiredOptions> getGoogleApiClientMaybe(vararg apis: Api<T>): Maybe<GoogleApiClient> {
+    private fun <T : Api.ApiOptions.NotRequiredOptions> getGoogleApiClientMaybe(vararg apis: Api<T>): Maybe<GoogleApiClient> {
         return GoogleAPIClientMaybeOnSubscribe.create(ctxMaybe, factoryMaybe, *apis)
+    }
+
+    companion object {
+        const val TAG: String = "ReactiveLocationProvide"
     }
 }

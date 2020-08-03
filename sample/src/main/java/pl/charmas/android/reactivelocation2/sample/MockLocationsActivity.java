@@ -24,8 +24,8 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.PublishSubject;
 import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation2.sample.ext.LocationExtKt;
 import pl.charmas.android.reactivelocation2.sample.utils.DisplayTextOnViewAction;
-import pl.charmas.android.reactivelocation2.sample.utils.LocationToStringFunc;
 
 import java.util.Date;
 
@@ -98,7 +98,7 @@ public class MockLocationsActivity extends BaseActivity {
 
         updatedLocationDisposable = locationProvider
                 .getUpdatedLocation(locationRequest)
-                .map(new LocationToStringFunc())
+                .map(LocationExtKt::text)
                 .map(new Function<String, String>() {
                     int count = 0;
 
@@ -133,7 +133,7 @@ public class MockLocationsActivity extends BaseActivity {
 
                                 @Override
                                 public String apply(Boolean result, Location location) {
-                                    return new LocationToStringFunc().apply(location) + " " + count++;
+                                    return LocationExtKt.text(location) + " " + count++;
                                 }
                             })
                             .subscribe(new DisplayTextOnViewAction(mockLocationView), new ErrorHandler());

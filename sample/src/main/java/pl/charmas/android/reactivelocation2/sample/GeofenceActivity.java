@@ -12,8 +12,8 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import io.reactivex.disposables.Disposable;
 import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation2.sample.ext.LocationExtKt;
 import pl.charmas.android.reactivelocation2.sample.utils.DisplayTextOnViewAction;
-import pl.charmas.android.reactivelocation2.sample.utils.LocationToStringFunc;
 
 import static pl.charmas.android.reactivelocation2.sample.utils.UnsubscribeIfPresent.dispose;
 
@@ -49,7 +49,7 @@ public class GeofenceActivity extends BaseActivity {
     protected void onLocationPermissionGranted() {
         lastKnownLocationDisposable = reactiveLocationProvider
                 .getLastKnownLocation()
-                .map(new LocationToStringFunc())
+                .map(LocationExtKt::text)
                 .subscribe(new DisplayTextOnViewAction(lastKnownLocationView));
     }
 

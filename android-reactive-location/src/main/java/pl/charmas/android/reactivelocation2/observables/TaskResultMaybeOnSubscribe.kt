@@ -12,12 +12,6 @@ class TaskResultMaybeOnSubscribe<T>(private val task: Task<T>) :
                 result?.let { emitter.onSuccess(it) } ?: emitter.onComplete()
             }
         }
-        task.addOnCompleteListener { command ->
-            if (!emitter.isDisposed) {
-                val result = command.result
-                result?.let { emitter.onSuccess(it) } ?: emitter.onComplete()
-            }
-        }
         task.addOnFailureListener { exception ->
             if (!emitter.isDisposed) {
                 emitter.onError(exception)
