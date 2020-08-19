@@ -36,6 +36,7 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Scheduler
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
 import pl.charmas.android.reactivelocation2.ext.calldownOrEmpty
@@ -90,6 +91,19 @@ constructor(
     private val geofencingClient = LocationServices.getGeofencingClient(context)
     private val fusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
+
+    fun isGpsEnabled(): Single<Boolean> {
+        return isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+    fun isProviderEnabled(provider: String): Single<Boolean> {
+        return Single.create<Boolean> { subscriber ->
+            if (subscriber.isDisposed) {
+                return@create
+            }
+            subscriber.onSuccess(locationManager.isProviderEnabled(provider))
+        }
+    }
 
     /**
      * Creates observable that obtains last known location and than completes.
@@ -537,14 +551,12 @@ constructor(
      * @deprecated use {@link ReactiveLocationProvider#getPlaceCompatById(java.lang.String)}
      */
     fun getPlaceById(placeId: String): Maybe<FetchPlaceResponse> {
-        return Places.createClient(ctxObservable.context)
-            .fetchPlace(
-                FetchPlaceRequest.builder(
-                    placeId,
-                    listOf(Place.Field.ID)
-                ).build()
-            )
-            .toMaybe()
+        val listOf = listOf(
+            Place.Field.ID,
+            Place.Field.LAT_LNG,
+            Place.Field.ADDRESS
+        )
+        return getPlaceById(placeId, listOf)
     }
 
     /**
@@ -577,14 +589,7 @@ constructor(
         @IntRange(from = 0L) height: Int,
         @IntRange(from = 0L) width: Int
     ): Maybe<Bitmap> {
-        return Places.createClient(ctxObservable.context)
-            .fetchPlace(
-                FetchPlaceRequest.builder(
-                    placeId,
-                    listOf(Place.Field.PHOTO_METADATAS)
-                ).build()
-            )
-            .toMaybe()
+        return getPlaceById(placeId, listOf(Place.Field.PHOTO_METADATAS))
             .flatMap { res ->
                 val photoMetadata = res.place.photoMetadatas?.firstOrNull()
                 if (photoMetadata == null) {
@@ -605,6 +610,20 @@ constructor(
                         .map { it.bitmap }
                 }
             }
+    }
+
+    fun getPlaceById(
+        placeId: String,
+        fields: List<Place.Field>
+    ): Maybe<FetchPlaceResponse> {
+        return Places.createClient(ctxObservable.context)
+            .fetchPlace(
+                FetchPlaceRequest.builder(
+                    placeId,
+                    fields
+                ).build()
+            )
+            .toMaybe()
     }
 
     /**
