@@ -9,7 +9,9 @@ class ObservableEmitterWrapper<T>(private val emitter: ObservableEmitter<T>) :
     override fun onSubscribe(d: Disposable) {}
     override fun onNext(value: T) {
         if (!emitter.isDisposed) {
-            emitter.onNext(value)
+            if (value != null) {
+                emitter.onNext(value)
+            }
         }
     }
 

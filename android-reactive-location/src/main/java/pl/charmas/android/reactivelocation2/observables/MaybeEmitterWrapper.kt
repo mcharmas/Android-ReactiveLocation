@@ -22,7 +22,11 @@ class MaybeEmitterWrapper<T>(private val emitter: MaybeEmitter<T>) :
 
     override fun onSuccess(value: T) {
         if (!emitter.isDisposed) {
-            emitter.onSuccess(value)
+            if (value != null) {
+                emitter.onSuccess(value)
+            }else{
+                emitter.onComplete()
+            }
         }
     }
 }

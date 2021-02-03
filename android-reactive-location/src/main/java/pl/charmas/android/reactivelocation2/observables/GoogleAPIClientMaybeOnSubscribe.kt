@@ -15,8 +15,9 @@ class GoogleAPIClientMaybeOnSubscribe @SafeVarargs private constructor(
         apiClient: GoogleApiClient,
         emitter: MaybeEmitter<in GoogleApiClient>
     ) {
-        if (emitter.isDisposed) return
-        emitter.onSuccess(apiClient)
+        if (!emitter.isDisposed) {
+            emitter.onSuccess(apiClient)
+        }
     }
 
     companion object {

@@ -14,26 +14,25 @@ import pl.charmas.android.reactivelocation2.observables.ObservableFactory
 class MockLocationObservableOnSubscribe private constructor(
     private val fusedLocationProviderClient: FusedLocationProviderClient,
     ctx: ObservableContext,
-    private val locationObservable: Observable<Location>
+    private val locationObservable: Observable<Location>,
 ) : BaseLocationObservableOnSubscribe<Boolean>(ctx) {
     private var mockLocationSubscription: Disposable? = null
 
     @SuppressLint("MissingPermission")
     protected override fun onGoogleApiClientReady(
         apiClient: GoogleApiClient,
-        emitter: ObservableEmitter<in Boolean>
+        emitter: ObservableEmitter<in Boolean>,
     ) {
         // this throws SecurityException if permissions are bad or mock locations are not enabled,
         // which is passed to observer's onError by BaseObservable
         fusedLocationProviderClient.setMockMode(true)
-            .addOnSuccessListener { sd: Void? ->
-                startLocationMocking(
-                    emitter
-                )
+            .addOnSuccessListener {
+                startLocationMocking(emitter)
             }
-            .addOnFailureListener { sd: Exception? ->
-                if (emitter.isDisposed) return@addOnFailureListener
-                emitter.onError(sd!!)
+            .addOnFailureListener { exception ->
+                if (!emitter.isDisposed) {
+                    emitter.onError(exception)
+                }
             }
     }
 
@@ -41,22 +40,26 @@ class MockLocationObservableOnSubscribe private constructor(
     private fun startLocationMocking(emitter: ObservableEmitter<in Boolean>) {
         mockLocationSubscription = locationObservable
             .subscribe({ location ->
-                    fusedLocationProviderClient.setMockLocation(location)
-                        .addOnSuccessListener { d: Void? ->
-                            if (emitter.isDisposed) return@addOnSuccessListener
+                fusedLocationProviderClient.setMockLocation(location)
+                    .addOnSuccessListener {
+                        if (!emitter.isDisposed) {
                             emitter.onNext(true)
                         }
-                        .addOnFailureListener { error: Exception? ->
-                            if (emitter.isDisposed) return@addOnFailureListener
-                            emitter.onError(error!!)
+                    }
+                    .addOnFailureListener { error ->
+                        if (!emitter.isDisposed) {
+                            emitter.onError(error)
                         }
-                },
-                { throwable: Throwable? ->
-                    if (emitter.isDisposed) return@subscribe
-                    emitter.onError(throwable!!)
+                    }
+            },
+                { throwable ->
+                    if (!emitter.isDisposed) {
+                        emitter.onError(throwable)
+                    }
                 }) {
-                if (emitter.isDisposed) return@subscribe
-                emitter.onComplete()
+                if (!emitter.isDisposed) {
+                    emitter.onComplete()
+                }
             }
     }
 
@@ -70,8 +73,8 @@ class MockLocationObservableOnSubscribe private constructor(
                 // and the observer's onError will already have been called
             }
         }
-        if (mockLocationSubscription != null && !mockLocationSubscription!!.isDisposed) {
-            mockLocationSubscription!!.dispose()
+        if (mockLocationSubscription?.isDisposed != true) {
+            mockLocationSubscription?.dispose()
         }
     }
 
@@ -80,7 +83,7 @@ class MockLocationObservableOnSubscribe private constructor(
             fusedLocationProviderClient: FusedLocationProviderClient,
             context: ObservableContext,
             factory: ObservableFactory,
-            locationObservable: Observable<Location>
+            locationObservable: Observable<Location>,
         ): Observable<Boolean> {
             return factory.create(
                 MockLocationObservableOnSubscribe(

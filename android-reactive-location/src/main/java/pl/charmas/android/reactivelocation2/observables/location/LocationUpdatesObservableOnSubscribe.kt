@@ -36,7 +36,7 @@ class LocationUpdatesObservableOnSubscribe private constructor(
     }
 
     override fun onDisposed(locationClient: GoogleApiClient) {
-        if (locationClient.isConnected) {
+        if (locationClient.isConnected && listener != null) {
             fusedLocationProviderClient.removeLocationUpdates(listener)
         }
     }

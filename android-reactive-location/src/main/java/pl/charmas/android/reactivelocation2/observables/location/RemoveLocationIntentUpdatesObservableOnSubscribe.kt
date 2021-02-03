@@ -20,12 +20,14 @@ class RemoveLocationIntentUpdatesObservableOnSubscribe private constructor(
     ) {
         fusedLocationProviderClient.removeLocationUpdates(intent)
             .addOnCompleteListener {
-                if (emitter.isDisposed) return@addOnCompleteListener
-                emitter.onSuccess(true)
+                if (!emitter.isDisposed) {
+                    emitter.onSuccess(true)
+                }
             }
             .addOnFailureListener { error ->
-                if (emitter.isDisposed) return@addOnFailureListener
-                emitter.onError(error)
+                if (!emitter.isDisposed) {
+                    emitter.onError(error)
+                }
             }
     }
 

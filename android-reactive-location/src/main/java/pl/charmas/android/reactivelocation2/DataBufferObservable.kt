@@ -21,7 +21,9 @@ object DataBufferObservable {
             emitter.setDisposable(Disposables.fromAction { buffer.release() })
             for (item in buffer) {
                 if (!emitter.isDisposed) {
-                    emitter.onNext(item)
+                    if (item != null) {
+                        emitter.onNext(item)
+                    }
                 }
             }
             if (!emitter.isDisposed) {

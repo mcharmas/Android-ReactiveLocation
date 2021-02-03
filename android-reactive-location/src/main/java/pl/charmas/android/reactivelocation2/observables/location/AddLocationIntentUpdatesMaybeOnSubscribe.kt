@@ -25,12 +25,14 @@ class AddLocationIntentUpdatesMaybeOnSubscribe private constructor(
     ) {
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, intent)
             .addOnSuccessListener {
-                if (emitter.isDisposed) return@addOnSuccessListener
-                emitter.onSuccess(true)
+                if (!emitter.isDisposed) {
+                    emitter.onSuccess(true)
+                }
             }
             .addOnFailureListener { error ->
-                if (emitter.isDisposed) return@addOnFailureListener
-                emitter.onError(error)
+                if (!emitter.isDisposed) {
+                    emitter.onError(error)
+                }
             }
     }
 
