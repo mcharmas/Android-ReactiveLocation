@@ -28,3 +28,12 @@ fun <T, R> Maybe<T>.mapOrEmpty(mapper: (T) -> R?): Maybe<R> {
         mapper(item)?.let { Maybe.just<R>(it) } ?: Maybe.empty()
     }
 }
+
+fun <T> Maybe<T>.errorSkip(printStackTrace: Boolean = false): Maybe<T> {
+    return this.onErrorResumeNext { throwable: Throwable ->
+        if (printStackTrace) {
+            throwable.printStackTrace()
+        }
+        Maybe.empty()
+    }
+}

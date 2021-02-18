@@ -16,7 +16,11 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import io.reactivex.Maybe
+import io.reactivex.Observable
+import pl.charmas.android.reactivelocation2.ext.errorSkip
+import pl.charmas.android.reactivelocation2.ext.mapOrEmpty
 import pl.charmas.android.reactivelocation2.ext.toMaybe
+import java.util.Collections
 
 class ReactivePlacesProvider constructor(
     val context: Context,
@@ -63,32 +67,60 @@ class ReactivePlacesProvider constructor(
      * @param placeId id for place
      * @return observable that emits metadata buffer and completes
      */
-    fun getPhotoMetadataById(
+    fun getPhotosByPlaceId(
         placeId: String,
-        @IntRange(from = 0L) height: Int,
-        @IntRange(from = 0L) width: Int,
-    ): Maybe<Bitmap> {
-        return getPlaceById(placeId, listOf(Place.Field.PHOTO_METADATAS))
-            .flatMap { res ->
-                val photoMetadata = res.place.photoMetadatas?.firstOrNull()
-                if (photoMetadata == null) {
-                    Maybe.empty<Bitmap>()
-                } else {
-                    placesClient
-                        .fetchPhoto(
-                            FetchPhotoRequest.builder(
-                                PhotoMetadata.builder(placeId)
-                                    .setHeight(height)
-                                    .setWidth(width)
-                                    .setAttributions(photoMetadata.attributions)
+        @IntRange(from = 1L, to = 1600L) height: Int,
+        @IntRange(from = 1L, to = 1600L) width: Int,
+    ): Maybe<List<Bitmap>> {
+        return getPlaceById(placeId, Collections.singletonList(Place.Field.PHOTO_METADATAS))
+            .mapOrEmpty { it.place.photoMetadatas }
+            .filter { it.isNotEmpty() }
+            .flatMapSingle { photoMetadatas ->
+                Observable.fromIterable(photoMetadatas)
+                    .flatMapMaybe { photoMetadata ->
+                        placesClient
+                            .fetchPhoto(
+                                FetchPhotoRequest.builder(
+                                    photoMetadata
+                                )
+                                    .setMaxHeight(height)
+                                    .setMaxWidth(width)
                                     .build()
                             )
-                                .build()
-                        )
-                        .toMaybe()
-                        .map { it.bitmap }
-                }
+                            .toMaybe()
+                            .errorSkip()
+                    }
+                    .map { it.bitmap }
+                    .toList()
             }
+            .filter { it.isNotEmpty() }
+    }
+    /**
+     * Returns observable that fetches photo metadata from the Places API using the place ID.
+     *
+     * @param placeId id for place
+     * @return observable that emits metadata buffer and completes
+     */
+    fun getFirstPhotoByPlaceId(
+        placeId: String,
+        @IntRange(from = 1L, to = 1600L) height: Int,
+        @IntRange(from = 1L, to = 1600L) width: Int,
+    ): Maybe<Bitmap> {
+        return getPlaceById(placeId, Collections.singletonList(Place.Field.PHOTO_METADATAS))
+            .mapOrEmpty { it.place.photoMetadatas?.firstOrNull() }
+            .flatMap { photoMetadata ->
+                placesClient
+                    .fetchPhoto(
+                        FetchPhotoRequest.builder(
+                            photoMetadata
+                        )
+                            .setMaxHeight(height)
+                            .setMaxWidth(width)
+                            .build()
+                    )
+                    .toMaybe()
+            }
+            .map { it.bitmap }
     }
 
     fun getPlaceById(
@@ -97,10 +129,10 @@ class ReactivePlacesProvider constructor(
     ): Maybe<FetchPlaceResponse> {
         return placesClient
             .fetchPlace(
-                FetchPlaceRequest.builder(
+                FetchPlaceRequest.newInstance(
                     placeId,
                     fields
-                ).build()
+                )
             )
             .toMaybe()
     }
