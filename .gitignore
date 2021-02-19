@@ -5,3 +5,5 @@
 build/
 .DS_Store
 *.iml
+/sample/keys/
+/sample/properties/

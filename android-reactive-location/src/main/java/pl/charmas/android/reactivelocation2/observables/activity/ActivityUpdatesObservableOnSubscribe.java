@@ -16,7 +16,12 @@ import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 
+
+/**
+ * deprecated: need to update to new api of google com.google.android.gms.location.ActivityRecognition#getClient(android.app.Activity)
+ * */
 @SuppressWarnings("MissingPermission")
+@Deprecated
 public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservableOnSubscribe<ActivityRecognitionResult> {
     private static final String ACTION_ACTIVITY_DETECTED = "pl.charmas.android.reactivelocation2.ACTION_ACTIVITY_UPDATE_DETECTED";
 
@@ -25,7 +30,7 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
     private ActivityUpdatesBroadcastReceiver receiver;
 
     public static Observable<ActivityRecognitionResult> createObservable(ObservableContext ctx, ObservableFactory factory, int detectionIntervalMiliseconds) {
-        return factory.createObservable(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
+        return factory.create(new ActivityUpdatesObservableOnSubscribe(ctx, detectionIntervalMiliseconds));
     }
 
     private ActivityUpdatesObservableOnSubscribe(ObservableContext context, int detectionIntervalMilliseconds) {

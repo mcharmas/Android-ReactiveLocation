@@ -22,6 +22,58 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Sample location" />
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Best provider location"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/last_best_provider_location_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sample location" />
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Best location from all providers"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/locationAllProviders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sample location" />
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="last location from Network Provider"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/locationNetworkProviderView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sample location" />
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="updated location from Network Provider"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/locationNetworkProviderUpdatesView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sample location" />
 
         <TextView
             style="?android:attr/listSeparatorTextViewStyle"
