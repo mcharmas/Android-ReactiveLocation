@@ -1,14 +1,15 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
 import android.app.PendingIntent;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 
-import io.reactivex.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableEmitter;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.StatusException;
 

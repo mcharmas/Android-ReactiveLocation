@@ -3,7 +3,8 @@ package pl.charmas.android.reactivelocation2.observables.geocode;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLngBounds;
 
@@ -11,9 +12,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
 
 public class GeocodeObservable implements ObservableOnSubscribe<List<Address>> {

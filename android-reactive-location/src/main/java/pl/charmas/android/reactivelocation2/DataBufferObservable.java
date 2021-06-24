@@ -2,11 +2,11 @@ package pl.charmas.android.reactivelocation2;
 
 import com.google.android.gms.common.data.AbstractDataBuffer;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
 
 
 /**
@@ -33,7 +33,7 @@ public final class DataBufferObservable {
                 for (T item : buffer) {
                     emitter.onNext(item);
                 }
-                emitter.setDisposable(Disposables.fromAction(new Action() {
+                emitter.setDisposable(Disposable.fromAction(new Action() {
                     @Override
                     public void run() throws Exception {
                         buffer.release();

@@ -1,6 +1,6 @@
 package pl.charmas.android.reactivelocation2.sample.utils;
 
-import io.reactivex.disposables.Disposable;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 public final class UnsubscribeIfPresent {
     private UnsubscribeIfPresent() {//no instance

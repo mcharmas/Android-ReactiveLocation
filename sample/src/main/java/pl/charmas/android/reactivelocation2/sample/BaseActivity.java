@@ -1,12 +1,13 @@
 package pl.charmas.android.reactivelocation2.sample;
 
 import android.Manifest;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.tbruyelle.rxpermissions2.RxPermissions;
+import androidx.appcompat.app.AppCompatActivity;
 
-import io.reactivex.functions.Consumer;
+import com.tbruyelle.rxpermissions3.RxPermissions;
+
+import io.reactivex.rxjava3.functions.Consumer;
 
 public abstract class BaseActivity extends AppCompatActivity {
 

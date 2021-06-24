@@ -2,7 +2,7 @@ package pl.charmas.android.reactivelocation2.sample.utils;
 
 import android.widget.TextView;
 
-import io.reactivex.functions.Consumer;
+import io.reactivex.rxjava3.functions.Consumer;
 
 public class DisplayTextOnViewAction implements Consumer<String> {
     private final TextView target;
