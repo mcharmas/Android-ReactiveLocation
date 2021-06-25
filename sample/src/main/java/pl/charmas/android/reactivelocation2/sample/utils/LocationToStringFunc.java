@@ -2,7 +2,7 @@ package pl.charmas.android.reactivelocation2.sample.utils;
 
 import android.location.Location;
 
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.functions.Function;
 
 public class LocationToStringFunc implements Function<Location, String> {
     @Override

@@ -6,7 +6,6 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,17 +15,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.core.app.ActivityCompat;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 
 import java.util.Date;
 
-import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
 import pl.charmas.android.reactivelocation2.sample.utils.DisplayTextOnViewAction;
 import pl.charmas.android.reactivelocation2.sample.utils.LocationToStringFunc;

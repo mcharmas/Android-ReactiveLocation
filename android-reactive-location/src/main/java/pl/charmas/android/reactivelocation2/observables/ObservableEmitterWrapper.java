@@ -1,8 +1,9 @@
 package pl.charmas.android.reactivelocation2.observables;
 
-import io.reactivex.ObservableEmitter;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
+
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 public class ObservableEmitterWrapper<T> implements Observer<T> {
     private final ObservableEmitter<T> emitter;

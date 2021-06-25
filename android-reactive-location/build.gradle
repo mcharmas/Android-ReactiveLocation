@@ -11,17 +11,17 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 //TODO: local maven deployment
 
 dependencies {
-    compile 'com.google.android.gms:play-services-location:11.0.4'
-    compile 'com.google.android.gms:play-services-places:11.0.4'
-    compile 'io.reactivex.rxjava2:rxjava:2.0.5'
+    api 'com.google.android.gms:play-services-location:18.0.0'
+    api 'com.google.android.gms:play-services-places:17.0.0'
+    implementation "io.reactivex.rxjava3:rxjava:3.0.13"
 }
 
 // Comment this to deploy to local maven repository

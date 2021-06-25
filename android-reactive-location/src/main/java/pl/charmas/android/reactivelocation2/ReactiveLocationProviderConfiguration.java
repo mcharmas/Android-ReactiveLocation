@@ -1,7 +1,8 @@
 package pl.charmas.android.reactivelocation2;
 
 import android.os.Handler;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 /**
  * Configuration for location provider. Pleas use builder to create an instance.

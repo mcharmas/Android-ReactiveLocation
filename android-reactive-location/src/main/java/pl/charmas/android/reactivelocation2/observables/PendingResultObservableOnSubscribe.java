@@ -1,15 +1,15 @@
 package pl.charmas.android.reactivelocation2.observables;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
 
 public class PendingResultObservableOnSubscribe<T extends Result> implements ObservableOnSubscribe<T> {
     private final PendingResult<T> result;
@@ -32,7 +32,7 @@ public class PendingResultObservableOnSubscribe<T extends Result> implements Obs
             }
         });
 
-        emitter.setDisposable(Disposables.fromAction(new Action() {
+        emitter.setDisposable(Disposable.fromAction(new Action() {
             @Override
             public void run() {
                 if (!complete) {

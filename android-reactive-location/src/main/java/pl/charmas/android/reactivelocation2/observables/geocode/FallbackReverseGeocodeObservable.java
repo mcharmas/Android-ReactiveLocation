@@ -17,8 +17,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+
 
 class FallbackReverseGeocodeObservable implements ObservableOnSubscribe<List<Address>> {
     private final Locale locale;

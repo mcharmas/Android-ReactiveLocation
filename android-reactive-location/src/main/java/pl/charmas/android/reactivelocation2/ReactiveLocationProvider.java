@@ -5,8 +5,9 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Location;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresPermission;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 
 import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,8 +34,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import java.util.List;
 import java.util.Locale;
 
-import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Function;
 import pl.charmas.android.reactivelocation2.observables.GoogleAPIClientObservableOnSubscribe;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
