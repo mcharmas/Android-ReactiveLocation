@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 def getGooglePlayServicesApiKey() {
-    if (REACTIVE_LOCATION_GMS_API_KEY != null && !REACTIVE_LOCATION_GMS_API_KEY.isEmpty()) {
+    if (project.hasProperty('REACTIVE_LOCATION_GMS_API_KEY') && !REACTIVE_LOCATION_GMS_API_KEY.isEmpty()) {
         return REACTIVE_LOCATION_GMS_API_KEY;
     }
     return ""
