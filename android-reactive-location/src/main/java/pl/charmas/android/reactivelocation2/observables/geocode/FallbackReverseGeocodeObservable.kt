@@ -46,7 +46,7 @@ internal class FallbackReverseGeocodeObservable(
     private fun alternativeReverseGeocodeQuery(): List<Address> {
         val url = URL(
             "http://maps.googleapis.com/maps/api/geocode/json?"
-                + "latlng=$latitude},${longitude}&sensor=true&key=$apiKey&language=${locale.language}"
+                + "latlng=$latitude,${longitude}&sensor=true&key=$apiKey&language=${locale.language}"
         )
         val urlConnection = url.openConnection() as HttpURLConnection
         val stringBuilder = StringBuilder()
