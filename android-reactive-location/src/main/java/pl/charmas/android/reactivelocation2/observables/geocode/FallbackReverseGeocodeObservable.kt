@@ -36,7 +36,7 @@ internal class FallbackReverseGeocodeObservable(
 
     /**
      * This function fetches a list of addresses for the set latitude, longitude and maxResults properties from the
-     * Google Geocode API (http://maps.googleapis.com/maps/api/geocode).
+     * Google Geocode API (https://maps.googleapis.com/maps/api/geocode).
      *
      * @return List of addresses
      * @throws IOException   In case of network problems
@@ -45,7 +45,7 @@ internal class FallbackReverseGeocodeObservable(
     @Throws(IOException::class, JSONException::class)
     private fun alternativeReverseGeocodeQuery(): List<Address> {
         val url = URL(
-            "http://maps.googleapis.com/maps/api/geocode/json?"
+            "https://maps.googleapis.com/maps/api/geocode/json?"
                 + "latlng=$latitude,${longitude}&sensor=true&key=$apiKey&language=${locale.language}"
         )
         val urlConnection = url.openConnection() as HttpURLConnection
