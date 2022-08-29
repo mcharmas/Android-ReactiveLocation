@@ -3,9 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="pl.charmas.android.reactivelocation2.sample">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"
-        tools:ignore="MockLocation" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" tools:ignore="MockLocation,ProtectedPermissions" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
@@ -32,15 +33,15 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.GeofenceActivity" />
+        <activity android:name=".GeofenceActivity" />
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.PlacesActivity" />
+        <activity android:name=".PlacesActivity" />
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.PlacesResultActivity" />
+        <activity android:name=".PlacesResultActivity" />
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.MockLocationsActivity" />
+        <activity android:name=".MockLocationsActivity" />
 
-        <receiver android:name="pl.charmas.android.reactivelocation2.sample.GeofenceBroadcastReceiver" />
+        <receiver android:name=".GeofenceBroadcastReceiver" />
     </application>
 
 </manifest>

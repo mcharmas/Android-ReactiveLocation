@@ -1,12 +1,12 @@
 package pl.charmas.android.reactivelocation2.sample;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,12 +15,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import com.google.android.gms.common.api.Status;
+import androidx.core.app.ActivityCompat;
 import com.google.android.gms.location.LocationRequest;
-
-import java.util.Date;
-
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
@@ -28,8 +24,10 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.PublishSubject;
 import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
+import pl.charmas.android.reactivelocation2.sample.ext.LocationExtKt;
 import pl.charmas.android.reactivelocation2.sample.utils.DisplayTextOnViewAction;
-import pl.charmas.android.reactivelocation2.sample.utils.LocationToStringFunc;
+
+import java.util.Date;
 
 import static pl.charmas.android.reactivelocation2.sample.utils.UnsubscribeIfPresent.dispose;
 
@@ -55,7 +53,7 @@ public class MockLocationsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mocklocations);
 
-        locationProvider = new ReactiveLocationProvider(this);
+        locationProvider = new ReactiveLocationProvider(this,getString(R.string.API_KEY));
         mockLocationSubject = PublishSubject.create();
 
         mockLocationObservable = mockLocationSubject.hide();
@@ -100,7 +98,7 @@ public class MockLocationsActivity extends BaseActivity {
 
         updatedLocationDisposable = locationProvider
                 .getUpdatedLocation(locationRequest)
-                .map(new LocationToStringFunc())
+                .map(LocationExtKt::text)
                 .map(new Function<String, String>() {
                     int count = 0;
 
@@ -120,6 +118,7 @@ public class MockLocationsActivity extends BaseActivity {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private void setMockMode(boolean toggle) {
         if (toggle) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -127,13 +126,14 @@ public class MockLocationsActivity extends BaseActivity {
             }
 
             mockLocationDisposable =
-                    Observable.zip(locationProvider.mockLocation(mockLocationObservable),
-                            mockLocationObservable, new BiFunction<Status, Location, String>() {
+                    Observable.zip(
+                            locationProvider.mockLocation(mockLocationObservable),
+                            mockLocationObservable, new BiFunction<Boolean, Location, String>() {
                                 int count = 0;
 
                                 @Override
-                                public String apply(Status result, Location location) {
-                                    return new LocationToStringFunc().apply(location) + " " + count++;
+                                public String apply(Boolean result, Location location) {
+                                    return LocationExtKt.text(location) + " " + count++;
                                 }
                             })
                             .subscribe(new DisplayTextOnViewAction(mockLocationView), new ErrorHandler());
