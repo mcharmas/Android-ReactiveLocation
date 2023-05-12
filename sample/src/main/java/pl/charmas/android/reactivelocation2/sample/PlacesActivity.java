@@ -12,9 +12,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.AutocompletePrediction;
-import com.google.android.gms.location.places.AutocompletePredictionBuffer;
+import com.google.android.gms.location.places.AutocompletePredictionBufferResponse;
 import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
+import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
@@ -22,7 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Maybe;
+import io.reactivex.MaybeSource;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
@@ -64,14 +67,14 @@ public class PlacesActivity extends BaseActivity {
         compositeDisposable = new CompositeDisposable();
         compositeDisposable.add(
                 reactiveLocationProvider.getCurrentPlace(null)
-                        .subscribe(new Consumer<PlaceLikelihoodBuffer>() {
+                        .subscribe(new Consumer<PlaceLikelihoodBufferResponse>() {
                             @Override
-                            public void accept(PlaceLikelihoodBuffer buffer) {
-                                PlaceLikelihood likelihood = buffer.get(0);
+                            public void accept(PlaceLikelihoodBufferResponse response) throws Exception {
+                                PlaceLikelihood likelihood = response.get(0);
                                 if (likelihood != null) {
                                     currentPlaceView.setText(likelihood.getPlace().getName());
                                 }
-                                buffer.release();
+                                response.release();
                             }
                         }, new Consumer<Throwable>() {
                             @Override
@@ -96,18 +99,19 @@ public class PlacesActivity extends BaseActivity {
                         return !TextUtils.isEmpty(s);
                     }
                 });
-        Observable<Location> lastKnownLocationObservable = reactiveLocationProvider.getLastKnownLocation();
-        Observable<AutocompletePredictionBuffer> suggestionsObservable = Observable
-                .combineLatest(queryObservable, lastKnownLocationObservable,
+        Single<Location> lastKnownLocationObservable = reactiveLocationProvider.getLastKnownLocation();
+        Observable<AutocompletePredictionBufferResponse> suggestionsObservable = Observable
+                .combineLatest(queryObservable, lastKnownLocationObservable.toObservable(),
                         new BiFunction<String, Location, QueryWithCurrentLocation>() {
                             @Override
                             public QueryWithCurrentLocation apply(String query, Location currentLocation) {
                                 return new QueryWithCurrentLocation(query, currentLocation);
                             }
-                        }).flatMap(new Function<QueryWithCurrentLocation, Observable<AutocompletePredictionBuffer>>() {
+                        })
+                .flatMapMaybe(new Function<QueryWithCurrentLocation, MaybeSource<AutocompletePredictionBufferResponse>>() {
                     @Override
-                    public Observable<AutocompletePredictionBuffer> apply(QueryWithCurrentLocation q) {
-                        if (q.location == null) return Observable.empty();
+                    public MaybeSource<AutocompletePredictionBufferResponse> apply(QueryWithCurrentLocation q) {
+                        if (q.location == null) return Maybe.empty();
 
                         double latitude = q.location.getLatitude();
                         double longitude = q.location.getLongitude();
@@ -115,13 +119,13 @@ public class PlacesActivity extends BaseActivity {
                                 new LatLng(latitude - 0.05, longitude - 0.05),
                                 new LatLng(latitude + 0.05, longitude + 0.05)
                         );
-                        return reactiveLocationProvider.getPlaceAutocompletePredictions(q.query, bounds, null);
+                        return reactiveLocationProvider.getPlaceAutocompletePredictions(q.query, bounds, null).toMaybe();
                     }
                 });
 
-        compositeDisposable.add(suggestionsObservable.subscribe(new Consumer<AutocompletePredictionBuffer>() {
+        compositeDisposable.add(suggestionsObservable.subscribe(new Consumer<AutocompletePredictionBufferResponse>() {
             @Override
-            public void accept(AutocompletePredictionBuffer buffer) {
+            public void accept(AutocompletePredictionBufferResponse buffer) {
                 List<AutocompleteInfo> infos = new ArrayList<>();
                 for (AutocompletePrediction prediction : buffer) {
                     infos.add(new AutocompleteInfo(prediction.getFullText(null).toString(), prediction.getPlaceId()));

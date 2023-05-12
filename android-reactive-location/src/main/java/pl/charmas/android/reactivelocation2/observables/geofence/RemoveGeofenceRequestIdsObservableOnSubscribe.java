@@ -1,20 +1,16 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
-import android.support.annotation.NonNull;
-
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.List;
 
 import io.reactivex.ObservableEmitter;
+import pl.charmas.android.reactivelocation2.BaseFailureListener;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
-import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
-class RemoveGeofenceRequestIdsObservableOnSubscribe extends RemoveGeofenceObservableOnSubscribe<Status> {
+class RemoveGeofenceRequestIdsObservableOnSubscribe extends RemoveGeofenceObservableOnSubscribe<Void> {
     private final List<String> geofenceRequestIds;
 
     RemoveGeofenceRequestIdsObservableOnSubscribe(ObservableContext ctx, List<String> geofenceRequestIds) {
@@ -23,19 +19,14 @@ class RemoveGeofenceRequestIdsObservableOnSubscribe extends RemoveGeofenceObserv
     }
 
     @Override
-    protected void removeGeofences(GoogleApiClient locationClient, final ObservableEmitter<? super Status> emitter) {
-        LocationServices.GeofencingApi.removeGeofences(locationClient, geofenceRequestIds)
-                .setResultCallback(new ResultCallback<Status>() {
+    protected void removeGeofences(GeofencingClient geofencingClient, final ObservableEmitter<? super Void> emitter) {
+        geofencingClient.removeGeofences(geofenceRequestIds)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onResult(@NonNull Status status) {
-                        if (emitter.isDisposed()) return;
-                        if (status.isSuccess()) {
-                            emitter.onNext(status);
-                            emitter.onComplete();
-                        } else {
-                            emitter.onError(new StatusException(status));
-                        }
+                    public void onSuccess(Void aVoid) {
+                        emitter.onComplete();
                     }
-                });
+                })
+                .addOnFailureListener(new BaseFailureListener<>(emitter));
     }
 }

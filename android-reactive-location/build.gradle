@@ -3,7 +3,6 @@ apply plugin: 'maven'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         minSdkVersion 14
@@ -19,9 +18,9 @@ android {
 //TODO: local maven deployment
 
 dependencies {
-    compile 'com.google.android.gms:play-services-location:11.0.4'
-    compile 'com.google.android.gms:play-services-places:11.0.4'
-    compile 'io.reactivex.rxjava2:rxjava:2.0.5'
+    api 'com.google.android.gms:play-services-location:21.0.1'
+    api 'com.google.android.gms:play-services-places:17.0.0'
+    api 'io.reactivex.rxjava2:rxjava:2.2.0'
 }
 
 // Comment this to deploy to local maven repository
