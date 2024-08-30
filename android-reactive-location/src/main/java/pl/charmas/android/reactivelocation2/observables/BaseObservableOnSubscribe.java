@@ -3,7 +3,6 @@ package pl.charmas.android.reactivelocation2.observables;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.Api;
@@ -12,6 +11,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import java.util.Arrays;
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.disposables.Disposables;
@@ -44,7 +44,7 @@ public abstract class BaseObservableOnSubscribe<T> implements ObservableOnSubscr
         emitter.setDisposable(Disposables.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                onDisposed(apiClient);
+                onDisposed();
                 apiClient.disconnect();
             }
         }));
@@ -52,7 +52,7 @@ public abstract class BaseObservableOnSubscribe<T> implements ObservableOnSubscr
 
 
     private GoogleApiClient createApiClient(ObservableEmitter<? super T> emitter) {
-        ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(emitter);
+        ApiClientConnectionCallbacks apiClientConnectionCallbacks = new ApiClientConnectionCallbacks(ctx, emitter);
         GoogleApiClient.Builder apiClientBuilder = new GoogleApiClient.Builder(ctx);
 
         for (Api<? extends Api.ApiOptions.NotRequiredOptions> service : services) {
@@ -72,27 +72,30 @@ public abstract class BaseObservableOnSubscribe<T> implements ObservableOnSubscr
         return apiClient;
     }
 
-    protected void onDisposed(GoogleApiClient locationClient) {
+    protected void onDisposed() {
     }
 
-    protected abstract void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<? super T> emitter);
+    protected abstract void onGoogleApiClientReady(Context context, GoogleApiClient googleApiClient, ObservableEmitter<? super T> emitter);
 
     private class ApiClientConnectionCallbacks implements
             GoogleApiClient.ConnectionCallbacks,
             GoogleApiClient.OnConnectionFailedListener {
 
+        final private Context context;
+
         final private ObservableEmitter<? super T> emitter;
 
         private GoogleApiClient apiClient;
 
-        private ApiClientConnectionCallbacks(ObservableEmitter<? super T> emitter) {
+        private ApiClientConnectionCallbacks(Context context, ObservableEmitter<? super T> emitter) {
+            this.context = context;
             this.emitter = emitter;
         }
 
         @Override
         public void onConnected(Bundle bundle) {
             try {
-                onGoogleApiClientReady(apiClient, emitter);
+                onGoogleApiClientReady(context, apiClient, emitter);
             } catch (Throwable ex) {
                 if (!emitter.isDisposed()) {
                     emitter.onError(ex);
@@ -111,7 +114,7 @@ public abstract class BaseObservableOnSubscribe<T> implements ObservableOnSubscr
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
             if (!emitter.isDisposed()) {
                 emitter.onError(new GoogleAPIConnectionException("Error connecting to GoogleApiClient.",
-                    connectionResult));
+                        connectionResult));
             }
         }
 

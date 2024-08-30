@@ -1,42 +1,43 @@
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    namespace 'pl.charmas.android.reactivelocation2'
+    compileSdk rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
-//TODO: local maven deployment
-
 dependencies {
-    compile 'com.google.android.gms:play-services-location:11.0.4'
-    compile 'com.google.android.gms:play-services-places:11.0.4'
-    compile 'io.reactivex.rxjava2:rxjava:2.0.5'
+    api 'com.google.android.gms:play-services-location:21.3.0'
+    api 'com.google.android.gms:play-services-places:17.1.0'
+    api 'io.reactivex.rxjava2:rxjava:2.2.21'
 }
 
-// Comment this to deploy to local maven repository
-apply from: '../maven_push.gradle'
-
-
-//TODO: clean up
-//This is for local maven deployment
-
-//apply plugin: 'maven'
-//uploadArchives {
-//    repositories {
-//        mavenDeployer {
-//            repository url: 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath
-//        }
-//    }
-//}
-//task install(dependsOn: uploadArchives)
+afterEvaluate {
+    publishing {
+        publications {
+            register("gpr", MavenPublication) {
+                from(components["release"])
+                groupId = GROUP
+                artifactId = 'android-reactive-location2'
+                version = VERSION_NAME
+            }
+        }
+    }
+}

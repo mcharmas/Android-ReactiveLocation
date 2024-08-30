@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="pl.charmas.android.reactivelocation2.sample">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"
+    <uses-permission
+        android:name="android.permission.ACCESS_MOCK_LOCATION"
         tools:ignore="MockLocation" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
@@ -24,6 +24,7 @@
 
         <activity
             android:name="pl.charmas.android.reactivelocation2.sample.MainActivity"
+            android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,15 +33,25 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.GeofenceActivity" />
+        <activity
+            android:name="pl.charmas.android.reactivelocation2.sample.GeofenceActivity"
+            android:exported="true" />
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.PlacesActivity" />
+        <activity
+            android:name="pl.charmas.android.reactivelocation2.sample.PlacesActivity"
+            android:exported="true" />
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.PlacesResultActivity" />
+        <activity
+            android:name="pl.charmas.android.reactivelocation2.sample.PlacesResultActivity"
+            android:exported="true" />
 
-        <activity android:name="pl.charmas.android.reactivelocation2.sample.MockLocationsActivity" />
+        <activity
+            android:name="pl.charmas.android.reactivelocation2.sample.MockLocationsActivity"
+            android:exported="true" />
 
-        <receiver android:name="pl.charmas.android.reactivelocation2.sample.GeofenceBroadcastReceiver" />
+        <receiver
+            android:name="pl.charmas.android.reactivelocation2.sample.GeofenceBroadcastReceiver"
+            android:exported="true" />
     </application>
 
 </manifest>

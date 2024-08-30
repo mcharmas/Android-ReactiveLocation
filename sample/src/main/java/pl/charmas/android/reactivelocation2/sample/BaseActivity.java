@@ -1,7 +1,7 @@
 package pl.charmas.android.reactivelocation2.sample;
 
 import android.Manifest;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.tbruyelle.rxpermissions2.RxPermissions;

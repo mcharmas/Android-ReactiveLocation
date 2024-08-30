@@ -1,28 +1,25 @@
 package pl.charmas.android.reactivelocation2.observables.geofence;
 
 import android.app.PendingIntent;
-import android.support.annotation.NonNull;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
-import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
-import pl.charmas.android.reactivelocation2.observables.BaseLocationObservableOnSubscribe;
+import pl.charmas.android.reactivelocation2.BaseFailureListener;
 import pl.charmas.android.reactivelocation2.observables.ObservableContext;
 import pl.charmas.android.reactivelocation2.observables.ObservableFactory;
-import pl.charmas.android.reactivelocation2.observables.StatusException;
 
 
 @SuppressWarnings("MissingPermission")
-public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSubscribe<Status> {
+public class AddGeofenceObservableOnSubscribe extends BaseGeofencingObservableOnSubscribe<Void> {
     private final GeofencingRequest request;
     private final PendingIntent geofenceTransitionPendingIntent;
 
-    public static Observable<Status> createObservable(ObservableContext ctx, ObservableFactory factory, GeofencingRequest request, PendingIntent geofenceTransitionPendingIntent) {
+    public static Observable<Void> createObservable(ObservableContext ctx, ObservableFactory factory, GeofencingRequest request, PendingIntent
+            geofenceTransitionPendingIntent) {
         return factory.createObservable(new AddGeofenceObservableOnSubscribe(ctx, request, geofenceTransitionPendingIntent));
     }
 
@@ -33,21 +30,15 @@ public class AddGeofenceObservableOnSubscribe extends BaseLocationObservableOnSu
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<? super Status> emitter) {
-        LocationServices.GeofencingApi.addGeofences(apiClient, request, geofenceTransitionPendingIntent)
-                .setResultCallback(new ResultCallback<Status>() {
+    protected void onGeofencingClientReady(GeofencingClient geofencingClient, final ObservableEmitter<? super Void> emitter) {
+        geofencingClient.addGeofences(request, geofenceTransitionPendingIntent)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onResult(@NonNull Status status) {
-                        if (emitter.isDisposed()) return;
-                        if (status.isSuccess()) {
-                            emitter.onNext(status);
-                            emitter.onComplete();
-
-                        } else {
-                            emitter.onError(new StatusException(status));
-                        }
+                    public void onSuccess(Void aVoid) {
+                        emitter.onComplete();
                     }
-                });
+                })
+                .addOnFailureListener(new BaseFailureListener<>(emitter));
     }
 
 }

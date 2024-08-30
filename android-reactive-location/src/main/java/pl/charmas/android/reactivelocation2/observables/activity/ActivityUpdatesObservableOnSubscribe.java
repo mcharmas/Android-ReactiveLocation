@@ -6,8 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.ActivityRecognitionClient;
 import com.google.android.gms.location.ActivityRecognitionResult;
 
 import io.reactivex.Observable;
@@ -22,6 +21,7 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
 
     private final Context context;
     private final int detectionIntervalMilliseconds;
+    private ActivityRecognitionClient activityRecognitionClient;
     private ActivityUpdatesBroadcastReceiver receiver;
 
     public static Observable<ActivityRecognitionResult> createObservable(ObservableContext ctx, ObservableFactory factory, int detectionIntervalMiliseconds) {
@@ -35,21 +35,23 @@ public class ActivityUpdatesObservableOnSubscribe extends BaseActivityObservable
     }
 
     @Override
-    protected void onGoogleApiClientReady(GoogleApiClient apiClient, ObservableEmitter<? super ActivityRecognitionResult> emitter) {
+    protected void onActivityRecognitionClientReady(ActivityRecognitionClient activityRecognitionClient,
+                                                    ObservableEmitter<? super ActivityRecognitionResult> emitter) {
+        this.activityRecognitionClient = activityRecognitionClient;
         receiver = new ActivityUpdatesBroadcastReceiver(emitter);
         context.registerReceiver(receiver, new IntentFilter(ACTION_ACTIVITY_DETECTED));
         PendingIntent receiverIntent = getReceiverPendingIntent();
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(apiClient, detectionIntervalMilliseconds, receiverIntent);
+        activityRecognitionClient.requestActivityUpdates(detectionIntervalMilliseconds, receiverIntent);
     }
 
     private PendingIntent getReceiverPendingIntent() {
-        return PendingIntent.getBroadcast(context, 0, new Intent(ACTION_ACTIVITY_DETECTED), PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, 0, new Intent(ACTION_ACTIVITY_DETECTED), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @Override
-    protected void onDisposed(GoogleApiClient apiClient) {
-        if (apiClient.isConnected()) {
-            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(apiClient, getReceiverPendingIntent());
+    protected void onDisposed() {
+        if (activityRecognitionClient != null) {
+            activityRecognitionClient.removeActivityTransitionUpdates(getReceiverPendingIntent());
         }
         if (receiver != null) {
             context.unregisterReceiver(receiver);

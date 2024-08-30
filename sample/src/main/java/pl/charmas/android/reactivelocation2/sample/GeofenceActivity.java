@@ -13,8 +13,11 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 
+import io.reactivex.CompletableObserver;
+import io.reactivex.CompletableSource;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import pl.charmas.android.reactivelocation2.ReactiveLocationProvider;
@@ -77,9 +80,10 @@ public class GeofenceActivity extends BaseActivity {
     private void clearGeofence() {
         reactiveLocationProvider
                 .removeGeofences(createNotificationBroadcastPendingIntent())
-                .subscribe(new Consumer<Status>() {
+                .subscribe(new Action() {
+
                     @Override
-                    public void accept(Status status) throws Exception {
+                    public void run() throws Exception {
                         toast("Geofences removed");
                     }
                 }, new Consumer<Throwable>() {
@@ -107,17 +111,11 @@ public class GeofenceActivity extends BaseActivity {
 
         reactiveLocationProvider
                 .removeGeofences(pendingIntent)
-                .flatMap(new Function<Status, Observable<Status>>() {
+                .concatWith(reactiveLocationProvider.addGeofences(pendingIntent, geofencingRequest))
+                .subscribe(new Action() {
                     @Override
-                    public Observable<Status> apply(Status status) throws Exception {
-                        return reactiveLocationProvider.addGeofences(pendingIntent, geofencingRequest);
-                    }
-
-                })
-                .subscribe(new Consumer<Status>() {
-                    @Override
-                    public void accept(Status addGeofenceResult) {
-                        toast("Geofence added, success: " + addGeofenceResult.isSuccess());
+                    public void run() throws Exception {
+                        toast("Geofence added, success");
                     }
                 }, new Consumer<Throwable>() {
                     @Override
